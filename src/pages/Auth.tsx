@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,11 +38,7 @@ const Auth = () => {
         });
         navigate('/');
       } else {
-        await signUp(formData.email, formData.password, {
-          name: formData.name,
-          phone: formData.phone,
-          referral_code: formData.referralCode
-        });
+        await signUp(formData.email, formData.password, formData.name);
         toast({
           title: "Account created!",
           description: "Please check your email to verify your account.",
