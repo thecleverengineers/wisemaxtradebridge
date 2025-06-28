@@ -1,4 +1,3 @@
-
 const express = require('express');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
@@ -395,6 +394,205 @@ app.get('/api/referrals', authenticateToken, async (req, res) => {
     console.error('Referrals fetch error:', error);
     res.status(500).json({ error: 'Failed to fetch referrals' });
   }
+});
+
+const TradingEngine = require('./services/tradingEngine');
+
+// Initialize trading engine
+let tradingEngine;
+pool.getConnection().then(() => {
+  tradingEngine = new TradingEngine(io, pool);
+  console.log('Trading engine initialized');
+}).catch(error => {
+  console.error('Failed to initialize trading engine:', error);
+});
+
+// ===== ENHANCED TRADING ROUTES =====
+
+// Get trade result
+app.get('/api/trades/:id/result', authenticateToken, async (req, res) => {
+  try {
+    const tradeId = req.params.id;
+    
+    const [trades] = await pool.execute(
+      'SELECT * FROM trades WHERE id = ? AND user_id = ?',
+      [tradeId, req.user.id]
+    );
+
+    if (trades.length === 0) {
+      return res.status(404).json({ error: 'Trade not found' });
+    }
+
+    const trade = trades[0];
+    if (trade.result === 'pending') {
+      return res.json({ trade, message: 'Trade still pending' });
+    }
+
+    const isWin = trade.result === 'win';
+    res.json({
+      trade,
+      isWin,
+      payout: trade.payout
+    });
+  } catch (error) {
+    console.error('Trade result error:', error);
+    res.status(500).json({ error: 'Failed to get trade result' });
+  }
+});
+
+// Get market analysis
+app.get('/api/market/analysis', async (req, res) => {
+  try {
+    if (tradingEngine) {
+      const analysis = await tradingEngine.getMarketAnalysis();
+      res.json(analysis);
+    } else {
+      res.status(503).json({ error: 'Trading engine not available' });
+    }
+  } catch (error) {
+    console.error('Market analysis error:', error);
+    res.status(500).json({ error: 'Failed to get market analysis' });
+  }
+});
+
+// Get trading signals
+app.get('/api/signals', async (req, res) => {
+  try {
+    if (tradingEngine) {
+      const signals = Array.from(tradingEngine.signals.entries());
+      res.json(signals);
+    } else {
+      res.json([]);
+    }
+  } catch (error) {
+    console.error('Signals error:', error);
+    res.status(500).json({ error: 'Failed to get signals' });
+  }
+});
+
+// Enhanced trade history with filters
+app.get('/api/trades/history', authenticateToken, async (req, res) => {
+  try {
+    const { symbol, result, mode, limit = 50, offset = 0 } = req.query;
+    
+    let query = `
+      SELECT t.*, a.name as asset_name, a.symbol as asset_symbol
+      FROM trades t 
+      JOIN assets a ON t.asset_id = a.id 
+      WHERE t.user_id = ?
+    `;
+    let params = [req.user.id];
+    
+    if (symbol) {
+      query += ' AND a.symbol = ?';
+      params.push(symbol);
+    }
+    
+    if (result) {
+      query += ' AND t.result = ?';
+      params.push(result);
+    }
+    
+    if (mode) {
+      query += ' AND t.mode = ?';
+      params.push(mode);
+    }
+    
+    query += ' ORDER BY t.created_at DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), parseInt(offset));
+    
+    const [trades] = await pool.execute(query, params);
+    
+    // Get total count for pagination
+    let countQuery = 'SELECT COUNT(*) as total FROM trades t JOIN assets a ON t.asset_id = a.id WHERE t.user_id = ?';
+    let countParams = [req.user.id];
+    
+    if (symbol) {
+      countQuery += ' AND a.symbol = ?';
+      countParams.push(symbol);
+    }
+    if (result) {
+      countQuery += ' AND t.result = ?';
+      countParams.push(result);
+    }
+    if (mode) {
+      countQuery += ' AND t.mode = ?';
+      countParams.push(mode);
+    }
+    
+    const [countResult] = await pool.execute(countQuery, countParams);
+    
+    res.json({
+      trades,
+      total: countResult[0].total,
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+  } catch (error) {
+    console.error('Trade history error:', error);
+    res.status(500).json({ error: 'Failed to fetch trade history' });
+  }
+});
+
+// Trading statistics
+app.get('/api/trading/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const [stats] = await pool.execute(`
+      SELECT 
+        COUNT(*) as total_trades,
+        COUNT(CASE WHEN result = 'win' THEN 1 END) as winning_trades,
+        COUNT(CASE WHEN result = 'loss' THEN 1 END) as losing_trades,
+        COALESCE(SUM(CASE WHEN result = 'win' THEN payout - stake ELSE -stake END), 0) as total_profit,
+        COALESCE(AVG(stake), 0) as avg_stake,
+        COALESCE(MAX(payout), 0) as max_payout
+      FROM trades 
+      WHERE user_id = ? AND result != 'pending'
+    `, [userId]);
+    
+    const [recentActivity] = await pool.execute(`
+      SELECT DATE(created_at) as trade_date, COUNT(*) as trades_count
+      FROM trades 
+      WHERE user_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY DATE(created_at)
+      ORDER BY trade_date DESC
+    `, [userId]);
+    
+    const winRate = stats[0].total_trades > 0 
+      ? (stats[0].winning_trades / stats[0].total_trades * 100).toFixed(2)
+      : 0;
+    
+    res.json({
+      ...stats[0],
+      win_rate: parseFloat(winRate),
+      recent_activity: recentActivity
+    });
+  } catch (error) {
+    console.error('Trading stats error:', error);
+    res.status(500).json({ error: 'Failed to get trading statistics' });
+  }
+});
+
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+  
+  // Join user room for personalized updates
+  socket.on('join', (userId) => {
+    socket.join(`user_${userId}`);
+    console.log(`User ${userId} joined room`);
+  });
+  
+  // Subscribe to price updates
+  socket.on('subscribe', (assets) => {
+    console.log('Client subscribed to assets:', assets);
+    // Handle asset-specific subscriptions
+  });
+  
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
 });
 
 // Start server
