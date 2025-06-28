@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -87,7 +86,7 @@ const Settings = () => {
         .from('users')
         .update({
           kyc_documents: kycData,
-          kyc_status: 'submitted',
+          kyc_status: 'pending',
         })
         .eq('id', user.id);
 
@@ -206,8 +205,8 @@ const Settings = () => {
                 KYC Verification
               </div>
               <Badge className={`${
-                profile?.kyc_status === 'verified' ? 'bg-green-500' :
-                profile?.kyc_status === 'submitted' ? 'bg-yellow-500' :
+                profile?.kyc_status === 'approved' ? 'bg-green-500' :
+                profile?.kyc_status === 'pending' ? 'bg-yellow-500' :
                 profile?.kyc_status === 'rejected' ? 'bg-red-500' :
                 'bg-gray-500'
               } text-white`}>
@@ -219,7 +218,7 @@ const Settings = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {profile?.kyc_status === 'verified' ? (
+            {profile?.kyc_status === 'approved' ? (
               <div className="text-center py-8">
                 <Shield className="h-12 w-12 text-green-400 mx-auto mb-4" />
                 <p className="text-green-400 font-semibold">KYC Verified</p>
@@ -271,7 +270,7 @@ const Settings = () => {
                 </div>
                 <Button 
                   onClick={submitKyc} 
-                  disabled={loading || profile?.kyc_status === 'submitted'}
+                  disabled={loading || profile?.kyc_status === 'pending'}
                   className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                 >
                   {loading ? 'Submitting...' : 'Submit KYC'}
