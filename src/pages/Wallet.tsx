@@ -6,21 +6,33 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Plus, Minus, ArrowLeft, CreditCard } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Wallet as WalletIcon, 
+  ArrowUpRight, 
+  ArrowDownLeft, 
+  History, 
+  DollarSign,
+  CreditCard,
+  Smartphone,
+  ArrowLeft,
+  Eye,
+  EyeOff
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { BottomNavigation } from '@/components/layout/BottomNavigation';
+import { AppSidebar } from '@/components/layout/AppSidebar';
 
 interface WalletData {
-  id: string;
   total_balance: number;
   roi_income: number;
   referral_income: number;
-  level_income: number;
   bonus_income: number;
+  level_income: number;
   total_withdrawn: number;
 }
 
@@ -34,32 +46,31 @@ interface Transaction {
   created_at: string;
 }
 
-interface Withdrawal {
-  id: string;
-  amount: number;
-  fee_amount: number;
-  net_amount: number;
-  status: string;
-  withdrawal_method: string;
-  upi_id?: string;
-  bank_details?: any;
-  requested_at: string;
-  processed_at?: string;
-}
-
 const Wallet = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  const [walletData, setWalletData] = useState<WalletData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showBalance, setShowBalance] = useState(true);
+  
+  // Withdrawal form
   const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [withdrawMethod, setWithdrawMethod] = useState('');
+  const [withdrawMethod, setWithdrawMethod] = useState('upi');
   const [upiId, setUpiId] = useState('');
-  const [bankDetails, setBankDetails] = useState('');
+  const [bankDetails, setBankDetails] = useState({
+    accountNumber: '',
+    ifscCode: '',
+    accountHolderName: ''
+  });
   const [withdrawing, setWithdrawing] = useState(false);
+
+  // Deposit form
+  const [depositAmount, setDepositAmount] = useState('');
+  const [depositing, setDepositing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -70,17 +81,17 @@ const Wallet = () => {
   const fetchWalletData = async () => {
     try {
       // Fetch wallet data
-      const { data: walletData, error: walletError } = await supabase
+      const { data: walletResponse, error: walletError } = await supabase
         .from('wallets')
         .select('*')
         .eq('user_id', user?.id)
         .single();
 
       if (walletError) throw walletError;
-      setWallet(walletData);
+      setWalletData(walletResponse);
 
       // Fetch transactions
-      const { data: transactionsData, error: transactionsError } = await supabase
+      const { data: transactionsResponse, error: transactionsError } = await supabase
         .from('wallet_transactions')
         .select('*')
         .eq('user_id', user?.id)
@@ -88,17 +99,7 @@ const Wallet = () => {
         .limit(50);
 
       if (transactionsError) throw transactionsError;
-      setTransactions(transactionsData || []);
-
-      // Fetch withdrawals
-      const { data: withdrawalsData, error: withdrawalsError } = await supabase
-        .from('withdrawals')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('requested_at', { ascending: false });
-
-      if (withdrawalsError) throw withdrawalsError;
-      setWithdrawals(withdrawalsData || []);
+      setTransactions(transactionsResponse || []);
 
     } catch (error) {
       console.error('Error fetching wallet data:', error);
@@ -113,14 +114,16 @@ const Wallet = () => {
   };
 
   const handleWithdraw = async () => {
-    if (!withdrawAmount || !withdrawMethod || !user || !wallet) return;
+    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid withdrawal amount",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const amount = parseFloat(withdrawAmount);
-    const feePercent = 2; // 2% withdrawal fee
-    const feeAmount = (amount * feePercent) / 100;
-    const netAmount = amount - feeAmount;
-
-    if (amount > wallet.total_balance) {
+    if (parseFloat(withdrawAmount) > (walletData?.total_balance || 0)) {
       toast({
         title: "Insufficient Balance",
         description: "You don't have enough balance for this withdrawal",
@@ -129,30 +132,16 @@ const Wallet = () => {
       return;
     }
 
-    if (amount < 100) {
-      toast({
-        title: "Minimum Withdrawal",
-        description: "Minimum withdrawal amount is ₹100",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setWithdrawing(true);
     try {
-      const withdrawalData: any = {
-        user_id: user.id,
-        amount,
-        fee_amount: feeAmount,
-        net_amount: netAmount,
+      const withdrawalData = {
+        user_id: user?.id,
+        amount: parseFloat(withdrawAmount),
+        net_amount: parseFloat(withdrawAmount) - (parseFloat(withdrawAmount) * 0.02), // 2% fee
+        fee_amount: parseFloat(withdrawAmount) * 0.02,
         withdrawal_method: withdrawMethod,
+        ...(withdrawMethod === 'upi' ? { upi_id: upiId } : { bank_details: bankDetails })
       };
-
-      if (withdrawMethod === 'upi' && upiId) {
-        withdrawalData.upi_id = upiId;
-      } else if (withdrawMethod === 'bank' && bankDetails) {
-        withdrawalData.bank_details = JSON.parse(bankDetails);
-      }
 
       const { error } = await supabase
         .from('withdrawals')
@@ -162,19 +151,18 @@ const Wallet = () => {
 
       toast({
         title: "Withdrawal Request Submitted",
-        description: `Your withdrawal request for ₹${amount.toLocaleString()} has been submitted for approval`,
+        description: "Your withdrawal request has been submitted and is pending approval",
       });
 
       setWithdrawAmount('');
-      setWithdrawMethod('');
       setUpiId('');
-      setBankDetails('');
+      setBankDetails({ accountNumber: '', ifscCode: '', accountHolderName: '' });
       fetchWalletData();
     } catch (error) {
-      console.error('Error creating withdrawal:', error);
+      console.error('Error submitting withdrawal:', error);
       toast({
         title: "Withdrawal Failed",
-        description: "Failed to create withdrawal request. Please try again.",
+        description: "Failed to submit withdrawal request. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -182,13 +170,53 @@ const Wallet = () => {
     }
   };
 
+  const handleDeposit = async () => {
+    if (!depositAmount || parseFloat(depositAmount) <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid deposit amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setDepositing(true);
+    try {
+      // This would typically integrate with a payment gateway
+      // For now, we'll simulate a successful deposit
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      toast({
+        title: "Deposit Successful",
+        description: `₹${depositAmount} has been added to your wallet`,
+      });
+
+      setDepositAmount('');
+      fetchWalletData();
+    } catch (error) {
+      toast({
+        title: "Deposit Failed",
+        description: "Failed to process deposit. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDepositing(false);
+    }
+  };
+
+  const getTransactionIcon = (type: string) => {
+    return type === 'credit' ? ArrowDownLeft : ArrowUpRight;
+  };
+
+  const getTransactionColor = (type: string) => {
+    return type === 'credit' ? 'text-green-400' : 'text-red-400';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-white text-center">
-          <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-white font-bold text-sm">IX</span>
-          </div>
+          <WalletIcon className="h-12 w-12 text-purple-400 mx-auto mb-4 animate-pulse" />
           <p>Loading wallet...</p>
         </div>
       </div>
@@ -196,249 +224,288 @@ const Wallet = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 p-4 pt-20 pb-20">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/')}
-              className="text-white hover:bg-white/10"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-white">My Wallet</h1>
-              <p className="text-purple-300">Manage your finances</p>
+    <div className="min-h-screen bg-slate-900">
+      <AppHeader onMenuClick={() => setSidebarOpen(true)} />
+      <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="p-4 pt-20 pb-20">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/')}
+                className="text-white hover:bg-white/10"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-white">My Wallet</h1>
+                <p className="text-purple-300">Manage your funds and transactions</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Wallet Balance */}
-        <Card className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 border-0 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100 text-sm">Total Balance</p>
-                <p className="text-4xl font-bold">₹{wallet?.total_balance?.toLocaleString() || '0'}</p>
+          {/* Balance Card */}
+          <Card className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 border-0 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <WalletIcon className="h-8 w-8" />
+                  <div>
+                    <p className="text-blue-100">Total Balance</p>
+                    <div className="flex items-center space-x-2">
+                      <p className="text-3xl font-bold">
+                        {showBalance ? `₹${walletData?.total_balance?.toLocaleString() || '0'}` : '₹****'}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowBalance(!showBalance)}
+                        className="text-white hover:bg-white/10"
+                      >
+                        {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <WalletIcon className="h-12 w-12 text-blue-200" />
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-4">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="bg-white/20 hover:bg-white/30 text-white border-white/30">
-                    <Minus className="h-4 w-4 mr-2" />
-                    Withdraw
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-blue-100 text-sm">ROI Income</p>
+                  <p className="text-white font-semibold">₹{walletData?.roi_income?.toLocaleString() || '0'}</p>
+                </div>
+                <div>
+                  <p className="text-blue-100 text-sm">Referral Income</p>
+                  <p className="text-white font-semibold">₹{walletData?.referral_income?.toLocaleString() || '0'}</p>
+                </div>
+                <div>
+                  <p className="text-blue-100 text-sm">Bonus Income</p>
+                  <p className="text-white font-semibold">₹{walletData?.bonus_income?.toLocaleString() || '0'}</p>
+                </div>
+                <div>
+                  <p className="text-blue-100 text-sm">Total Withdrawn</p>
+                  <p className="text-white font-semibold">₹{walletData?.total_withdrawn?.toLocaleString() || '0'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="grid grid-cols-2 gap-4">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="h-16 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+                  <ArrowDownLeft className="h-6 w-6 mr-2" />
+                  Deposit
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-slate-800 border-white/10">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Deposit Funds</DialogTitle>
+                  <DialogDescription className="text-purple-300">
+                    Add money to your wallet
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="deposit-amount" className="text-white">Amount (₹)</Label>
+                    <Input
+                      id="deposit-amount"
+                      type="number"
+                      placeholder="Enter amount to deposit"
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  </div>
+                  <Button 
+                    onClick={handleDeposit}
+                    disabled={depositing || !depositAmount}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  >
+                    {depositing ? 'Processing...' : 'Deposit Now'}
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-slate-800 border-white/10">
-                  <DialogHeader>
-                    <DialogTitle className="text-white">Withdraw Funds</DialogTitle>
-                    <DialogDescription className="text-purple-300">
-                      Withdraw money from your wallet (2% processing fee applies)
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="withdraw-amount" className="text-white">Amount (₹)</Label>
-                      <Input
-                        id="withdraw-amount"
-                        type="number"
-                        placeholder="Minimum ₹100"
-                        value={withdrawAmount}
-                        onChange={(e) => setWithdrawAmount(e.target.value)}
-                        className="bg-white/5 border-white/10 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="withdraw-method" className="text-white">Withdrawal Method</Label>
-                      <Select value={withdrawMethod} onValueChange={setWithdrawMethod}>
-                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                          <SelectValue placeholder="Select method" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-800 border-white/10">
-                          <SelectItem value="upi">UPI</SelectItem>
-                          <SelectItem value="bank">Bank Transfer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {withdrawMethod === 'upi' && (
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="h-16 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800">
+                  <ArrowUpRight className="h-6 w-6 mr-2" />
+                  Withdraw
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-slate-800 border-white/10 max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Withdraw Funds</DialogTitle>
+                  <DialogDescription className="text-purple-300">
+                    Withdraw money from your wallet
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="withdraw-amount" className="text-white">Amount (₹)</Label>
+                    <Input
+                      id="withdraw-amount"
+                      type="number"
+                      placeholder="Enter amount to withdraw"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                    <p className="text-purple-300 text-sm mt-1">
+                      Available: ₹{walletData?.total_balance?.toLocaleString() || '0'}
+                    </p>
+                  </div>
+
+                  <Tabs value={withdrawMethod} onValueChange={setWithdrawMethod}>
+                    <TabsList className="grid w-full grid-cols-2 bg-white/10">
+                      <TabsTrigger value="upi">UPI</TabsTrigger>
+                      <TabsTrigger value="bank">Bank Transfer</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="upi" className="space-y-4">
                       <div>
                         <Label htmlFor="upi-id" className="text-white">UPI ID</Label>
-                        <Input
-                          id="upi-id"
-                          placeholder="your-upi@provider"
-                          value={upiId}
-                          onChange={(e) => setUpiId(e.target.value)}
-                          className="bg-white/5 border-white/10 text-white"
-                        />
+                        <div className="relative">
+                          <Smartphone className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                          <Input
+                            id="upi-id"
+                            type="text"
+                            placeholder="your-upi-id@paytm"
+                            value={upiId}
+                            onChange={(e) => setUpiId(e.target.value)}
+                            className="pl-10 bg-white/5 border-white/10 text-white"
+                          />
+                        </div>
                       </div>
-                    )}
-                    {withdrawMethod === 'bank' && (
+                    </TabsContent>
+                    
+                    <TabsContent value="bank" className="space-y-4">
                       <div>
-                        <Label htmlFor="bank-details" className="text-white">Bank Details (JSON)</Label>
-                        <Textarea
-                          id="bank-details"
-                          placeholder='{"account_number": "1234567890", "ifsc": "ABCD0123456", "name": "Your Name"}'
-                          value={bankDetails}
-                          onChange={(e) => setBankDetails(e.target.value)}
+                        <Label htmlFor="account-number" className="text-white">Account Number</Label>
+                        <Input
+                          id="account-number"
+                          type="text"
+                          placeholder="Enter account number"
+                          value={bankDetails.accountNumber}
+                          onChange={(e) => setBankDetails({...bankDetails, accountNumber: e.target.value})}
                           className="bg-white/5 border-white/10 text-white"
                         />
                       </div>
-                    )}
-                    {withdrawAmount && (
-                      <div className="bg-white/5 rounded-lg p-4 space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-purple-300">Amount:</span>
-                          <span className="text-white">₹{parseFloat(withdrawAmount).toLocaleString()}</span>
+                      <div>
+                        <Label htmlFor="ifsc-code" className="text-white">IFSC Code</Label>
+                        <Input
+                          id="ifsc-code"
+                          type="text"
+                          placeholder="Enter IFSC code"
+                          value={bankDetails.ifscCode}
+                          onChange={(e) => setBankDetails({...bankDetails, ifscCode: e.target.value})}
+                          className="bg-white/5 border-white/10 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="account-holder" className="text-white">Account Holder Name</Label>
+                        <Input
+                          id="account-holder"
+                          type="text"
+                          placeholder="Enter account holder name"
+                          value={bankDetails.accountHolderName}
+                          onChange={(e) => setBankDetails({...bankDetails, accountHolderName: e.target.value})}
+                          className="bg-white/5 border-white/10 text-white"
+                        />
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+
+                  {withdrawAmount && (
+                    <div className="bg-white/5 rounded-lg p-3 space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-purple-300">Withdrawal Amount:</span>
+                        <span className="text-white">₹{parseFloat(withdrawAmount).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-purple-300">Processing Fee (2%):</span>
+                        <span className="text-white">₹{(parseFloat(withdrawAmount) * 0.02).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-sm font-semibold">
+                        <span className="text-purple-300">You'll Receive:</span>
+                        <span className="text-white">₹{(parseFloat(withdrawAmount) - (parseFloat(withdrawAmount) * 0.02)).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <Button 
+                    onClick={handleWithdraw}
+                    disabled={withdrawing || !withdrawAmount || (withdrawMethod === 'upi' && !upiId) || (withdrawMethod === 'bank' && (!bankDetails.accountNumber || !bankDetails.ifscCode || !bankDetails.accountHolderName))}
+                    className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+                  >
+                    {withdrawing ? 'Processing...' : 'Submit Withdrawal Request'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Transaction History */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <History className="h-5 w-5 mr-2" />
+                Transaction History
+              </CardTitle>
+              <CardDescription className="text-purple-300">
+                Your recent wallet transactions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {transactions.length === 0 ? (
+                <div className="text-center py-8">
+                  <DollarSign className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                  <p className="text-purple-300">No transactions found</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {transactions.map((transaction) => {
+                    const TransactionIcon = getTransactionIcon(transaction.type);
+                    return (
+                      <div key={transaction.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className={`p-2 rounded-full bg-white/10`}>
+                            <TransactionIcon className={`h-4 w-4 ${getTransactionColor(transaction.type)}`} />
+                          </div>
+                          <div>
+                            <h4 className="text-white font-medium">{transaction.reason || transaction.income_type}</h4>
+                            <p className="text-purple-300 text-sm">
+                              {new Date(transaction.created_at).toLocaleDateString()} • 
+                              {new Date(transaction.created_at).toLocaleTimeString()}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-purple-300">Fee (2%):</span>
-                          <span className="text-white">₹{((parseFloat(withdrawAmount) * 2) / 100).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between text-sm font-semibold border-t border-white/10 pt-2">
-                          <span className="text-purple-300">You'll receive:</span>
-                          <span className="text-white">₹{(parseFloat(withdrawAmount) - (parseFloat(withdrawAmount) * 2) / 100).toLocaleString()}</span>
+                        <div className="text-right">
+                          <p className={`font-semibold ${getTransactionColor(transaction.type)}`}>
+                            {transaction.type === 'credit' ? '+' : '-'}₹{transaction.amount?.toLocaleString()}
+                          </p>
+                          <p className="text-purple-300 text-sm">
+                            Balance: ₹{transaction.balance_after?.toLocaleString()}
+                          </p>
                         </div>
                       </div>
-                    )}
-                    <Button 
-                      onClick={handleWithdraw} 
-                      disabled={withdrawing || !withdrawAmount || !withdrawMethod}
-                      className="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700"
-                    >
-                      {withdrawing ? 'Processing...' : 'Submit Withdrawal'}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <Button className="bg-white/20 hover:bg-white/30 text-white border-white/30">
-                <CreditCard className="h-4 w-4 mr-2" />
-                Add Money
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Income Breakdown */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-gradient-to-br from-green-500 to-emerald-600 border-0 text-white">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <p className="text-green-100 text-sm">ROI Income</p>
-                <p className="text-2xl font-bold">₹{wallet?.roi_income?.toLocaleString() || '0'}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 border-0 text-white">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <p className="text-blue-100 text-sm">Referral Income</p>
-                <p className="text-2xl font-bold">₹{wallet?.referral_income?.toLocaleString() || '0'}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-purple-500 to-pink-600 border-0 text-white">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <p className="text-purple-100 text-sm">Level Income</p>
-                <p className="text-2xl font-bold">₹{wallet?.level_income?.toLocaleString() || '0'}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-orange-500 to-red-600 border-0 text-white">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <p className="text-orange-100 text-sm">Bonus Income</p>
-                <p className="text-2xl font-bold">₹{wallet?.bonus_income?.toLocaleString() || '0'}</p>
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
-
-        {/* Recent Transactions */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">Recent Transactions</CardTitle>
-            <CardDescription className="text-purple-300">
-              Your latest wallet activity
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {transactions.length === 0 ? (
-              <p className="text-purple-300 text-center py-8">No transactions found.</p>
-            ) : (
-              <div className="space-y-3">
-                {transactions.slice(0, 10).map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded-full ${transaction.type === 'credit' ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
-                        {transaction.type === 'credit' ? 
-                          <ArrowUpRight className="h-4 w-4 text-green-400" /> : 
-                          <ArrowDownRight className="h-4 w-4 text-red-400" />
-                        }
-                      </div>
-                      <div>
-                        <p className="text-white font-semibold">{transaction.reason}</p>
-                        <p className="text-purple-300 text-sm">{new Date(transaction.created_at).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={`font-semibold ${transaction.type === 'credit' ? 'text-green-400' : 'text-red-400'}`}>
-                        {transaction.type === 'credit' ? '+' : '-'}₹{transaction.amount?.toLocaleString()}
-                      </p>
-                      <p className="text-purple-300 text-sm">₹{transaction.balance_after?.toLocaleString()}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Withdrawal History */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">Withdrawal History</CardTitle>
-            <CardDescription className="text-purple-300">
-              Track your withdrawal requests
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {withdrawals.length === 0 ? (
-              <p className="text-purple-300 text-center py-8">No withdrawals found.</p>
-            ) : (
-              <div className="space-y-3">
-                {withdrawals.map((withdrawal) => (
-                  <div key={withdrawal.id} className="p-4 bg-white/5 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="text-white font-semibold">₹{withdrawal.amount?.toLocaleString()}</p>
-                        <p className="text-purple-300 text-sm">{withdrawal.withdrawal_method.toUpperCase()}</p>
-                      </div>
-                      <Badge className={`${
-                        withdrawal.status === 'approved' ? 'bg-green-500' :
-                        withdrawal.status === 'rejected' ? 'bg-red-500' :
-                        'bg-yellow-500'
-                      } text-white`}>
-                        {withdrawal.status}
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-purple-300">
-                      <p>Requested: {new Date(withdrawal.requested_at).toLocaleDateString()}</p>
-                      <p>Net Amount: ₹{withdrawal.net_amount?.toLocaleString()}</p>
-                      {withdrawal.upi_id && <p>UPI: {withdrawal.upi_id}</p>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
+
+      <BottomNavigation />
     </div>
   );
 };

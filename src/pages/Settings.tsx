@@ -1,38 +1,73 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Settings as SettingsIcon, User, Bell, Shield, CreditCard, HelpCircle, LogOut, ArrowLeft, Upload } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  User, 
+  Lock, 
+  Bell, 
+  Shield, 
+  CreditCard, 
+  ArrowLeft,
+  Phone,
+  Mail,
+  Camera,
+  Save,
+  Eye,
+  EyeOff
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { BottomNavigation } from '@/components/layout/BottomNavigation';
+import { AppSidebar } from '@/components/layout/AppSidebar';
 
 const Settings = () => {
-  const { user, profile, signOut, refreshProfile, isAdmin } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
+  // Profile form
   const [profileData, setProfileData] = useState({
     name: profile?.name || '',
     phone: profile?.phone || '',
+    email: user?.email || ''
   });
-  const [kycData, setKycData] = useState({
-    aadhar_number: '',
-    pan_number: '',
-    bank_account: '',
-    ifsc_code: '',
+
+  // Security form
+  const [securityData, setSecurityData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
+
+  // Notification settings
   const [notifications, setNotifications] = useState({
-    email_notifications: true,
-    sms_notifications: false,
-    push_notifications: true,
+    emailNotifications: true,
+    smsNotifications: true,
+    pushNotifications: true,
+    investmentAlerts: true,
+    roiAlerts: true,
+    referralAlerts: true
+  });
+
+  // KYC form
+  const [kycData, setKycData] = useState({
+    panNumber: '',
+    aadharNumber: '',
+    bankAccount: '',
+    ifscCode: ''
   });
 
   useEffect(() => {
@@ -40,22 +75,21 @@ const Settings = () => {
       setProfileData({
         name: profile.name || '',
         phone: profile.phone || '',
+        email: user?.email || ''
       });
     }
-  }, [profile]);
+  }, [profile, user]);
 
-  const updateProfile = async () => {
-    if (!user) return;
-    
+  const handleProfileUpdate = async () => {
     setLoading(true);
     try {
       const { error } = await supabase
         .from('users')
         .update({
           name: profileData.name,
-          phone: profileData.phone,
+          phone: profileData.phone
         })
-        .eq('id', user.id);
+        .eq('id', user?.id);
 
       if (error) throw error;
 
@@ -63,12 +97,10 @@ const Settings = () => {
         title: "Profile Updated",
         description: "Your profile has been updated successfully",
       });
-
-      refreshProfile();
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
-        title: "Update Failed",
+        title: "Update Failed", 
         description: "Failed to update profile. Please try again.",
         variant: "destructive",
       });
@@ -77,32 +109,47 @@ const Settings = () => {
     }
   };
 
-  const submitKyc = async () => {
-    if (!user) return;
-    
+  const handlePasswordChange = async () => {
+    if (securityData.newPassword !== securityData.confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "New password and confirm password don't match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (securityData.newPassword.length < 6) {
+      toast({
+        title: "Weak Password",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({
-          kyc_documents: kycData,
-          kyc_status: 'pending',
-        })
-        .eq('id', user.id);
+      const { error } = await supabase.auth.updateUser({
+        password: securityData.newPassword
+      });
 
       if (error) throw error;
 
       toast({
-        title: "KYC Submitted",
-        description: "Your KYC documents have been submitted for verification",
+        title: "Password Updated",
+        description: "Your password has been updated successfully",
       });
 
-      refreshProfile();
-    } catch (error) {
-      console.error('Error submitting KYC:', error);
+      setSecurityData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    } catch (error: any) {
       toast({
-        title: "Submission Failed",
-        description: "Failed to submit KYC. Please try again.",
+        title: "Password Update Failed",
+        description: error.message || "Failed to update password. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -110,343 +157,422 @@ const Settings = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+  const handleKYCSubmit = async () => {
+    if (!kycData.panNumber || !kycData.aadharNumber) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required KYC details",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          kyc_documents: kycData,
+          kyc_status: 'pending'
+        })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "KYC Submitted",
+        description: "Your KYC documents have been submitted for verification",
+      });
+    } catch (error) {
+      console.error('Error submitting KYC:', error);
+      toast({
+        title: "KYC Submission Failed",
+        description: "Failed to submit KYC documents. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 p-4 pt-20 pb-20">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/')}
-              className="text-white hover:bg-white/10"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Settings</h1>
-              <p className="text-purple-300">Manage your account preferences</p>
+    <div className="min-h-screen bg-slate-900">
+      <AppHeader onMenuClick={() => setSidebarOpen(true)} />
+      <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="p-4 pt-20 pb-20">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/')}
+                className="text-white hover:bg-white/10"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Settings</h1>
+                <p className="text-purple-300">Manage your account preferences</p>
+              </div>
             </div>
           </div>
+
+          <Tabs defaultValue="profile" className="space-y-4">
+            <TabsList className="bg-white/5 border-white/10 grid grid-cols-4">
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              <TabsTrigger value="kyc">KYC</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="profile">
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <User className="h-5 w-5 mr-2" />
+                    Profile Information
+                  </CardTitle>
+                  <CardDescription className="text-purple-300">
+                    Update your personal information
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Profile Picture */}
+                  <div className="flex items-center space-x-4">
+                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-2xl">
+                        {profileData.name.substring(0, 2).toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                    <div>
+                      <Button variant="outline" className="border-white/10">
+                        <Camera className="h-4 w-4 mr-2" />
+                        Change Photo
+                      </Button>
+                      <p className="text-purple-300 text-sm mt-2">
+                        JPG, GIF or PNG. 1MB max.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="name" className="text-white">Full Name</Label>
+                      <Input
+                        id="name"
+                        value={profileData.name}
+                        onChange={(e) => setProfileData({...profileData, name: e.target.value})}
+                        className="bg-white/5 border-white/10 text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="email" className="text-white">Email Address</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                        <Input
+                          id="email"
+                          value={profileData.email}
+                          disabled
+                          className="pl-10 bg-white/5 border-white/10 text-white opacity-60 cursor-not-allowed"
+                        />
+                      </div>
+                      <p className="text-purple-300 text-sm mt-1">
+                        Email cannot be changed
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="phone" className="text-white">Phone Number</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                        <Input
+                          id="phone"
+                          value={profileData.phone}
+                          onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                          className="pl-10 bg-white/5 border-white/10 text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-white">Referral Code</Label>
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          value={profile?.referral_code || ''}
+                          disabled
+                          className="bg-white/5 border-white/10 text-white opacity-60 cursor-not-allowed"
+                        />
+                        <Button variant="outline" className="border-white/10">
+                          Copy
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={handleProfileUpdate}
+                      disabled={loading}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      {loading ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="security">
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Lock className="h-5 w-5 mr-2" />
+                    Security Settings
+                  </CardTitle>
+                  <CardDescription className="text-purple-300">
+                    Manage your account security
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-white font-semibold">Change Password</h3>
+                    
+                    <div>
+                      <Label htmlFor="current-password" className="text-white">Current Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="current-password"
+                          type={showPassword ? 'text' : 'password'}
+                          value={securityData.currentPassword}
+                          onChange={(e) => setSecurityData({...securityData, currentPassword: e.target.value})}
+                          className="pr-10 bg-white/5 border-white/10 text-white"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="new-password" className="text-white">New Password</Label>
+                      <Input
+                        id="new-password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={securityData.newPassword}
+                        onChange={(e) => setSecurityData({...securityData, newPassword: e.target.value})}
+                        className="bg-white/5 border-white/10 text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="confirm-password" className="text-white">Confirm New Password</Label>
+                      <Input
+                        id="confirm-password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={securityData.confirmPassword}
+                        onChange={(e) => setSecurityData({...securityData, confirmPassword: e.target.value})}
+                        className="bg-white/5 border-white/10 text-white"
+                      />
+                    </div>
+
+                    <Button 
+                      onClick={handlePasswordChange}
+                      disabled={loading || !securityData.currentPassword || !securityData.newPassword}
+                      className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+                    >
+                      {loading ? 'Updating...' : 'Update Password'}
+                    </Button>
+                  </div>
+
+                  <div className="border-t border-white/10 pt-6">
+                    <h3 className="text-white font-semibold mb-4">Two-Factor Authentication</h3>
+                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                      <div>
+                        <p className="text-white font-medium">SMS Authentication</p>
+                        <p className="text-purple-300 text-sm">Secure your account with SMS codes</p>
+                      </div>
+                      <Switch />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="notifications">
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Bell className="h-5 w-5 mr-2" />
+                    Notification Preferences
+                  </CardTitle>
+                  <CardDescription className="text-purple-300">
+                    Choose how you want to be notified
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-white font-semibold">General Notifications</h3>
+                    
+                    {[
+                      { key: 'emailNotifications', label: 'Email Notifications', desc: 'Receive notifications via email' },
+                      { key: 'smsNotifications', label: 'SMS Notifications', desc: 'Receive notifications via SMS' },
+                      { key: 'pushNotifications', label: 'Push Notifications', desc: 'Receive push notifications in browser' }
+                    ].map((item) => (
+                      <div key={item.key} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                        <div>
+                          <p className="text-white font-medium">{item.label}</p>
+                          <p className="text-purple-300 text-sm">{item.desc}</p>
+                        </div>
+                        <Switch 
+                          checked={notifications[item.key as keyof typeof notifications]}
+                          onCheckedChange={(checked) => setNotifications({
+                            ...notifications,
+                            [item.key]: checked
+                          })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-white/10 pt-6">
+                    <h3 className="text-white font-semibold mb-4">Investment Alerts</h3>
+                    
+                    {[
+                      { key: 'investmentAlerts', label: 'Investment Updates', desc: 'Get notified about investment status changes' },
+                      { key: 'roiAlerts', label: 'ROI Payments', desc: 'Get notified when ROI is credited' },
+                      { key: 'referralAlerts', label: 'Referral Bonuses', desc: 'Get notified about referral earnings' }
+                    ].map((item) => (
+                      <div key={item.key} className="flex items-center justify-between p-4 bg-white/5 rounded-lg mb-3">
+                        <div>
+                          <p className="text-white font-medium">{item.label}</p>
+                          <p className="text-purple-300 text-sm">{item.desc}</p>
+                        </div>
+                        <Switch 
+                          checked={notifications[item.key as keyof typeof notifications]}
+                          onCheckedChange={(checked) => setNotifications({
+                            ...notifications,
+                            [item.key]: checked
+                          })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="kyc">
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Shield className="h-5 w-5 mr-2" />
+                      KYC Verification
+                    </div>
+                    <Badge className={`${
+                      profile?.kyc_status === 'approved' ? 'bg-green-500' :
+                      profile?.kyc_status === 'pending' ? 'bg-yellow-500' :
+                      'bg-red-500'
+                    } text-white`}>
+                      {profile?.kyc_status || 'Not Submitted'}
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription className="text-purple-300">
+                    Complete your KYC verification to access all features
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="pan-number" className="text-white">PAN Number *</Label>
+                      <Input
+                        id="pan-number"
+                        value={kycData.panNumber}
+                        onChange={(e) => setKycData({...kycData, panNumber: e.target.value.toUpperCase()})}
+                        placeholder="ABCDE1234F"
+                        className="bg-white/5 border-white/10 text-white"
+                        maxLength={10}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="aadhar-number" className="text-white">Aadhar Number *</Label>
+                      <Input
+                        id="aadhar-number"
+                        value={kycData.aadharNumber}
+                        onChange={(e) => setKycData({...kycData, aadharNumber: e.target.value})}
+                        placeholder="1234 5678 9012"
+                        className="bg-white/5 border-white/10 text-white"
+                        maxLength={12}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="bank-account" className="text-white">Bank Account Number</Label>
+                      <div className="relative">
+                        <CreditCard className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                        <Input
+                          id="bank-account"
+                          value={kycData.bankAccount}
+                          onChange={(e) => setKycData({...kycData, bankAccount: e.target.value})}
+                          className="pl-10 bg-white/5 border-white/10 text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="ifsc-code" className="text-white">IFSC Code</Label>
+                      <Input
+                        id="ifsc-code"
+                        value={kycData.ifscCode}
+                        onChange={(e) => setKycData({...kycData, ifscCode: e.target.value.toUpperCase()})}
+                        placeholder="SBIN0001234"
+                        className="bg-white/5 border-white/10 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <h4 className="text-blue-400 font-medium mb-2">Required Documents</h4>
+                    <ul className="text-blue-300 text-sm space-y-1">
+                      <li>• PAN Card (mandatory)</li>
+                      <li>• Aadhar Card (mandatory)</li>
+                      <li>• Bank Account details for withdrawals</li>
+                      <li>• All documents should be clear and readable</li>
+                    </ul>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={handleKYCSubmit}
+                      disabled={loading || !kycData.panNumber || !kycData.aadharNumber || profile?.kyc_status === 'approved'}
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                    >
+                      {loading ? 'Submitting...' : 
+                       profile?.kyc_status === 'approved' ? 'Already Verified' :
+                       profile?.kyc_status === 'pending' ? 'Resubmit KYC' :
+                       'Submit KYC'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
-
-        {/* Profile Settings */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center">
-              <User className="h-5 w-5 mr-2" />
-              Profile Information
-            </CardTitle>
-            <CardDescription className="text-purple-300">
-              Update your personal information
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name" className="text-white">Full Name</Label>
-                <Input
-                  id="name"
-                  value={profileData.name}
-                  onChange={(e) => setProfileData({...profileData, name: e.target.value})}
-                  className="bg-white/5 border-white/10 text-white"
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone" className="text-white">Phone Number</Label>
-                <Input
-                  id="phone"
-                  value={profileData.phone}
-                  onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                  className="bg-white/5 border-white/10 text-white"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email" className="text-white">Email Address</Label>
-                <Input
-                  id="email"
-                  value={user?.email || ''}
-                  disabled
-                  className="bg-white/5 border-white/10 text-gray-400"
-                />
-              </div>
-              <div>
-                <Label htmlFor="referral-code" className="text-white">Referral Code</Label>
-                <Input
-                  id="referral-code"
-                  value={profile?.referral_code || ''}
-                  disabled
-                  className="bg-white/5 border-white/10 text-gray-400"
-                />
-              </div>
-            </div>
-            <Button 
-              onClick={updateProfile} 
-              disabled={loading}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-            >
-              {loading ? 'Updating...' : 'Update Profile'}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* KYC Verification */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center justify-between">
-              <div className="flex items-center">
-                <Shield className="h-5 w-5 mr-2" />
-                KYC Verification
-              </div>
-              <Badge className={`${
-                profile?.kyc_status === 'approved' ? 'bg-green-500' :
-                profile?.kyc_status === 'pending' ? 'bg-yellow-500' :
-                profile?.kyc_status === 'rejected' ? 'bg-red-500' :
-                'bg-gray-500'
-              } text-white`}>
-                {profile?.kyc_status || 'pending'}
-              </Badge>
-            </CardTitle>
-            <CardDescription className="text-purple-300">
-              Complete your KYC to unlock all features
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {profile?.kyc_status === 'approved' ? (
-              <div className="text-center py-8">
-                <Shield className="h-12 w-12 text-green-400 mx-auto mb-4" />
-                <p className="text-green-400 font-semibold">KYC Verified</p>
-                <p className="text-purple-300">Your account is fully verified</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="aadhar" className="text-white">Aadhar Number</Label>
-                    <Input
-                      id="aadhar"
-                      placeholder="1234 5678 9012"
-                      value={kycData.aadhar_number}
-                      onChange={(e) => setKycData({...kycData, aadhar_number: e.target.value})}
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="pan" className="text-white">PAN Number</Label>
-                    <Input
-                      id="pan"
-                      placeholder="ABCDE1234F"
-                      value={kycData.pan_number}
-                      onChange={(e) => setKycData({...kycData, pan_number: e.target.value})}
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="bank" className="text-white">Bank Account Number</Label>
-                    <Input
-                      id="bank"
-                      placeholder="1234567890"
-                      value={kycData.bank_account}
-                      onChange={(e) => setKycData({...kycData, bank_account: e.target.value})}
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="ifsc" className="text-white">IFSC Code</Label>
-                    <Input
-                      id="ifsc"
-                      placeholder="ABCD0123456"
-                      value={kycData.ifsc_code}
-                      onChange={(e) => setKycData({...kycData, ifsc_code: e.target.value})}
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                  </div>
-                </div>
-                <Button 
-                  onClick={submitKyc} 
-                  disabled={loading || profile?.kyc_status === 'pending'}
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                >
-                  {loading ? 'Submitting...' : 'Submit KYC'}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Notification Settings */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center">
-              <Bell className="h-5 w-5 mr-2" />
-              Notifications
-            </CardTitle>
-            <CardDescription className="text-purple-300">
-              Manage your notification preferences
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white font-medium">Email Notifications</p>
-                <p className="text-purple-300 text-sm">Receive updates via email</p>
-              </div>
-              <Switch
-                checked={notifications.email_notifications}
-                onCheckedChange={(checked) => setNotifications({...notifications, email_notifications: checked})}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white font-medium">SMS Notifications</p>
-                <p className="text-purple-300 text-sm">Receive updates via SMS</p>
-              </div>
-              <Switch
-                checked={notifications.sms_notifications}
-                onCheckedChange={(checked) => setNotifications({...notifications, sms_notifications: checked})}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white font-medium">Push Notifications</p>
-                <p className="text-purple-300 text-sm">Receive browser notifications</p>
-              </div>
-              <Switch
-                checked={notifications.push_notifications}
-                onCheckedChange={(checked) => setNotifications({...notifications, push_notifications: checked})}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Security Settings */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center">
-              <Shield className="h-5 w-5 mr-2" />
-              Security
-            </CardTitle>
-            <CardDescription className="text-purple-300">
-              Manage your account security
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="w-full justify-start bg-white/5 border-white/10 text-white hover:bg-white/10">
-                  Change Password
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-slate-800 border-white/10">
-                <DialogHeader>
-                  <DialogTitle className="text-white">Change Password</DialogTitle>
-                  <DialogDescription className="text-purple-300">
-                    Update your account password
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="current-password" className="text-white">Current Password</Label>
-                    <Input
-                      id="current-password"
-                      type="password"
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="new-password" className="text-white">New Password</Label>
-                    <Input
-                      id="new-password"
-                      type="password"
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="confirm-password" className="text-white">Confirm New Password</Label>
-                    <Input
-                      id="confirm-password"
-                      type="password"
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                  </div>
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                    Update Password
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-            
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-              <div>
-                <p className="text-white font-medium">Two-Factor Authentication</p>
-                <p className="text-purple-300 text-sm">Add an extra layer of security</p>
-              </div>
-              <Button variant="outline" size="sm" className="bg-white/5 border-white/10 text-white hover:bg-white/10">
-                Enable
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Account Actions */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">Account Actions</CardTitle>
-            <CardDescription className="text-purple-300">
-              Manage your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {isAdmin && (
-              <Button 
-                variant="outline" 
-                className="w-full justify-start bg-yellow-500/10 border-yellow-500/20 text-yellow-400 hover:bg-yellow-500/20"
-                onClick={() => navigate('/admin')}
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                Admin Panel
-              </Button>
-            )}
-            
-            <Button 
-              variant="outline" 
-              className="w-full justify-start bg-white/5 border-white/10 text-white hover:bg-white/10"
-            >
-              <HelpCircle className="h-4 w-4 mr-2" />
-              Help & Support
-            </Button>
-            
-            <Button 
-              onClick={handleSignOut}
-              variant="outline" 
-              className="w-full justify-start bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* App Info */}
-        <Card className="bg-white/5 border-white/10">
-          <CardContent className="p-4">
-            <div className="text-center text-purple-300 text-sm space-y-1">
-              <p>InvestX Platform v1.0</p>
-              <p>© 2024 InvestX. All rights reserved.</p>
-              <div className="flex justify-center space-x-4 mt-2">
-                <button className="hover:text-white transition-colors">Privacy Policy</button>
-                <button className="hover:text-white transition-colors">Terms of Service</button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
+
+      <BottomNavigation />
     </div>
   );
 };

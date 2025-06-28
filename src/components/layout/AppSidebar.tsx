@@ -25,6 +25,8 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
     { icon: Calculator, label: 'Calculator', path: '/calculator' },
     { icon: Award, label: 'Leaderboard', path: '/leaderboard' },
     { icon: Gift, label: 'Rewards', path: '/rewards' },
+    { icon: Shield, label: 'Investment Records', path: '/investment-records' },
+    { icon: TrendingUp, label: 'Intraday Trading', path: '/intraday-trading' },
     ...(isAdmin ? [{ icon: Shield, label: 'Admin Panel', path: '/admin' }] : []),
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
