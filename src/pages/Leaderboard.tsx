@@ -259,40 +259,40 @@ const Leaderboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {leaderboardData.map((user) => (
+                {leaderboardData.map((leaderboardUser) => (
                   <div
-                    key={user.id}
+                    key={leaderboardUser.id}
                     className={`flex items-center justify-between p-4 rounded-lg transition-all duration-200 ${
-                      user.id === userId ? 'bg-purple-600/20 border border-purple-500/30' : 'bg-white/5 hover:bg-white/10'
+                      leaderboardUser.id === user?.id ? 'bg-purple-600/20 border border-purple-500/30' : 'bg-white/5 hover:bg-white/10'
                     }`}
                   >
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center justify-center w-10 h-10">
-                        {user.rank <= 3 ? (
-                          getRankIcon(user.rank)
+                        {leaderboardUser.rank <= 3 ? (
+                          getRankIcon(leaderboardUser.rank)
                         ) : (
-                          <span className="text-lg font-bold text-purple-300">#{user.rank}</span>
+                          <span className="text-lg font-bold text-purple-300">#{leaderboardUser.rank}</span>
                         )}
                       </div>
                       <div>
-                        <h4 className="text-white font-semibold">{user.name}</h4>
+                        <h4 className="text-white font-semibold">{leaderboardUser.name}</h4>
                         <p className="text-purple-300 text-sm">
-                          {user.referral_count} referrals
+                          {leaderboardUser.referral_count} referrals
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-white font-semibold">
                         {formatValue(
-                          activeTab === 'investment' ? user.total_investment :
-                          activeTab === 'roi' ? user.total_roi_earned :
-                          user.referral_count,
+                          activeTab === 'investment' ? leaderboardUser.total_investment :
+                          activeTab === 'roi' ? leaderboardUser.total_roi_earned :
+                          leaderboardUser.referral_count,
                           activeTab === 'referral' ? 'referral' : 'currency'
                         )}
                       </p>
                       {activeTab !== 'referral' && (
                         <p className="text-purple-300 text-sm">
-                          Total: ₹{(user.total_investment + user.total_roi_earned + user.total_referral_earned).toLocaleString()}
+                          Total: ₹{(leaderboardUser.total_investment + leaderboardUser.total_roi_earned + leaderboardUser.total_referral_earned).toLocaleString()}
                         </p>
                       )}
                     </div>
