@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
+import { useWalletBalance } from '@/hooks/useWalletBalance';
 
 interface CryptoPrice {
   symbol: string;
@@ -105,6 +105,7 @@ export const CryptoTradingWidget = () => {
   const [amount, setAmount] = useState('');
   const [price, setPrice] = useState('');
   const [orders, setOrders] = useState<Order[]>([]);
+  const { walletData, checkBalance, deductBalance } = useWalletBalance();
 
   useEffect(() => {
     // Simulate real-time price updates
@@ -120,16 +121,36 @@ export const CryptoTradingWidget = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleTrade = () => {
+  const handleTrade = async () => {
     if (!amount || (tradeType !== 'MARKET' && !price)) return;
+
+    const tradeAmount = parseFloat(amount);
+    const tradePrice = tradeType === 'MARKET' ? selectedCrypto.price : parseFloat(price);
+    const totalCost = tradeAmount * tradePrice;
+
+    // Check wallet balance before executing trade
+    if (!checkBalance(totalCost)) {
+      return;
+    }
+
+    // Deduct balance from wallet
+    const success = await deductBalance(
+      totalCost,
+      `${orderType} ${tradeAmount} ${selectedCrypto.symbol} at ₹${tradePrice.toFixed(2)}`,
+      Math.random().toString(36).substr(2, 9)
+    );
+
+    if (!success) {
+      return;
+    }
 
     const newOrder: Order = {
       id: Math.random().toString(36).substr(2, 9),
       symbol: selectedCrypto.symbol,
       type: orderType,
       orderType: tradeType,
-      amount: parseFloat(amount),
-      price: tradeType === 'MARKET' ? selectedCrypto.price : parseFloat(price),
+      amount: tradeAmount,
+      price: tradePrice,
       status: tradeType === 'MARKET' ? 'FILLED' : 'PENDING',
       timestamp: new Date().toISOString()
     };
@@ -141,6 +162,23 @@ export const CryptoTradingWidget = () => {
 
   return (
     <div className="space-y-6">
+      {/* Wallet Balance Display */}
+      {walletData && (
+        <Card className="bg-gradient-to-r from-green-600 to-emerald-600 border-0 text-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <DollarSign className="h-8 w-8" />
+                <div>
+                  <p className="text-green-100">Available Balance</p>
+                  <p className="text-2xl font-bold">₹{walletData.total_balance.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Crypto Price List */}
         <Card className="lg:col-span-2 bg-white/5 border-white/10">

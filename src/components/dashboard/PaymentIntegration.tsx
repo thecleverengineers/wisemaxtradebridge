@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +19,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useWalletBalance } from '@/hooks/useWalletBalance';
 
 interface PaymentMethod {
   id: string;
@@ -121,70 +121,101 @@ const mockTransactions: Transaction[] = [
 
 export const PaymentIntegration = () => {
   const { toast } = useToast();
+  const { walletData, checkBalance, deductBalance } = useWalletBalance();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
-  const [amount, setAmount] = useState('');
+  const [paymentAmount, setPaymentAmount] = useState('');
   const [processing, setProcessing] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
 
-  const handlePayment = async () => {
-    if (!selectedMethod || !amount) return;
+  const handleQuickPay = async (amount: number) => {
+    // Check wallet balance for quick pay
+    if (!checkBalance(amount)) {
+      return;
+    }
 
     setProcessing(true);
-    
     try {
-      // Simulate Razorpay integration
-      const options = {
-        key: 'rzp_test_9J7F6Q8B9X5A4D', // Demo key
-        amount: parseFloat(amount) * 100, // Amount in paise
-        currency: 'INR',
-        name: 'InvestX',
-        description: 'Wallet Top-up',
-        image: '/logo.png',
-        handler: function (response: any) {
-          // Payment successful
-          const newTransaction: Transaction = {
-            id: `txn_${Date.now()}`,
-            amount: parseFloat(amount),
-            type: 'DEPOSIT',
-            status: 'SUCCESS',
-            method: selectedMethod.name,
-            timestamp: new Date().toISOString(),
-            description: `Wallet top-up via ${selectedMethod.name}`
-          };
-          
-          setTransactions(prev => [newTransaction, ...prev]);
-          setAmount('');
-          setSelectedMethod(null);
-          
-          toast({
-            title: "Payment Successful!",
-            description: `₹${amount} has been added to your wallet`,
-          });
-        },
-        prefill: {
-          name: 'User Name',
-          email: 'user@example.com',
-          contact: '9000000000'
-        },
-        theme: {
-          color: '#7c3aed'
-        }
-      };
+      const success = await deductBalance(
+        amount,
+        `Quick Pay - ₹${amount.toLocaleString()}`,
+        `quick_pay_${Date.now()}`
+      );
 
-      // In a real implementation, you would load Razorpay script and create payment
-      // For demo purposes, we'll simulate success after 2 seconds
-      setTimeout(() => {
-        options.handler({ razorpay_payment_id: 'pay_demo_' + Date.now() });
-        setProcessing(false);
-      }, 2000);
-      
+      if (success) {
+        const newTransaction: Transaction = {
+          id: `txn_${Date.now()}`,
+          amount: amount,
+          type: 'debit',
+          status: 'completed',
+          method: 'wallet',
+          description: `Quick Pay - ₹${amount.toLocaleString()}`,
+          timestamp: new Date().toISOString()
+        };
+
+        setTransactions(prev => [newTransaction, ...prev]);
+        
+        toast({
+          title: "Payment Successful",
+          description: `Quick payment of ₹${amount.toLocaleString()} completed successfully`,
+        });
+      }
+    } catch (error) {
+      console.error('Quick pay error:', error);
+      toast({
+        title: "Payment Failed",
+        description: "Failed to process quick payment",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handlePayment = async () => {
+    if (!paymentAmount) return;
+
+    const amount = parseFloat(paymentAmount);
+    
+    // Check wallet balance before payment
+    if (!checkBalance(amount)) {
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const success = await deductBalance(
+        amount,
+        `${selectedMethod.toUpperCase()} Payment - ₹${amount.toLocaleString()}`,
+        `payment_${Date.now()}`
+      );
+
+      if (success) {
+        const newTransaction: Transaction = {
+          id: `txn_${Date.now()}`,
+          amount: amount,
+          type: 'debit',
+          status: 'completed',
+          method: selectedMethod,
+          description: `${selectedMethod.toUpperCase()} Payment`,
+          timestamp: new Date().toISOString()
+        };
+
+        setTransactions(prev => [newTransaction, ...prev]);
+        setPaymentAmount('');
+        
+        toast({
+          title: "Payment Successful",
+          description: `Payment of ₹${amount.toLocaleString()} completed successfully`,
+        });
+      }
     } catch (error) {
       console.error('Payment error:', error);
       toast({
         title: "Payment Failed",
-        description: "Please try again or contact support",
+        description: "Failed to process payment",
         variant: "destructive",
       });
+    } finally {
       setProcessing(false);
     }
   };
@@ -217,6 +248,27 @@ export const PaymentIntegration = () => {
 
   return (
     <div className="space-y-6">
+      {/* Wallet Balance Card */}
+      {walletData && (
+        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-0 text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Wallet className="h-8 w-8" />
+                <div>
+                  <p className="text-blue-100">Wallet Balance</p>
+                  <p className="text-3xl font-bold">₹{walletData.total_balance.toLocaleString()}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-blue-100 text-sm">Available for Trading</p>
+                <p className="text-xl font-semibold">₹{walletData.total_balance.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Tabs defaultValue="payment" className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-white/10">
           <TabsTrigger value="payment">Add Money</TabsTrigger>
@@ -241,8 +293,8 @@ export const PaymentIntegration = () => {
                   id="amount"
                   type="number"
                   placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
                   className="bg-white/5 border-white/10 text-white mt-2"
                 />
                 <div className="flex space-x-2 mt-2">
@@ -251,7 +303,7 @@ export const PaymentIntegration = () => {
                       key={value}
                       variant="outline"
                       size="sm"
-                      onClick={() => setAmount(value.toString())}
+                      onClick={() => setPaymentAmount(value.toString())}
                       className="border-white/20 text-purple-300 hover:bg-white/10"
                     >
                       ₹{value}
@@ -289,22 +341,22 @@ export const PaymentIntegration = () => {
                 </div>
               </div>
 
-              {amount && selectedMethod && (
+              {paymentAmount && selectedMethod && (
                 <div className="bg-white/5 rounded-lg p-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-purple-300">Amount:</span>
-                    <span className="text-white">₹{parseFloat(amount).toLocaleString()}</span>
+                    <span className="text-white">₹{parseFloat(paymentAmount).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-purple-300">Processing Fee:</span>
                     <span className="text-white">
-                      {selectedMethod.fees === 'Free' ? 'Free' : `₹${(parseFloat(amount) * 0.015).toFixed(2)}`}
+                      {selectedMethod.fees === 'Free' ? 'Free' : `₹${(parseFloat(paymentAmount) * 0.015).toFixed(2)}`}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm font-semibold border-t border-white/10 pt-2">
                     <span className="text-purple-300">Total:</span>
                     <span className="text-white">
-                      ₹{(parseFloat(amount) + (selectedMethod.fees === 'Free' ? 0 : parseFloat(amount) * 0.015)).toLocaleString()}
+                      ₹{(parseFloat(paymentAmount) + (selectedMethod.fees === 'Free' ? 0 : parseFloat(paymentAmount) * 0.015)).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -312,7 +364,7 @@ export const PaymentIntegration = () => {
 
               <Button
                 onClick={handlePayment}
-                disabled={!amount || !selectedMethod || processing}
+                disabled={!paymentAmount || !selectedMethod || processing}
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
               >
                 {processing ? (
