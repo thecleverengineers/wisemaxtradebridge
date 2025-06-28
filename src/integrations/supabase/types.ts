@@ -9,6 +9,110 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      auto_trading_rules: {
+        Row: {
+          action_amount: number | null
+          action_type: string | null
+          asset_symbol: string | null
+          condition_type: string | null
+          condition_value: number | null
+          created_at: string | null
+          executions_count: number | null
+          id: string
+          is_active: boolean | null
+          last_executed: string | null
+          rule_name: string
+          user_id: string | null
+        }
+        Insert: {
+          action_amount?: number | null
+          action_type?: string | null
+          asset_symbol?: string | null
+          condition_type?: string | null
+          condition_value?: number | null
+          created_at?: string | null
+          executions_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed?: string | null
+          rule_name: string
+          user_id?: string | null
+        }
+        Update: {
+          action_amount?: number | null
+          action_type?: string | null
+          asset_symbol?: string | null
+          condition_type?: string | null
+          condition_value?: number | null
+          created_at?: string | null
+          executions_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed?: string | null
+          rule_name?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_trading_rules_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copy_trades: {
+        Row: {
+          allocation_amount: number
+          allocation_percentage: number | null
+          created_at: string | null
+          follower_id: string | null
+          id: string
+          is_active: boolean | null
+          total_copied_trades: number | null
+          total_pnl: number | null
+          trader_id: string | null
+        }
+        Insert: {
+          allocation_amount: number
+          allocation_percentage?: number | null
+          created_at?: string | null
+          follower_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          total_copied_trades?: number | null
+          total_pnl?: number | null
+          trader_id?: string | null
+        }
+        Update: {
+          allocation_amount?: number
+          allocation_percentage?: number | null
+          created_at?: string | null
+          follower_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          total_copied_trades?: number | null
+          total_pnl?: number | null
+          trader_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copy_trades_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copy_trades_trader_id_fkey"
+            columns: ["trader_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_plans: {
         Row: {
           created_at: string | null
@@ -117,6 +221,39 @@ export type Database = {
           },
         ]
       }
+      market_sentiment: {
+        Row: {
+          asset_symbol: string | null
+          created_at: string | null
+          fear_greed_index: number | null
+          id: string
+          news_sentiment: number | null
+          sentiment_score: number | null
+          social_sentiment: number | null
+          volume_sentiment: number | null
+        }
+        Insert: {
+          asset_symbol?: string | null
+          created_at?: string | null
+          fear_greed_index?: number | null
+          id?: string
+          news_sentiment?: number | null
+          sentiment_score?: number | null
+          social_sentiment?: number | null
+          volume_sentiment?: number | null
+        }
+        Update: {
+          asset_symbol?: string | null
+          created_at?: string | null
+          fear_greed_index?: number | null
+          id?: string
+          news_sentiment?: number | null
+          sentiment_score?: number | null
+          social_sentiment?: number | null
+          volume_sentiment?: number | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -148,6 +285,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_analytics: {
+        Row: {
+          alpha: number | null
+          beta: number | null
+          calculated_at: string | null
+          daily_pnl: number | null
+          id: string
+          max_drawdown: number | null
+          sharpe_ratio: number | null
+          total_pnl: number | null
+          total_value: number | null
+          user_id: string | null
+          volatility: number | null
+        }
+        Insert: {
+          alpha?: number | null
+          beta?: number | null
+          calculated_at?: string | null
+          daily_pnl?: number | null
+          id?: string
+          max_drawdown?: number | null
+          sharpe_ratio?: number | null
+          total_pnl?: number | null
+          total_value?: number | null
+          user_id?: string | null
+          volatility?: number | null
+        }
+        Update: {
+          alpha?: number | null
+          beta?: number | null
+          calculated_at?: string | null
+          daily_pnl?: number | null
+          id?: string
+          max_drawdown?: number | null
+          sharpe_ratio?: number | null
+          total_pnl?: number | null
+          total_value?: number | null
+          user_id?: string | null
+          volatility?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_analytics_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -209,6 +396,53 @@ export type Database = {
           },
           {
             foreignKeyName: "referral_bonus_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_profiles: {
+        Row: {
+          auto_stop_loss: boolean | null
+          black_swan_protection: boolean | null
+          created_at: string | null
+          id: string
+          max_daily_loss: number | null
+          max_position_size: number | null
+          risk_tolerance: string | null
+          updated_at: string | null
+          user_id: string | null
+          var_limit: number | null
+        }
+        Insert: {
+          auto_stop_loss?: boolean | null
+          black_swan_protection?: boolean | null
+          created_at?: string | null
+          id?: string
+          max_daily_loss?: number | null
+          max_position_size?: number | null
+          risk_tolerance?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          var_limit?: number | null
+        }
+        Update: {
+          auto_stop_loss?: boolean | null
+          black_swan_protection?: boolean | null
+          created_at?: string | null
+          id?: string
+          max_daily_loss?: number | null
+          max_position_size?: number | null
+          risk_tolerance?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          var_limit?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_profiles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -297,6 +531,59 @@ export type Database = {
             foreignKeyName: "settings_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_traders: {
+        Row: {
+          bio: string | null
+          copy_trading_enabled: boolean | null
+          created_at: string | null
+          id: string
+          is_verified: boolean | null
+          min_copy_amount: number | null
+          risk_score: number | null
+          total_followers: number | null
+          total_return_percentage: number | null
+          trader_name: string | null
+          user_id: string | null
+          win_rate: number | null
+        }
+        Insert: {
+          bio?: string | null
+          copy_trading_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          min_copy_amount?: number | null
+          risk_score?: number | null
+          total_followers?: number | null
+          total_return_percentage?: number | null
+          trader_name?: string | null
+          user_id?: string | null
+          win_rate?: number | null
+        }
+        Update: {
+          bio?: string | null
+          copy_trading_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          min_copy_amount?: number | null
+          risk_score?: number | null
+          total_followers?: number | null
+          total_return_percentage?: number | null
+          trader_name?: string | null
+          user_id?: string | null
+          win_rate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_traders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -534,6 +821,53 @@ export type Database = {
             foreignKeyName: "wallets_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      web3_wallets: {
+        Row: {
+          chain_id: number | null
+          created_at: string | null
+          defi_protocols: Json | null
+          id: string
+          is_primary: boolean | null
+          last_synced: string | null
+          nft_count: number | null
+          user_id: string | null
+          wallet_address: string
+          wallet_type: string | null
+        }
+        Insert: {
+          chain_id?: number | null
+          created_at?: string | null
+          defi_protocols?: Json | null
+          id?: string
+          is_primary?: boolean | null
+          last_synced?: string | null
+          nft_count?: number | null
+          user_id?: string | null
+          wallet_address: string
+          wallet_type?: string | null
+        }
+        Update: {
+          chain_id?: number | null
+          created_at?: string | null
+          defi_protocols?: Json | null
+          id?: string
+          is_primary?: boolean | null
+          last_synced?: string | null
+          nft_count?: number | null
+          user_id?: string | null
+          wallet_address?: string
+          wallet_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "web3_wallets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
