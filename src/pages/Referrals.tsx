@@ -1,13 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Users, Copy, Share2, ArrowLeft, Gift, TrendingUp } from 'lucide-react';
+import { Users, Copy, Share2, TrendingUp, Gift, ArrowLeft, Crown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { BottomNavigation } from '@/components/layout/BottomNavigation';
+import { AppSidebar } from '@/components/layout/AppSidebar';
 
 interface ReferralUser {
   id: string;
@@ -35,6 +38,7 @@ const Referrals = () => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [referralUsers, setReferralUsers] = useState<ReferralUser[]>([]);
   const [referralBonuses, setReferralBonuses] = useState<ReferralBonus[]>([]);
   const [loading, setLoading] = useState(true);
@@ -147,212 +151,219 @@ const Referrals = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 p-4 pt-20 pb-20">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/')}
-              className="text-white hover:bg-white/10"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Referral Program</h1>
-              <p className="text-purple-300">Earn rewards by inviting friends</p>
+    <div className="min-h-screen bg-slate-900">
+      <AppHeader onMenuClick={() => setSidebarOpen(true)} />
+      <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="p-4 pt-20 pb-20">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/')}
+                className="text-white hover:bg-white/10"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Referral Program</h1>
+                <p className="text-purple-300">Earn rewards by inviting friends</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Referral Code Card */}
-        <Card className="bg-gradient-to-r from-yellow-500 to-orange-500 border-0 text-black">
-          <CardContent className="p-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">Your Referral Code</h2>
-              <div className="bg-white/20 rounded-xl p-4 mb-4">
-                <p className="text-3xl font-bold tracking-wider">{profile?.referral_code}</p>
-              </div>
-              <div className="flex gap-3 justify-center">
-                <Button 
-                  onClick={copyReferralCode}
-                  className="bg-white/20 hover:bg-white/30 text-black border-white/30"
-                >
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy Code
-                </Button>
-                <Button 
-                  onClick={shareReferralLink}
-                  className="bg-white/20 hover:bg-white/30 text-black border-white/30"
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share Link
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 border-0 text-white">
-            <CardContent className="p-4">
+          {/* Referral Code Card */}
+          <Card className="bg-gradient-to-r from-yellow-500 to-orange-500 border-0 text-black">
+            <CardContent className="p-6">
               <div className="text-center">
-                <Users className="h-8 w-8 mx-auto mb-2 text-blue-200" />
-                <p className="text-blue-100 text-sm">Total Referrals</p>
-                <p className="text-2xl font-bold">{stats.totalReferrals}</p>
+                <h2 className="text-2xl font-bold mb-2">Your Referral Code</h2>
+                <div className="bg-white/20 rounded-xl p-4 mb-4">
+                  <p className="text-3xl font-bold tracking-wider">{profile?.referral_code}</p>
+                </div>
+                <div className="flex gap-3 justify-center">
+                  <Button 
+                    onClick={copyReferralCode}
+                    className="bg-white/20 hover:bg-white/30 text-black border-white/30"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Code
+                  </Button>
+                  <Button 
+                    onClick={shareReferralLink}
+                    className="bg-white/20 hover:bg-white/30 text-black border-white/30"
+                  >
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share Link
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-green-500 to-emerald-600 border-0 text-white">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <TrendingUp className="h-8 w-8 mx-auto mb-2 text-green-200" />
-                <p className="text-green-100 text-sm">Active Referrals</p>
-                <p className="text-2xl font-bold">{stats.activeReferrals}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-purple-500 to-pink-600 border-0 text-white">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <Gift className="h-8 w-8 mx-auto mb-2 text-purple-200" />
-                <p className="text-purple-100 text-sm">Total Earnings</p>
-                <p className="text-2xl font-bold">₹{stats.totalEarnings.toLocaleString()}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-orange-500 to-red-600 border-0 text-white">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <TrendingUp className="h-8 w-8 mx-auto mb-2 text-orange-200" />
-                <p className="text-orange-100 text-sm">This Month</p>
-                <p className="text-2xl font-bold">₹{stats.thisMonthEarnings.toLocaleString()}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Referral Rewards Structure */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">Reward Structure</CardTitle>
-            <CardDescription className="text-purple-300">
-              Earn commissions on multiple levels
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl p-4 text-center text-black">
-                <h3 className="font-bold text-lg">Level 1</h3>
-                <p className="text-2xl font-bold">10%</p>
-                <p className="text-sm">Direct Referrals</p>
-              </div>
-              <div className="bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl p-4 text-center text-white">
-                <h3 className="font-bold text-lg">Level 2</h3>
-                <p className="text-2xl font-bold">5%</p>
-                <p className="text-sm">Indirect Referrals</p>
-              </div>
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-4 text-center text-white">
-                <h3 className="font-bold text-lg">Level 3</h3>
-                <p className="text-2xl font-bold">2%</p>
-                <p className="text-sm">3rd Level Referrals</p>
-              </div>
-            </div>
-            <div className="mt-4 p-4 bg-white/5 rounded-lg">
-              <p className="text-purple-300 text-sm">
-                <strong className="text-white">How it works:</strong> When someone uses your referral code to join and makes an investment, 
-                you earn a percentage of their investment as a bonus. The more people you refer, the more you earn!
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 border-0 text-white">
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <Users className="h-8 w-8 mx-auto mb-2 text-blue-200" />
+                  <p className="text-blue-100 text-sm">Total Referrals</p>
+                  <p className="text-2xl font-bold">{stats.totalReferrals}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-green-500 to-emerald-600 border-0 text-white">
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <TrendingUp className="h-8 w-8 mx-auto mb-2 text-green-200" />
+                  <p className="text-green-100 text-sm">Active Referrals</p>
+                  <p className="text-2xl font-bold">{stats.activeReferrals}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-purple-500 to-pink-600 border-0 text-white">
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <Gift className="h-8 w-8 mx-auto mb-2 text-purple-200" />
+                  <p className="text-purple-100 text-sm">Total Earnings</p>
+                  <p className="text-2xl font-bold">₹{stats.totalEarnings.toLocaleString()}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-orange-500 to-red-600 border-0 text-white">
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <TrendingUp className="h-8 w-8 mx-auto mb-2 text-orange-200" />
+                  <p className="text-orange-100 text-sm">This Month</p>
+                  <p className="text-2xl font-bold">₹{stats.thisMonthEarnings.toLocaleString()}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* My Referrals */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">My Referrals</CardTitle>
-            <CardDescription className="text-purple-300">
-              People who joined using your referral code
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {referralUsers.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                <p className="text-purple-300">No referrals yet. Start sharing your code to earn rewards!</p>
+          {/* Referral Rewards Structure */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white">Reward Structure</CardTitle>
+              <CardDescription className="text-purple-300">
+                Earn commissions on multiple levels
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl p-4 text-center text-black">
+                  <h3 className="font-bold text-lg">Level 1</h3>
+                  <p className="text-2xl font-bold">10%</p>
+                  <p className="text-sm">Direct Referrals</p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl p-4 text-center text-white">
+                  <h3 className="font-bold text-lg">Level 2</h3>
+                  <p className="text-2xl font-bold">5%</p>
+                  <p className="text-sm">Indirect Referrals</p>
+                </div>
+                <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-4 text-center text-white">
+                  <h3 className="font-bold text-lg">Level 3</h3>
+                  <p className="text-2xl font-bold">2%</p>
+                  <p className="text-sm">3rd Level Referrals</p>
+                </div>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {referralUsers.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">
-                          {user.name.substring(0, 2).toUpperCase()}
-                        </span>
+              <div className="mt-4 p-4 bg-white/5 rounded-lg">
+                <p className="text-purple-300 text-sm">
+                  <strong className="text-white">How it works:</strong> When someone uses your referral code to join and makes an investment, 
+                  you earn a percentage of their investment as a bonus. The more people you refer, the more you earn!
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* My Referrals */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white">My Referrals</CardTitle>
+              <CardDescription className="text-purple-300">
+                People who joined using your referral code
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {referralUsers.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                  <p className="text-purple-300">No referrals yet. Start sharing your code to earn rewards!</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {referralUsers.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                          <span className="text-white font-semibold text-sm">
+                            {user.name.substring(0, 2).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-white font-semibold">{user.name}</p>
+                          <p className="text-purple-300 text-sm">
+                            Joined {new Date(user.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-white font-semibold">{user.name}</p>
-                        <p className="text-purple-300 text-sm">
-                          Joined {new Date(user.created_at).toLocaleDateString()}
+                      <div className="text-right">
+                        <Badge className={`${user.is_active ? 'bg-green-500' : 'bg-gray-500'} text-white`}>
+                          {user.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                        <p className="text-purple-300 text-sm mt-1">
+                          Invested: ₹{user.total_investment?.toLocaleString() || '0'}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <Badge className={`${user.is_active ? 'bg-green-500' : 'bg-gray-500'} text-white`}>
-                        {user.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                      <p className="text-purple-300 text-sm mt-1">
-                        Invested: ₹{user.total_investment?.toLocaleString() || '0'}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Referral Earnings */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">Referral Earnings</CardTitle>
-            <CardDescription className="text-purple-300">
-              Your commission history
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {referralBonuses.length === 0 ? (
-              <p className="text-purple-300 text-center py-8">No earnings yet. Start referring to see your commissions here!</p>
-            ) : (
-              <div className="space-y-3">
-                {referralBonuses.slice(0, 10).map((bonus) => (
-                  <div key={bonus.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                    <div>
-                      <p className="text-white font-semibold">Level {bonus.level} Commission</p>
-                      <p className="text-purple-300 text-sm">
-                        From: {bonus.users?.name} • {bonus.percentage}% of ₹{bonus.base_amount?.toLocaleString()}
-                      </p>
-                      <p className="text-purple-300 text-sm">
-                        {new Date(bonus.created_at).toLocaleDateString()}
-                      </p>
+          {/* Referral Earnings */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white">Referral Earnings</CardTitle>
+              <CardDescription className="text-purple-300">
+                Your commission history
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {referralBonuses.length === 0 ? (
+                <p className="text-purple-300 text-center py-8">No earnings yet. Start referring to see your commissions here!</p>
+              ) : (
+                <div className="space-y-3">
+                  {referralBonuses.slice(0, 10).map((bonus) => (
+                    <div key={bonus.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                      <div>
+                        <p className="text-white font-semibold">Level {bonus.level} Commission</p>
+                        <p className="text-purple-300 text-sm">
+                          From: {bonus.users?.name} • {bonus.percentage}% of ₹{bonus.base_amount?.toLocaleString()}
+                        </p>
+                        <p className="text-purple-300 text-sm">
+                          {new Date(bonus.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-green-400 font-semibold text-lg">+₹{bonus.amount?.toLocaleString()}</p>
+                        <Badge className="bg-yellow-500 text-black text-xs">
+                          {bonus.bonus_type}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-green-400 font-semibold text-lg">+₹{bonus.amount?.toLocaleString()}</p>
-                      <Badge className="bg-yellow-500 text-black text-xs">
-                        {bonus.bonus_type}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      <BottomNavigation />
     </div>
   );
 };
