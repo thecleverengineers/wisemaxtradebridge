@@ -145,8 +145,8 @@ export const PaymentIntegration = () => {
         const newTransaction: Transaction = {
           id: `txn_${Date.now()}`,
           amount: amount,
-          type: 'debit',
-          status: 'completed',
+          type: 'WITHDRAWAL',
+          status: 'SUCCESS',
           method: 'wallet',
           description: `Quick Pay - ₹${amount.toLocaleString()}`,
           timestamp: new Date().toISOString()
@@ -172,7 +172,7 @@ export const PaymentIntegration = () => {
   };
 
   const handlePayment = async () => {
-    if (!paymentAmount) return;
+    if (!paymentAmount || !selectedMethod) return;
 
     const amount = parseFloat(paymentAmount);
     
@@ -185,7 +185,7 @@ export const PaymentIntegration = () => {
     try {
       const success = await deductBalance(
         amount,
-        `${selectedMethod.toUpperCase()} Payment - ₹${amount.toLocaleString()}`,
+        `${selectedMethod.name} Payment - ₹${amount.toLocaleString()}`,
         `payment_${Date.now()}`
       );
 
@@ -193,10 +193,10 @@ export const PaymentIntegration = () => {
         const newTransaction: Transaction = {
           id: `txn_${Date.now()}`,
           amount: amount,
-          type: 'debit',
-          status: 'completed',
-          method: selectedMethod,
-          description: `${selectedMethod.toUpperCase()} Payment`,
+          type: 'WITHDRAWAL',
+          status: 'SUCCESS',
+          method: selectedMethod.name,
+          description: `${selectedMethod.name} Payment`,
           timestamp: new Date().toISOString()
         };
 
