@@ -1,13 +1,17 @@
 
 import React from 'react';
-import { Menu, Bell, User } from 'lucide-react';
+import { Menu, Bell, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { Badge } from '@/components/ui/badge';
 
 interface AppHeaderProps {
   onMenuClick: () => void;
 }
 
 export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
+  const { user, profile, isAdmin, signOut } = useAuth();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 backdrop-blur-md border-b border-white/10">
       <div className="flex items-center justify-between px-4 py-3">
@@ -24,7 +28,14 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
             <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">IX</span>
             </div>
-            <span className="text-white font-bold text-lg">InvestX</span>
+            <div>
+              <span className="text-white font-bold text-lg">InvestX</span>
+              {isAdmin && (
+                <Badge className="ml-2 bg-yellow-500 text-black text-xs">
+                  Admin
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
         
@@ -37,13 +48,26 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
             <Bell className="h-5 w-5" />
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/10"
-          >
-            <User className="h-5 w-5" />
-          </Button>
+          
+          {user ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={signOut}
+              className="text-white hover:bg-white/10"
+              title="Sign Out"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/10"
+            >
+              <User className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </div>
     </header>

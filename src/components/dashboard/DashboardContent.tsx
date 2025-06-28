@@ -1,154 +1,233 @@
 
-import React from 'react';
-import { TrendingUp, Wallet, Users, Gift, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Users, Wallet, Eye } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+
+interface WalletData {
+  total_balance: number;
+  roi_income: number;
+  referral_income: number;
+  level_income: number;
+  bonus_income: number;
+}
+
+interface InvestmentPlan {
+  id: string;
+  name: string;
+  min_amount: number;
+  max_amount: number;
+  daily_roi: number;
+  duration_days: number;
+  total_return_percent: number;
+}
 
 export const DashboardContent = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-20 pb-20">
-      <div className="px-4 space-y-6">
-        {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-md border border-white/10 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white mb-1">Welcome Back!</h1>
-              <p className="text-purple-300">Your portfolio is looking great today</p>
-            </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
-              <TrendingUp className="h-6 w-6 text-white" />
-            </div>
+  const { profile, user, isAdmin } = useAuth();
+  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [investmentPlans, setInvestmentPlans] = useState<InvestmentPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch wallet data
+      const { data: walletData, error: walletError } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (walletError) throw walletError;
+      setWallet(walletData);
+
+      // Fetch investment plans
+      const { data: plansData, error: plansError } = await supabase
+        .from('investment_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+
+      if (plansError) throw plansError;
+      setInvestmentPlans(plansData || []);
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex-1 p-4 pt-20 pb-20 space-y-4">
+        <div className="animate-pulse space-y-4">
+          <div className="h-32 bg-white/10 rounded-xl"></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="h-24 bg-white/10 rounded-xl"></div>
+            <div className="h-24 bg-white/10 rounded-xl"></div>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {/* Balance Card */}
-        <Card className="bg-gradient-to-br from-purple-600 to-blue-600 border-0 text-white p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold opacity-90">Total Balance</h2>
-            <Wallet className="h-5 w-5 opacity-90" />
+  return (
+    <div className="flex-1 p-4 pt-20 pb-20 space-y-6">
+      {/* Welcome Section */}
+      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Welcome back!</h2>
+            <p className="text-blue-100 mt-1">{profile?.name}</p>
+            {isAdmin && (
+              <Badge className="mt-2 bg-yellow-500 text-black">
+                Admin Access
+              </Badge>
+            )}
           </div>
-          <div className="space-y-2">
-            <h3 className="text-3xl font-bold">₹1,24,580</h3>
-            <div className="flex items-center space-x-2">
-              <ArrowUpRight className="h-4 w-4 text-green-300" />
-              <span className="text-green-300 text-sm font-medium">+12.5% this month</span>
+          <div className="text-right">
+            <p className="text-blue-100 text-sm">Total Balance</p>
+            <p className="text-3xl font-bold">₹{wallet?.total_balance?.toLocaleString() || '0'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-4">
+        <Card className="bg-gradient-to-br from-green-500 to-emerald-600 border-0 text-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm">ROI Income</p>
+                <p className="text-2xl font-bold">₹{wallet?.roi_income?.toLocaleString() || '0'}</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-green-200" />
             </div>
-          </div>
+          </CardContent>
         </Card>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="bg-white/5 backdrop-blur-md border-white/10 p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                <ArrowUpRight className="h-5 w-5 text-green-400" />
-              </div>
+        <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 border-0 text-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-400 text-sm font-medium">ROI Earned</p>
-                <p className="text-white text-lg font-bold">₹24,580</p>
+                <p className="text-blue-100 text-sm">Referral Income</p>
+                <p className="text-2xl font-bold">₹{wallet?.referral_income?.toLocaleString() || '0'}</p>
               </div>
+              <Users className="h-8 w-8 text-blue-200" />
             </div>
-          </Card>
+          </CardContent>
+        </Card>
 
-          <Card className="bg-white/5 backdrop-blur-md border-white/10 p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-blue-400" />
-              </div>
+        <Card className="bg-gradient-to-br from-purple-500 to-pink-600 border-0 text-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-400 text-sm font-medium">Active Plans</p>
-                <p className="text-white text-lg font-bold">4</p>
+                <p className="text-purple-100 text-sm">Level Income</p>
+                <p className="text-2xl font-bold">₹{wallet?.level_income?.toLocaleString() || '0'}</p>
               </div>
+              <ArrowUpRight className="h-8 w-8 text-purple-200" />
             </div>
-          </Card>
+          </CardContent>
+        </Card>
 
-          <Card className="bg-white/5 backdrop-blur-md border-white/10 p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                <Users className="h-5 w-5 text-purple-400" />
-              </div>
+        <Card className="bg-gradient-to-br from-orange-500 to-red-600 border-0 text-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-400 text-sm font-medium">Referrals</p>
-                <p className="text-white text-lg font-bold">127</p>
+                <p className="text-orange-100 text-sm">Bonus Income</p>
+                <p className="text-2xl font-bold">₹{wallet?.bonus_income?.toLocaleString() || '0'}</p>
               </div>
+              <Wallet className="h-8 w-8 text-orange-200" />
             </div>
-          </Card>
+          </CardContent>
+        </Card>
+      </div>
 
-          <Card className="bg-white/5 backdrop-blur-md border-white/10 p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                <Gift className="h-5 w-5 text-yellow-400" />
-              </div>
-              <div>
-                <p className="text-yellow-400 text-sm font-medium">Rewards</p>
-                <p className="text-white text-lg font-bold">₹5,240</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Investment Plans */}
-        <div className="space-y-4">
-          <h3 className="text-white text-lg font-semibold">Investment Plans</h3>
-          
-          {[
-            { amount: "₹10,000", roi: "₹1,000/day", plan: "Premium Plan", progress: 85 },
-            { amount: "₹5,000", roi: "₹500/day", plan: "Gold Plan", progress: 65 },
-            { amount: "₹1,000", roi: "₹100/day", plan: "Silver Plan", progress: 45 },
-          ].map((investment, index) => (
-            <Card key={index} className="bg-white/5 backdrop-blur-md border-white/10 p-4">
+      {/* Investment Plans */}
+      <Card className="bg-white/5 border-white/10">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center">
+            <TrendingUp className="h-5 w-5 mr-2" />
+            Investment Plans
+          </CardTitle>
+          <CardDescription className="text-purple-300">
+            Choose from our premium investment options
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {investmentPlans.map((plan) => (
+            <div
+              key={plan.id}
+              className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-4 border border-white/10"
+            >
               <div className="flex items-center justify-between mb-3">
+                <h3 className="text-white font-semibold text-lg">{plan.name}</h3>
+                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+                  {plan.daily_roi}% Daily
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <h4 className="text-white font-semibold">{investment.plan}</h4>
-                  <p className="text-purple-300 text-sm">Investment: {investment.amount}</p>
+                  <p className="text-purple-300 text-sm">Min Amount</p>
+                  <p className="text-white font-semibold">₹{plan.min_amount?.toLocaleString()}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-green-400 font-semibold">{investment.roi}</p>
-                  <p className="text-purple-300 text-sm">Daily ROI</p>
+                <div>
+                  <p className="text-purple-300 text-sm">Duration</p>
+                  <p className="text-white font-semibold">{plan.duration_days} Days</p>
+                </div>
+                <div>
+                  <p className="text-purple-300 text-sm">Max Amount</p>
+                  <p className="text-white font-semibold">₹{plan.max_amount?.toLocaleString() || 'No Limit'}</p>
+                </div>
+                <div>
+                  <p className="text-purple-300 text-sm">Total Return</p>
+                  <p className="text-white font-semibold">{plan.total_return_percent}%</p>
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-purple-300">Progress</span>
-                  <span className="text-white">{investment.progress}%</span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${investment.progress}%` }}
-                  ></div>
-                </div>
-              </div>
-            </Card>
+              <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                Invest Now
+              </Button>
+            </div>
           ))}
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Recent Transactions */}
-        <div className="space-y-4">
-          <h3 className="text-white text-lg font-semibold">Recent Activity</h3>
-          
-          {[
-            { type: "ROI Credit", amount: "+₹1,000", time: "2 hours ago", icon: ArrowUpRight, color: "text-green-400" },
-            { type: "Investment", amount: "-₹5,000", time: "1 day ago", icon: ArrowDownRight, color: "text-blue-400" },
-            { type: "Referral Bonus", amount: "+₹500", time: "2 days ago", icon: Gift, color: "text-yellow-400" },
-          ].map((transaction, index) => (
-            <Card key={index} className="bg-white/5 backdrop-blur-md border-white/10 p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 ${transaction.color.replace('text-', 'bg-').replace('-400', '-500/20')} rounded-lg flex items-center justify-center`}>
-                    <transaction.icon className={`h-5 w-5 ${transaction.color}`} />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">{transaction.type}</p>
-                    <p className="text-purple-300 text-sm">{transaction.time}</p>
-                  </div>
-                </div>
-                <p className={`font-semibold ${transaction.color}`}>{transaction.amount}</p>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
+      {/* Referral Section */}
+      <Card className="bg-white/5 border-white/10">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center">
+            <Users className="h-5 w-5 mr-2" />
+            Referral Program
+          </CardTitle>
+          <CardDescription className="text-purple-300">
+            Share your referral code and earn rewards
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4 text-center">
+            <p className="text-black font-medium mb-2">Your Referral Code</p>
+            <p className="text-black text-2xl font-bold tracking-wider">{profile?.referral_code}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-3 bg-white/20 border-white/30 text-black hover:bg-white/30"
+            >
+              Share Code
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

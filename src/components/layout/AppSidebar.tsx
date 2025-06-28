@@ -1,26 +1,31 @@
 
 import React from 'react';
-import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award } from 'lucide-react';
+import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AppSidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const menuItems = [
-  { icon: Home, label: 'Dashboard', active: true },
-  { icon: TrendingUp, label: 'Investments', badge: '4' },
-  { icon: Wallet, label: 'Wallet', badge: '₹12,450' },
-  { icon: Users, label: 'Referrals' },
-  { icon: Calculator, label: 'Calculator' },
-  { icon: Award, label: 'Leaderboard' },
-  { icon: Gift, label: 'Rewards' },
-  { icon: Settings, label: 'Settings' },
-];
-
 export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
+  const { profile, isAdmin, signOut } = useAuth();
+
+  const menuItems = [
+    { icon: Home, label: 'Dashboard', active: true },
+    { icon: TrendingUp, label: 'Investments', badge: '4' },
+    { icon: Wallet, label: 'Wallet', badge: `₹${profile?.total_investment?.toLocaleString() || '0'}` },
+    { icon: Users, label: 'Referrals' },
+    { icon: Calculator, label: 'Calculator' },
+    { icon: Award, label: 'Leaderboard' },
+    { icon: Gift, label: 'Rewards' },
+    ...(isAdmin ? [{ icon: Shield, label: 'Admin Panel' }] : []),
+    { icon: Settings, label: 'Settings' },
+  ];
+
   return (
     <>
       {/* Overlay */}
@@ -62,14 +67,27 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
           <div className="p-6 border-b border-white/10">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold">JD</span>
+                <span className="text-white font-semibold">
+                  {profile?.name?.substring(0, 2).toUpperCase() || 'U'}
+                </span>
               </div>
               <div>
-                <h3 className="text-white font-semibold">John Doe</h3>
-                <p className="text-purple-300 text-sm">Gold Member</p>
+                <h3 className="text-white font-semibold">{profile?.name || 'User'}</h3>
+                <div className="flex items-center space-x-2">
+                  <p className="text-purple-300 text-sm">
+                    {isAdmin ? 'Admin' : 'Gold Member'}
+                  </p>
+                  {isAdmin && (
+                    <Badge className="bg-yellow-500 text-black text-xs">
+                      Admin
+                    </Badge>
+                  )}
+                </div>
                 <div className="flex items-center space-x-1 mt-1">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-green-400 text-xs">Active</span>
+                  <span className="text-green-400 text-xs">
+                    {profile?.is_active ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -102,7 +120,10 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
 
           {/* Logout */}
           <div className="p-4 border-t border-white/10">
-            <button className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200">
+            <button 
+              onClick={signOut}
+              className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200"
+            >
               <LogOut className="h-5 w-5" />
               <span className="font-medium">Logout</span>
             </button>
