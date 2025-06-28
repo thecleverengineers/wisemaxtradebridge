@@ -1,0 +1,51 @@
+
+import React from 'react';
+import { Menu, Bell, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+interface AppHeaderProps {
+  onMenuClick: () => void;
+}
+
+export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 backdrop-blur-md border-b border-white/10">
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onMenuClick}
+            className="text-white hover:bg-white/10"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">IX</span>
+            </div>
+            <span className="text-white font-bold text-lg">InvestX</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/10 relative"
+          >
+            <Bell className="h-5 w-5" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/10"
+          >
+            <User className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+    </header>
+  );
+};
