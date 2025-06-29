@@ -1,81 +1,63 @@
 
 import React from 'react';
-import { Menu, Bell, User, LogOut, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Menu, User, LogOut, Wallet } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Badge } from '@/components/ui/badge';
+import { AdminLink } from './AdminLink';
+import { TempAdminAccess } from './TempAdminAccess';
 
 interface AppHeaderProps {
   onMenuClick: () => void;
 }
 
 export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
-  const { user, profile, isAdmin, signOut } = useAuth();
+  const { user, signOut, profile } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-glass backdrop-blur-2xl border-b border-glass">
-      <div className="flex items-center justify-between px-6 py-4">
+    <header className="bg-slate-950/80 backdrop-blur-xl border-b border-white/10 px-4 py-3">
+      <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onMenuClick}
-            className="text-white hover:bg-white/10 rounded-xl"
-          >
-            <Menu className="h-6 w-6" />
+          <Button variant="ghost" size="sm" onClick={onMenuClick} className="lg:hidden">
+            <Menu className="h-5 w-5" />
           </Button>
           
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center pulse-glow">
-              <span className="text-white font-display font-bold text-lg">IX</span>
+            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+              <span className="text-white font-display font-bold text-sm">IX</span>
             </div>
-            <div>
-              <span className="text-white font-display font-bold text-xl">InvestX</span>
-              {isAdmin && (
-                <Badge className="ml-3 bg-gradient-accent text-white text-xs font-mono">
-                  ADMIN
-                </Badge>
-              )}
-            </div>
+            <h1 className="text-xl font-display font-bold holographic-text">InvestX</h1>
           </div>
         </div>
-        
-        <div className="flex items-center space-x-3">
-          {/* AI Status Indicator */}
-          <div className="hidden md:flex items-center space-x-2 glass-card px-3 py-2">
-            <Zap className="w-4 h-4 text-yellow-400" />
-            <span className="text-xs font-mono text-slate-300">AI ACTIVE</span>
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/10 relative rounded-xl"
-          >
-            <Bell className="h-5 w-5" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-          </Button>
-          
-          {user ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={signOut}
-              className="text-white hover:bg-white/10 rounded-xl"
-              title="Sign Out"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/10 rounded-xl"
-            >
-              <User className="h-5 w-5" />
-            </Button>
+        <div className="flex items-center space-x-4">
+          {user && (
+            <>
+              <div className="flex items-center space-x-2 text-white">
+                <Wallet className="h-4 w-4 text-purple-400" />
+                <span className="font-mono text-sm">
+                  ${profile?.total_investment?.toLocaleString() || '0'}
+                </span>
+              </div>
+              
+              <AdminLink />
+              
+              <div className="flex items-center space-x-2 text-white">
+                <User className="h-4 w-4" />
+                <span className="text-sm">{profile?.name || user.email}</span>
+              </div>
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={signOut}
+                className="text-red-400 hover:text-red-300"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </>
           )}
+          
+          {!user && <TempAdminAccess />}
         </div>
       </div>
     </header>
