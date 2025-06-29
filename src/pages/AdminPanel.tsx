@@ -6,6 +6,10 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { SystemMonitor } from '@/components/admin/SystemMonitor';
 import { DynamicFeatureManager } from '@/components/admin/DynamicFeatureManager';
+import { UserManagement } from '@/components/admin/UserManagement';
+import { InvestmentManagement } from '@/components/admin/InvestmentManagement';
+import { WithdrawalManagement } from '@/components/admin/WithdrawalManagement';
+import { SettingsManagement } from '@/components/admin/SettingsManagement';
 
 const AdminPanel = () => {
   const { user, isAdmin, loading } = useAuth();
@@ -49,17 +53,18 @@ const AdminPanel = () => {
     <AdminLayout>
       <Routes>
         <Route index element={<AdminDashboard />} />
-        <Route path="users" element={<div>User Management Coming Soon</div>} />
+        <Route path="users" element={<UserManagement />} />
         <Route path="analytics" element={<div>Analytics Coming Soon</div>} />
         <Route path="transactions" element={<div>Transactions Coming Soon</div>} />
-        <Route path="investments" element={<div>Investments Coming Soon</div>} />
+        <Route path="investments" element={<InvestmentManagement />} />
         <Route path="trading" element={<div>Trading Management Coming Soon</div>} />
         <Route path="notifications" element={<div>Notifications Coming Soon</div>} />
         <Route path="reports" element={<div>Reports Coming Soon</div>} />
         <Route path="monitor" element={<SystemMonitor />} />
         <Route path="database" element={<div>Database Management Coming Soon</div>} />
         <Route path="features" element={<DynamicFeatureManager />} />
-        <Route path="settings" element={<div>Settings Coming Soon</div>} />
+        <Route path="withdrawals" element={<WithdrawalManagement />} />
+        <Route path="settings" element={<SettingsManagement />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </AdminLayout>
