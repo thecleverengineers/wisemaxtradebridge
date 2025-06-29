@@ -46,7 +46,7 @@ const App = () => (
             <Route path="/investment-records" element={<InvestmentRecords />} />
             <Route path="/intraday-trading" element={<IntradayTrading />} />
             <Route path="/mt5-trading" element={<MT5Trading />} />
-            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/admin/*" element={<AdminPanel />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
