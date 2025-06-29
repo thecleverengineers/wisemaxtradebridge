@@ -6,9 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, UserPlus, Shield, Ban, CheckCircle, XCircle } from 'lucide-react';
+import { Search, UserPlus, Ban, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -41,25 +40,16 @@ export const UserManagement = () => {
     try {
       const { data: usersData, error } = await supabase
         .from('users')
-        .select(`
-          *,
-          wallets (
-            total_balance,
-            roi_income,
-            referral_income,
-            level_income,
-            bonus_income
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       // Get auth users for email
-      const { data: authUsers } = await supabase.auth.admin.listUsers();
+      const { data: authData } = await supabase.auth.admin.listUsers();
       
-      const enrichedUsers = usersData.map(user => {
-        const authUser = authUsers?.users.find(au => au.id === user.id);
+      const enrichedUsers = (usersData || []).map(user => {
+        const authUser = authData?.users?.find(au => au.id === user.id);
         return {
           ...user,
           email: authUser?.email
@@ -132,7 +122,7 @@ export const UserManagement = () => {
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.referral_code.toLowerCase().includes(searchTerm.toLowerCase())
+    user.referral_code?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getKYCBadge = (status: string) => {

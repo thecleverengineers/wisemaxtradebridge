@@ -25,10 +25,7 @@ interface Withdrawal {
   admin_notes?: string;
   upi_id?: string;
   bank_details?: any;
-  users: {
-    name: string;
-    email?: string;
-  };
+  user_name?: string;
 }
 
 export const WithdrawalManagement = () => {
@@ -45,16 +42,29 @@ export const WithdrawalManagement = () => {
 
   const fetchWithdrawals = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: withdrawalData, error } = await supabase
         .from('withdrawals')
-        .select(`
-          *,
-          users (name)
-        `)
+        .select('*')
         .order('requested_at', { ascending: false });
 
       if (error) throw error;
-      setWithdrawals(data || []);
+
+      // Get user names separately
+      const userIds = [...new Set(withdrawalData?.map(w => w.user_id) || [])];
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id, name')
+        .in('id', userIds);
+
+      const enrichedWithdrawals = (withdrawalData || []).map(withdrawal => {
+        const user = userData?.find(u => u.id === withdrawal.user_id);
+        return {
+          ...withdrawal,
+          user_name: user?.name || 'Unknown User'
+        };
+      });
+
+      setWithdrawals(enrichedWithdrawals);
     } catch (error) {
       console.error('Error fetching withdrawals:', error);
       toast({
@@ -110,7 +120,7 @@ export const WithdrawalManagement = () => {
   };
 
   const filteredWithdrawals = withdrawals.filter(withdrawal =>
-    withdrawal.users?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    withdrawal.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     withdrawal.withdrawal_method.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -220,7 +230,7 @@ export const WithdrawalManagement = () => {
                 {filteredWithdrawals.map((withdrawal) => (
                   <TableRow key={withdrawal.id}>
                     <TableCell>
-                      <div className="font-medium">{withdrawal.users?.name}</div>
+                      <div className="font-medium">{withdrawal.user_name}</div>
                     </TableCell>
                     <TableCell className="capitalize">{withdrawal.withdrawal_method}</TableCell>
                     <TableCell>${withdrawal.amount.toLocaleString()}</TableCell>
@@ -253,7 +263,7 @@ export const WithdrawalManagement = () => {
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <label className="text-sm font-medium">User</label>
-                                  <p className="text-sm text-slate-600">{selectedWithdrawal.users?.name}</p>
+                                  <p className="text-sm text-slate-600">{selectedWithdrawal.user_name}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium">Method</label>
