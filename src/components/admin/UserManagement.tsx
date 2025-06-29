@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,16 +44,25 @@ export const UserManagement = () => {
 
       if (error) throw error;
 
-      // Get auth users for email
-      const { data: authData } = await supabase.auth.admin.listUsers();
+      // Get auth users for email - using a more defensive approach
+      let enrichedUsers = usersData || [];
       
-      const enrichedUsers = (usersData || []).map(user => {
-        const authUser = authData?.users?.find(au => au.id === user.id);
-        return {
-          ...user,
-          email: authUser?.email
-        };
-      });
+      try {
+        const { data: authData } = await supabase.auth.admin.listUsers();
+        
+        if (authData?.users) {
+          enrichedUsers = (usersData || []).map(user => {
+            const authUser = authData.users.find((au: any) => au.id === user.id);
+            return {
+              ...user,
+              email: authUser?.email || 'No email'
+            };
+          });
+        }
+      } catch (authError) {
+        console.warn('Could not fetch auth data:', authError);
+        // Continue with users data without email enrichment
+      }
 
       setUsers(enrichedUsers);
     } catch (error) {
