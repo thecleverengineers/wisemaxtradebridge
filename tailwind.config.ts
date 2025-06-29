@@ -65,9 +65,10 @@ export default {
 				}
 			},
 			fontFamily: {
-				'display': ['Orbitron', 'monospace'],
-				'body': ['Inter', 'sans-serif'],
-				'mono': ['JetBrains Mono', 'monospace'],
+				'display': ['Roboto Condensed', 'sans-serif'],
+				'body': ['Roboto', 'sans-serif'],
+				'mono': ['Roboto Mono', 'monospace'],
+				'sans': ['Roboto', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

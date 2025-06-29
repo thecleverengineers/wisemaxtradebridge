@@ -19,6 +19,7 @@ import Rewards from "./pages/Rewards";
 import InvestmentRecords from "./pages/InvestmentRecords";
 import IntradayTrading from "./pages/IntradayTrading";
 import MT5Trading from "./pages/MT5Trading";
+import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/investment-records" element={<InvestmentRecords />} />
             <Route path="/intraday-trading" element={<IntradayTrading />} />
             <Route path="/mt5-trading" element={<MT5Trading />} />
+            <Route path="/admin" element={<AdminPanel />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
