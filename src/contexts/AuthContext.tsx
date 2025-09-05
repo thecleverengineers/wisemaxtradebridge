@@ -1,19 +1,19 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserProfile {
   id: string;
   name: string;
   phone?: string;
-  referral_code: string;
+  referral_code?: string;
   parent_id?: string;
   is_active: boolean;
   kyc_status: string;
-  total_investment: number;
-  total_roi_earned: number;
-  total_referral_earned: number;
+  total_investment?: number;
+  total_roi_earned?: number;
+  total_referral_earned?: number;
 }
 
 interface AuthContextType {

@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, UserPlus, Ban, CheckCircle, XCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 interface User {
@@ -15,13 +15,13 @@ interface User {
   name: string;
   email?: string;
   phone?: string;
-  kyc_status: 'pending' | 'approved' | 'rejected';
+  kyc_status: 'pending' | 'approved' | 'rejected' | string;
   is_active: boolean;
-  total_investment: number;
-  total_roi_earned: number;
-  total_referral_earned: number;
-  created_at: string;
-  referral_code: string;
+  total_investment?: number;
+  total_roi_earned?: number;
+  total_referral_earned?: number;
+  created_at?: string;
+  referral_code?: string;
 }
 
 export const UserManagement = () => {

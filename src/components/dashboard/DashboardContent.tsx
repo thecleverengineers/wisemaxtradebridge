@@ -34,7 +34,7 @@ import { CryptoTradingWidget } from './CryptoTradingWidget';
 import { ReferralSystem } from './ReferralSystem';
 import { PaymentIntegration } from './PaymentIntegration';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
 
 interface DashboardStats {
   totalBalance: number;

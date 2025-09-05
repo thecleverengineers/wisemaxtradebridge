@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Search, CheckCircle, XCircle, Clock, DollarSign } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 interface Withdrawal {
@@ -17,8 +17,9 @@ interface Withdrawal {
   amount: number;
   net_amount: number;
   fee_amount: number;
-  withdrawal_method: string;
-  status: 'pending' | 'approved' | 'rejected' | 'processed';
+  withdrawal_method?: string;
+  payment_method?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'processed' | 'processing';
   requested_at: string;
   approved_at?: string;
   processed_at?: string;
@@ -56,12 +57,13 @@ export const WithdrawalManagement = () => {
         .select('id, name')
         .in('id', userIds);
 
-      const enrichedWithdrawals = (withdrawalData || []).map(withdrawal => {
+      const enrichedWithdrawals = (withdrawalData || []).map((withdrawal: any) => {
         const user = userData?.find(u => u.id === withdrawal.user_id);
         return {
           ...withdrawal,
-          user_name: user?.name || 'Unknown User'
-        };
+          user_name: user?.name || 'Unknown User',
+          withdrawal_method: withdrawal.withdrawal_method || withdrawal.payment_method || 'bank'
+        } as Withdrawal;
       });
 
       setWithdrawals(enrichedWithdrawals);

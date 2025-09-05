@@ -8,40 +8,43 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, TrendingUp, Clock, CheckCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 interface Investment {
   id: string;
   user_id: string;
   amount: number;
-  daily_roi_amount: number;
-  total_roi_expected: number;
-  start_date: string;
-  end_date: string;
-  status: 'active' | 'completed' | 'cancelled';
-  roi_credited_days: number;
-  users: {
-    name: string;
+  start_date?: string;
+  end_date?: string;
+  status?: 'active' | 'completed' | 'cancelled' | string;
+  returns?: number;
+  daily_roi_amount?: number;
+  total_roi_expected?: number;
+  roi_credited_days?: number;
+  users?: {
+    name?: string;
     email?: string;
   };
-  investment_plans: {
-    name: string;
-    daily_roi: number;
-    duration_days: number;
+  investment_plans?: {
+    name?: string;
+    daily_roi?: number;
+    duration_days?: number;
+    roi_percentage?: number;
   };
 }
 
 interface InvestmentPlan {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   min_amount: number;
-  max_amount: number;
-  daily_roi: number;
+  max_amount?: number;
   duration_days: number;
-  total_return_percent: number;
   is_active: boolean;
+  daily_roi?: number;
+  total_return_percent?: number;
+  roi_percentage?: number;
 }
 
 export const InvestmentManagement = () => {
