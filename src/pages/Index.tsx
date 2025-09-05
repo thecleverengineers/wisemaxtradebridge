@@ -9,11 +9,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Zap, Shield, TrendingUp, Brain, Globe, Layers } from 'lucide-react';
+import { useEffect } from 'react';
 
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect logged in users to dashboard
+  useEffect(() => {
+    if (user && !loading) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -126,16 +134,8 @@ const Index = () => {
     );
   }
 
-  return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-        <AppHeader onMenuClick={() => setSidebarOpen(true)} />
-        <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <DashboardContent />
-        <BottomNavigation />
-      </div>
-    </ProtectedRoute>
-  );
+  // This should never be reached now due to redirect
+  return null;
 };
 
 export default Index;
