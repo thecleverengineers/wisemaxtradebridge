@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, TrendingUp, DollarSign, ArrowLeft, Search, Filter, Download, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/components/layout/AppHeader';

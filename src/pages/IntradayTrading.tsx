@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,6 @@ import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { AppSidebar } from '@/components/layout/AppSidebar';
-import { useWalletBalance } from '@/hooks/useWalletBalance';
 
 interface Stock {
   symbol: string;
@@ -59,8 +59,6 @@ const IntradayTrading = () => {
   const [tradeAmount, setTradeAmount] = useState('');
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
   const [loading, setLoading] = useState(false);
-
-  const { walletData, checkBalance, deductBalance } = useWalletBalance();
 
   // Mock data for demonstration
   useEffect(() => {
@@ -162,27 +160,8 @@ const IntradayTrading = () => {
       return;
     }
 
-    const amount = parseFloat(tradeAmount);
-    
-    // Check wallet balance before executing trade
-    if (!checkBalance(amount)) {
-      return;
-    }
-
     setLoading(true);
     try {
-      // Deduct balance from wallet
-      const success = await deductBalance(
-        amount,
-        `${tradeType.toUpperCase()} ${selectedStock.symbol} - ₹${amount.toLocaleString()}`,
-        Date.now().toString()
-      );
-
-      if (!success) {
-        setLoading(false);
-        return;
-      }
-
       // Simulate trade execution
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -190,7 +169,7 @@ const IntradayTrading = () => {
         id: Date.now().toString(),
         symbol: selectedStock.symbol,
         type: tradeType,
-        quantity: Math.floor(amount / selectedStock.price),
+        quantity: Math.floor(parseFloat(tradeAmount) / selectedStock.price),
         entryPrice: selectedStock.price,
         currentPrice: selectedStock.price,
         pnl: 0,
@@ -258,16 +237,16 @@ const IntradayTrading = () => {
             </div>
           </div>
 
-          {/* Portfolio Summary with Wallet Balance */}
+          {/* Portfolio Summary */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="bg-gradient-to-r from-green-600 to-emerald-600 border-0 text-white">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-green-100 text-sm">Available Balance</p>
-                    <p className="text-2xl font-bold">₹{walletData?.total_balance.toLocaleString() || '0'}</p>
+                    <p className="text-green-100 text-sm">Total P&L</p>
+                    <p className="text-2xl font-bold">₹{getTotalPNL().toLocaleString()}</p>
                   </div>
-                  <DollarSign className="h-8 w-8 text-green-200" />
+                  <TrendingUp className="h-8 w-8 text-green-200" />
                 </div>
               </CardContent>
             </Card>
@@ -280,6 +259,18 @@ const IntradayTrading = () => {
                     <p className="text-white text-2xl font-bold">{positions.length}</p>
                   </div>
                   <Activity className="h-8 w-8 text-purple-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5 border-white/10">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-300 text-sm">Available Balance</p>
+                    <p className="text-white text-2xl font-bold">₹50,000</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-purple-400" />
                 </div>
               </CardContent>
             </Card>

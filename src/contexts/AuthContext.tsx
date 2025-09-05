@@ -1,19 +1,20 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserProfile {
   id: string;
   name: string;
   phone?: string;
-  referral_code?: string;
+  referral_code: string;
   parent_id?: string;
   is_active: boolean;
   kyc_status: string;
-  total_investment?: number;
-  total_roi_earned?: number;
-  total_referral_earned?: number;
+  total_investment: number;
+  total_roi_earned: number;
+  total_referral_earned: number;
 }
 
 interface AuthContextType {
@@ -65,12 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (roleError) console.error('Role error:', roleError);
 
       setProfile(userProfile);
-      
-      // Check for database admin role or temporary admin access
-      const hasDbAdminRole = userRole?.role === 'admin' || userRole?.role === 'super_admin';
-      const hasTempAccess = localStorage.getItem('temp_admin_access') === 'true';
-      
-      setIsAdmin(hasDbAdminRole || hasTempAccess);
+      setIsAdmin(userRole?.role === 'admin' || userRole?.role === 'super_admin');
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
@@ -198,9 +194,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setProfile(null);
       setIsAdmin(false);
-      
-      // Clear temporary admin access
-      localStorage.removeItem('temp_admin_access');
       
       toast({
         title: "Signed out successfully",
