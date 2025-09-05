@@ -17,6 +17,7 @@ export type Database = {
       investment_plans: {
         Row: {
           created_at: string
+          daily_roi: number | null
           description: string | null
           duration_days: number
           id: string
@@ -25,10 +26,13 @@ export type Database = {
           min_amount: number
           name: string
           roi_percentage: number
+          sort_order: number | null
+          total_return_percent: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          daily_roi?: number | null
           description?: string | null
           duration_days: number
           id?: string
@@ -37,10 +41,13 @@ export type Database = {
           min_amount: number
           name: string
           roi_percentage: number
+          sort_order?: number | null
+          total_return_percent?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          daily_roi?: number | null
           description?: string | null
           duration_days?: number
           id?: string
@@ -49,6 +56,8 @@ export type Database = {
           min_amount?: number
           name?: string
           roi_percentage?: number
+          sort_order?: number | null
+          total_return_percent?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -57,36 +66,45 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          daily_roi_amount: number | null
           end_date: string | null
           id: string
           plan_id: string | null
           returns: number | null
+          roi_credited_days: number | null
           start_date: string
           status: string | null
+          total_roi_expected: number | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           amount: number
           created_at?: string
+          daily_roi_amount?: number | null
           end_date?: string | null
           id?: string
           plan_id?: string | null
           returns?: number | null
+          roi_credited_days?: number | null
           start_date?: string
           status?: string | null
+          total_roi_expected?: number | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           amount?: number
           created_at?: string
+          daily_roi_amount?: number | null
           end_date?: string | null
           id?: string
           plan_id?: string | null
           returns?: number | null
+          roi_credited_days?: number | null
           start_date?: string
           status?: string | null
+          total_roi_expected?: number | null
           updated_at?: string
           user_id?: string | null
         }
@@ -130,6 +148,38 @@ export type Database = {
         }
         Relationships: []
       }
+      roi_ledger: {
+        Row: {
+          amount: number
+          created_at: string
+          credited_date: string
+          id: string
+          investment_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          credited_date: string
+          id?: string
+          investment_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          credited_date?: string
+          id?: string
+          investment_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roi_ledger_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settings: {
         Row: {
           category: string | null
@@ -166,6 +216,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           address: string | null
@@ -179,7 +250,11 @@ export type Database = {
           kyc_status: string | null
           name: string | null
           phone: string | null
+          referral_code: string | null
           state: string | null
+          total_investment: number | null
+          total_referral_earned: number | null
+          total_roi_earned: number | null
           updated_at: string
           user_id: string | null
         }
@@ -195,7 +270,11 @@ export type Database = {
           kyc_status?: string | null
           name?: string | null
           phone?: string | null
+          referral_code?: string | null
           state?: string | null
+          total_investment?: number | null
+          total_referral_earned?: number | null
+          total_roi_earned?: number | null
           updated_at?: string
           user_id?: string | null
         }
@@ -211,7 +290,11 @@ export type Database = {
           kyc_status?: string | null
           name?: string | null
           phone?: string | null
+          referral_code?: string | null
           state?: string | null
+          total_investment?: number | null
+          total_referral_earned?: number | null
+          total_roi_earned?: number | null
           updated_at?: string
           user_id?: string | null
         }
@@ -249,6 +332,30 @@ export type Database = {
           reference_id?: string | null
           status?: string | null
           type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          created_at: string
+          id: string
+          total_balance: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          total_balance?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          total_balance?: number | null
+          updated_at?: string
           user_id?: string | null
         }
         Relationships: []
