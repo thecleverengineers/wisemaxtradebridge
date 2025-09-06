@@ -139,41 +139,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error };
       }
 
-      // Create user profile after successful signup
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            user_id: data.user.id,
-            name: name,
-            email: email,
-            phone: phone,
-            referral_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
-            parent_id: referralCode ? (await supabase
-              .from('users')
-              .select('id')
-              .eq('referral_code', referralCode)
-              .single()).data?.id : null
-          });
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-        }
-
-        // Create wallet for the user
-        const { error: walletError } = await supabase
-          .from('wallets')
-          .insert({
-            user_id: data.user.id,
-            total_balance: 0
-          });
-
-        if (walletError) {
-          console.error('Wallet creation error:', walletError);
-        }
-      }
-
       toast({
         title: "Account created successfully!",
         description: "Please check your email to verify your account.",

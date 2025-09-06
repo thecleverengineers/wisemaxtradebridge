@@ -81,25 +81,39 @@ const Wallet = () => {
   const fetchWalletData = async () => {
     try {
       // Fetch wallet data
-      const { data: walletResponse, error: walletError } = await supabase
+      const untypedSupabase = supabase as any;
+      const { data: walletResponse, error: walletError } = await untypedSupabase
         .from('wallets')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
-      if (walletError) throw walletError;
-      setWalletData(walletResponse);
+      if (!walletError && walletResponse) {
+        setWalletData({
+          total_balance: walletResponse.total_balance || 0,
+          roi_income: walletResponse.roi_income || 0,
+          referral_income: walletResponse.referral_income || 0,
+          bonus_income: walletResponse.bonus_income || 0,
+          level_income: walletResponse.level_income || 0,
+          total_withdrawn: walletResponse.total_withdrawn || 0
+        });
+      }
 
       // Fetch transactions
-      const { data: transactionsResponse, error: transactionsError } = await supabase
+      const { data: transactionsResponse, error: transactionsError } = await untypedSupabase
         .from('wallet_transactions')
         .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (transactionsError) throw transactionsError;
-      setTransactions(transactionsResponse || []);
+      if (!transactionsError && transactionsResponse) {
+        setTransactions(transactionsResponse.map((tx: any) => ({
+          ...tx,
+          income_type: tx.type,
+          reason: tx.description
+        })));
+      }
 
     } catch (error) {
       console.error('Error fetching wallet data:', error);

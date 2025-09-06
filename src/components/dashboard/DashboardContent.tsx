@@ -40,14 +40,22 @@ export const DashboardContent = () => {
   const fetchDashboardData = async () => {
     try {
       // Fetch wallet data
-      const { data: walletData, error: walletError } = await supabase
+      const untypedSupabase = supabase as any;
+      const { data: walletData, error: walletError } = await untypedSupabase
         .from('wallets')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
-      if (walletError) throw walletError;
-      setWallet(walletData);
+      if (!walletError && walletData) {
+        setWallet({
+          total_balance: walletData.total_balance || 0,
+          roi_income: walletData.roi_income || 0,
+          referral_income: walletData.referral_income || 0,
+          level_income: walletData.level_income || 0,
+          bonus_income: walletData.bonus_income || 0
+        });
+      }
 
       // Fetch investment plans
       const { data: plansData, error: plansError } = await supabase

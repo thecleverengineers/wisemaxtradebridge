@@ -73,14 +73,19 @@ const InvestmentRecords = () => {
       setInvestments(investmentData || []);
 
       // Fetch ROI records
-      const { data: roiData, error: roiError } = await supabase
+      const untypedSupabase = supabase as any;
+      const { data: roiData, error: roiError } = await untypedSupabase
         .from('roi_ledger')
         .select('*')
-        .eq('user_id', user?.id)
-        .order('credited_at', { ascending: false });
+        .order('credited_date', { ascending: false });
 
-      if (roiError) throw roiError;
-      setROIRecords(roiData || []);
+      if (!roiError && roiData) {
+        setROIRecords(roiData.map((record: any) => ({
+          ...record,
+          roi_date: record.credited_date,
+          credited_at: record.created_at
+        })));
+      }
 
     } catch (error) {
       console.error('Error fetching records:', error);
