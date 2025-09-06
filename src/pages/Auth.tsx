@@ -32,18 +32,31 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        await signIn(formData.email, formData.password);
-        toast({
-          title: "Welcome back to InvestX",
-          description: "Successfully signed in to your premium trading account.",
-        });
-        navigate('/');
+        const { error } = await signIn(formData.email, formData.password);
+        if (!error) {
+          toast({
+            title: "Welcome back to InvestX",
+            description: "Successfully signed in to your premium trading account.",
+          });
+          // Add a small delay to ensure state updates
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 100);
+        }
       } else {
-        await signUp(formData.email, formData.password, formData.name);
-        toast({
-          title: "Welcome to InvestX Premium",
-          description: "Your account has been created. Please verify your email to start trading.",
-        });
+        const { error } = await signUp(
+          formData.email, 
+          formData.password, 
+          formData.name,
+          formData.phone,
+          formData.referralCode
+        );
+        if (!error) {
+          toast({
+            title: "Welcome to InvestX Premium",
+            description: "Your account has been created. Please verify your email to start trading.",
+          });
+        }
       }
     } catch (error: any) {
       toast({
