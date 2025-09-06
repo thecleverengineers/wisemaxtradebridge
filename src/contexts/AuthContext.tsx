@@ -119,9 +119,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string, phone?: string, referralCode?: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      // First check if user already exists
+      const { data: existingUser } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'dummy_check' // This will fail but tells us if email exists
+      });
+
+      const redirectUrl = `${window.location.origin}/auth`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -135,18 +141,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) {
-        toast({
-          title: "Sign up failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        // Handle specific error cases
+        if (error.message.includes('already registered')) {
+          toast({
+            title: "Email already registered",
+            description: "This email is already in use. Please sign in instead.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Sign up failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
         return { error };
       }
 
-      toast({
-        title: "Account created successfully!",
-        description: "Please check your email to verify your account.",
-      });
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        toast({
+          title: "Account created successfully!",
+          description: "Please check your email to verify your account before signing in.",
+        });
+      } else if (data.session) {
+        // Auto sign-in successful
+        toast({
+          title: "Welcome to InvestX!",
+          description: "Your account has been created and you're now signed in.",
+        });
+      }
 
       return { error: null };
     } catch (error: any) {
@@ -161,20 +185,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        toast({
-          title: "Sign in failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        // Handle specific error cases
+        if (error.message.includes('Invalid login credentials')) {
+          toast({
+            title: "Invalid credentials",
+            description: "The email or password you entered is incorrect.",
+            variant: "destructive",
+          });
+        } else if (error.message.includes('Email not confirmed')) {
+          toast({
+            title: "Email not verified",
+            description: "Please verify your email address before signing in.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Sign in failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
         return { error };
       }
 
+      // Success - session will be handled by onAuthStateChange
       toast({
         title: "Welcome back!",
         description: "You have successfully signed in.",

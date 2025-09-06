@@ -32,30 +32,75 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await signIn(formData.email, formData.password);
+        // Validate login fields
+        if (!formData.email || !formData.password) {
+          toast({
+            title: "Missing Information",
+            description: "Please enter both email and password.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
+        const { error } = await signIn(formData.email.trim(), formData.password);
         if (!error) {
           toast({
             title: "Welcome back to InvestX",
             description: "Successfully signed in to your premium trading account.",
           });
-          // Add a small delay to ensure state updates
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 100);
+          // Navigation is handled by AuthContext and ProtectedRoute
+        } else {
+          // Error already handled by signIn function
+          setLoading(false);
         }
       } else {
+        // Validate signup fields
+        if (!formData.name || !formData.email || !formData.phone || !formData.password) {
+          toast({
+            title: "Missing Information",
+            description: "Please fill in all required fields.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Password validation
+        if (formData.password.length < 6) {
+          toast({
+            title: "Weak Password",
+            description: "Password must be at least 6 characters long.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
         const { error } = await signUp(
-          formData.email, 
+          formData.email.trim(), 
           formData.password, 
-          formData.name,
-          formData.phone,
-          formData.referralCode
+          formData.name.trim(),
+          formData.phone.trim(),
+          formData.referralCode?.trim()
         );
         if (!error) {
           toast({
             title: "Welcome to InvestX Premium",
-            description: "Your account has been created. Please verify your email to start trading.",
+            description: "Your account has been created. Please check your email to verify your account.",
           });
+          // Clear form after successful signup
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            password: '',
+            referralCode: ''
+          });
+          setIsLogin(true); // Switch to login tab
+        } else {
+          // Error already handled by signUp function
+          setLoading(false);
         }
       }
     } catch (error: any) {
@@ -64,8 +109,12 @@ const Auth = () => {
         description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
+    } finally {
+      // Only set loading to false if there was no successful auth
+      if (isLogin) {
+        setLoading(false);
+      }
     }
   };
 
