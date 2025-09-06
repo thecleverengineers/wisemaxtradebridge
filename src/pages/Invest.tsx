@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { TrendingUp, Clock, Target, DollarSign, ArrowLeft, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
+import { TrendingUp, Clock, Target, DollarSign, ArrowLeft, Calendar, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -42,10 +41,6 @@ interface UserInvestment {
   };
 }
 
-interface WalletData {
-  total_balance: number;
-}
-
 const Invest = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -53,7 +48,6 @@ const Invest = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [investmentPlans, setInvestmentPlans] = useState<InvestmentPlan[]>([]);
   const [userInvestments, setUserInvestments] = useState<UserInvestment[]>([]);
-  const [walletData, setWalletData] = useState<WalletData | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<InvestmentPlan | null>(null);
   const [investAmount, setInvestAmount] = useState('');
   const [loading, setLoading] = useState(true);
@@ -90,16 +84,6 @@ const Invest = () => {
       if (investmentsError) throw investmentsError;
       setUserInvestments(investmentsData || []);
 
-      // Fetch wallet balance
-      const { data: walletResponse, error: walletError } = await supabase
-        .from('wallets')
-        .select('total_balance')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (walletError) throw walletError;
-      setWalletData(walletResponse);
-
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -116,23 +100,10 @@ const Invest = () => {
     if (!selectedPlan || !investAmount || !user) return;
 
     const amount = parseFloat(investAmount);
-    const availableBalance = walletData?.total_balance || 0;
-
-    // Validate amount range
     if (amount < selectedPlan.min_amount || (selectedPlan.max_amount && amount > selectedPlan.max_amount)) {
       toast({
         title: "Invalid Amount",
         description: `Investment amount must be between ₹${selectedPlan.min_amount.toLocaleString()} and ₹${selectedPlan.max_amount?.toLocaleString() || 'unlimited'}`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check wallet balance
-    if (amount > availableBalance) {
-      toast({
-        title: "Insufficient Balance",
-        description: `You need ₹${amount.toLocaleString()} but only have ₹${availableBalance.toLocaleString()} in your wallet. Please add funds to continue.`,
         variant: "destructive",
       });
       return;
@@ -145,8 +116,7 @@ const Invest = () => {
       const startDate = new Date().toISOString().split('T')[0];
       const endDate = new Date(Date.now() + selectedPlan.duration_days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-      // Create investment
-      const { error: investError } = await supabase
+      const { error } = await supabase
         .from('investments')
         .insert({
           user_id: user.id,
@@ -158,32 +128,7 @@ const Invest = () => {
           end_date: endDate,
         });
 
-      if (investError) throw investError;
-
-      // Deduct amount from wallet
-      const { error: walletError } = await supabase
-        .from('wallets')
-        .update({
-          total_balance: availableBalance - amount
-        })
-        .eq('user_id', user.id);
-
-      if (walletError) throw walletError;
-
-      // Add transaction record
-      const { error: transactionError } = await supabase
-        .from('wallet_transactions')
-        .insert({
-          user_id: user.id,
-          type: 'debit',
-          income_type: 'investment',
-          amount: amount,
-          balance_before: availableBalance,
-          balance_after: availableBalance - amount,
-          reason: `Investment in ${selectedPlan.name}`,
-        });
-
-      if (transactionError) throw transactionError;
+      if (error) throw error;
 
       toast({
         title: "Investment Successful!",
@@ -243,27 +188,6 @@ const Invest = () => {
             </div>
           </div>
 
-          {/* Wallet Balance Card */}
-          <Card className="bg-gradient-to-r from-green-600 to-emerald-600 border-0 text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <DollarSign className="h-6 w-6" />
-                  <div>
-                    <p className="text-green-100 text-sm">Available Balance</p>
-                    <p className="text-2xl font-bold">₹{walletData?.total_balance?.toLocaleString() || '0'}</p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => navigate('/wallet')}
-                  className="bg-white/20 hover:bg-white/30 text-white"
-                >
-                  Add Funds
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Investment Plans */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {investmentPlans.map((plan) => (
@@ -317,12 +241,6 @@ const Invest = () => {
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4">
-                        {/* Wallet Balance Info */}
-                        <div className="bg-white/5 rounded-lg p-3 flex items-center justify-between">
-                          <span className="text-purple-300">Available Balance:</span>
-                          <span className="text-white font-semibold">₹{walletData?.total_balance?.toLocaleString() || '0'}</span>
-                        </div>
-
                         <div>
                           <Label htmlFor="amount" className="text-white">Investment Amount (₹)</Label>
                           <Input
@@ -334,18 +252,7 @@ const Invest = () => {
                             className="bg-white/5 border-white/10 text-white"
                           />
                         </div>
-
-                        {/* Balance Check Warning */}
-                        {investAmount && parseFloat(investAmount) > (walletData?.total_balance || 0) && (
-                          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-center space-x-2">
-                            <AlertCircle className="h-4 w-4 text-red-400" />
-                            <span className="text-red-400 text-sm">
-                              Insufficient balance. You need ₹{(parseFloat(investAmount) - (walletData?.total_balance || 0)).toLocaleString()} more.
-                            </span>
-                          </div>
-                        )}
-
-                        {selectedPlan && investAmount && parseFloat(investAmount) <= (walletData?.total_balance || 0) && (
+                        {selectedPlan && investAmount && (
                           <div className="bg-white/5 rounded-lg p-4 space-y-2">
                             <div className="flex justify-between text-sm">
                               <span className="text-purple-300">Daily ROI:</span>
@@ -355,16 +262,11 @@ const Invest = () => {
                               <span className="text-purple-300">Total Return:</span>
                               <span className="text-white">₹{((parseFloat(investAmount) * selectedPlan.total_return_percent) / 100).toLocaleString()}</span>
                             </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-purple-300">Remaining Balance:</span>
-                              <span className="text-white">₹{((walletData?.total_balance || 0) - parseFloat(investAmount)).toLocaleString()}</span>
-                            </div>
                           </div>
                         )}
-                        
                         <Button 
                           onClick={handleInvest} 
-                          disabled={investing || !investAmount || parseFloat(investAmount) > (walletData?.total_balance || 0)}
+                          disabled={investing || !investAmount}
                           className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                         >
                           {investing ? 'Processing...' : 'Confirm Investment'}
