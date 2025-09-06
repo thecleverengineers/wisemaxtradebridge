@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, Smartphone, Mail, Zap, Shield, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -22,9 +22,14 @@ const Auth = () => {
     referralCode: ''
   });
 
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +54,10 @@ const Auth = () => {
             title: "Welcome back to InvestX",
             description: "Successfully signed in to your premium trading account.",
           });
-          // Navigation is handled by AuthContext and ProtectedRoute
+          // Force navigation to home
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 100);
         } else {
           // Error already handled by signIn function
           setLoading(false);
