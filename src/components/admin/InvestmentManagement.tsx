@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, TrendingUp, Clock, CheckCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 interface Investment {
@@ -19,13 +19,13 @@ interface Investment {
   total_roi_expected: number;
   start_date: string;
   end_date: string;
-  status: 'active' | 'completed' | 'cancelled';
+  status: string; // Changed from union type to string
   roi_credited_days: number;
-  users: {
+  users?: {
     name: string;
     email?: string;
   };
-  investment_plans: {
+  investment_plans?: {
     name: string;
     daily_roi: number;
     duration_days: number;

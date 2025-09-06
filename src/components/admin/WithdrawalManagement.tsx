@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Search, CheckCircle, XCircle, Clock, DollarSign } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 interface Withdrawal {
@@ -17,8 +17,8 @@ interface Withdrawal {
   amount: number;
   net_amount: number;
   fee_amount: number;
-  withdrawal_method: string;
-  status: 'pending' | 'approved' | 'rejected' | 'processed';
+  payment_method?: string; // Changed from withdrawal_method to payment_method
+  status: string; // Changed from union type to string
   requested_at: string;
   approved_at?: string;
   processed_at?: string;
@@ -121,7 +121,7 @@ export const WithdrawalManagement = () => {
 
   const filteredWithdrawals = withdrawals.filter(withdrawal =>
     withdrawal.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    withdrawal.withdrawal_method.toLowerCase().includes(searchTerm.toLowerCase())
+    (withdrawal.payment_method || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusBadge = (status: string) => {
@@ -232,7 +232,7 @@ export const WithdrawalManagement = () => {
                     <TableCell>
                       <div className="font-medium">{withdrawal.user_name}</div>
                     </TableCell>
-                    <TableCell className="capitalize">{withdrawal.withdrawal_method}</TableCell>
+                    <TableCell className="capitalize">{withdrawal.payment_method || 'N/A'}</TableCell>
                     <TableCell>${withdrawal.amount.toLocaleString()}</TableCell>
                     <TableCell>${(withdrawal.fee_amount || 0).toFixed(2)}</TableCell>
                     <TableCell className="font-medium">${withdrawal.net_amount.toLocaleString()}</TableCell>
@@ -267,7 +267,7 @@ export const WithdrawalManagement = () => {
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium">Method</label>
-                                  <p className="text-sm text-slate-600 capitalize">{selectedWithdrawal.withdrawal_method}</p>
+                                  <p className="text-sm text-slate-600 capitalize">{selectedWithdrawal.payment_method || 'N/A'}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium">Amount</label>
@@ -287,7 +287,7 @@ export const WithdrawalManagement = () => {
                                 </div>
                               </div>
 
-                              {selectedWithdrawal.withdrawal_method === 'upi' && selectedWithdrawal.upi_id && (
+                              {(selectedWithdrawal.payment_method || '') === 'upi' && selectedWithdrawal.upi_id && (
                                 <div>
                                   <label className="text-sm font-medium">UPI ID</label>
                                   <p className="text-sm text-slate-600">{selectedWithdrawal.upi_id}</p>
