@@ -8,21 +8,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, UserPlus, Ban, CheckCircle, XCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 interface User {
   id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  kyc_status: 'pending' | 'approved' | 'rejected';
-  is_active: boolean;
-  total_investment: number;
-  total_roi_earned: number;
-  total_referral_earned: number;
+  user_id?: string | null;
+  name: string | null;
+  email?: string | null;
+  phone?: string | null;
+  kyc_status: string;
+  is_active: boolean | null;
+  total_investment: number | null;
+  total_roi_earned: number | null;
+  total_referral_earned: number | null;
   created_at: string;
-  referral_code: string;
+  referral_code: string | null;
 }
 
 export const UserManagement = () => {
@@ -45,14 +46,18 @@ export const UserManagement = () => {
 
       if (error) throw error;
 
-      // Get auth users for email
-      const { data: authData } = await supabase.auth.admin.listUsers();
-      
-      const enrichedUsers = (usersData || []).map(user => {
-        const authUser = authData?.users?.find(au => au.id === user.id);
+      // Map users data to correct format
+      const enrichedUsers = (usersData || []).map((user: any) => {
         return {
           ...user,
-          email: authUser?.email
+          email: user.email || '',
+          name: user.name || 'Unknown',
+          kyc_status: user.kyc_status || 'pending',
+          is_active: user.is_active !== false,
+          total_investment: user.total_investment || 0,
+          total_roi_earned: user.total_roi_earned || 0,
+          total_referral_earned: user.total_referral_earned || 0,
+          referral_code: user.referral_code || ''
         };
       });
 
