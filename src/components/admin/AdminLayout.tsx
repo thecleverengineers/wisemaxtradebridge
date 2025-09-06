@@ -1,10 +1,13 @@
 
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 
-export const AdminLayout = () => {
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+
+export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
@@ -15,7 +18,7 @@ export const AdminLayout = () => {
         <AdminHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         
         <main className="p-6">
-          <Outlet />
+          {children}
         </main>
       </div>
     </div>

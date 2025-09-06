@@ -17,7 +17,8 @@ import {
   TrendingUp,
   Target,
   ChevronLeft,
-  LogOut
+  LogOut,
+  Wallet
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -33,14 +34,16 @@ export const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin', exact: true },
     { icon: Users, label: 'User Management', path: '/admin/users' },
+    { icon: TrendingUp, label: 'Investments', path: '/admin/investments' },
+    { icon: Wallet, label: 'Withdrawals', path: '/admin/withdrawals' },
     { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
     { icon: CreditCard, label: 'Transactions', path: '/admin/transactions' },
-    { icon: TrendingUp, label: 'Investments', path: '/admin/investments' },
     { icon: Target, label: 'Trading', path: '/admin/trading' },
     { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
     { icon: FileText, label: 'Reports', path: '/admin/reports' },
     { icon: Activity, label: 'System Monitor', path: '/admin/monitor' },
     { icon: Database, label: 'Database', path: '/admin/database' },
+    { icon: Shield, label: 'Features', path: '/admin/features' },
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
 
