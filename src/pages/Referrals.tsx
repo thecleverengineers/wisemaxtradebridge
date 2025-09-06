@@ -58,8 +58,7 @@ const Referrals = () => {
   const fetchReferralData = async () => {
     try {
       // Fetch referred users
-      const untypedSupabase = supabase as any;
-      const { data: usersData, error: usersError } = await untypedSupabase
+      const { data: usersData, error: usersError } = await supabase
         .from('users')
         .select('id, name, created_at, is_active, total_investment')
         .eq('parent_id', user?.id)
@@ -68,18 +67,29 @@ const Referrals = () => {
       if (usersError) throw usersError;
       setReferralUsers(usersData || []);
 
-      // Set mock referral bonuses since referral_bonus table doesn't exist
-      const mockBonuses: any[] = [];
-      setReferralBonuses(mockBonuses);
+      // Fetch referral bonuses
+      const { data: bonusesData, error: bonusesError } = await supabase
+        .from('referral_bonus')
+        .select(`
+          *,
+          users!referral_bonus_from_user_id_fkey (name)
+        `)
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (bonusesError) throw bonusesError;
+      setReferralBonuses(bonusesData || []);
 
       // Calculate stats
       const totalReferrals = usersData?.length || 0;
       const activeReferrals = usersData?.filter(u => u.is_active).length || 0;
-      const totalEarnings = 0; // No bonus data available
+      const totalEarnings = bonusesData?.reduce((sum, bonus) => sum + (bonus.amount || 0), 0) || 0;
       
       const thisMonth = new Date();
       thisMonth.setDate(1);
-      const thisMonthEarnings = 0; // No bonus data available
+      const thisMonthEarnings = bonusesData?.filter(bonus => 
+        new Date(bonus.created_at) >= thisMonth
+      ).reduce((sum, bonus) => sum + (bonus.amount || 0), 0) || 0;
 
       setStats({
         totalReferrals,

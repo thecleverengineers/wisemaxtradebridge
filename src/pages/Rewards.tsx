@@ -45,16 +45,15 @@ const Rewards = () => {
   const fetchRewards = async () => {
     try {
       // Get user statistics for reward calculations
-      const untypedSupabase = supabase as any;
       const [investmentCount, referralCount, totalRoi] = await Promise.all([
-        untypedSupabase.from('investments').select('*', { count: 'exact', head: true }).eq('user_id', user?.id),
-        untypedSupabase.from('users').select('*', { count: 'exact', head: true }).eq('parent_id', user?.id),
-        untypedSupabase.from('wallets').select('*').eq('user_id', user?.id).maybeSingle()
+        supabase.from('investments').select('*', { count: 'exact', head: true }).eq('user_id', user?.id),
+        supabase.from('users').select('*', { count: 'exact', head: true }).eq('parent_id', user?.id),
+        supabase.from('wallets').select('roi_income').eq('user_id', user?.id).single()
       ]);
 
       const userInvestments = investmentCount.count || 0;
       const userReferrals = referralCount.count || 0;
-      const userRoi = totalRoi.data?.roi_income || totalRoi.data?.total_roi_earned || 0;
+      const userRoi = totalRoi.data?.roi_income || 0;
 
       // Define available rewards
       const availableRewards: Reward[] = [

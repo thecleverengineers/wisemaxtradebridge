@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -66,7 +65,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (roleError) console.error('Role error:', roleError);
 
       setProfile(userProfile);
-      setIsAdmin(userRole?.role === 'admin' || userRole?.role === 'super_admin');
+      
+      // Check for database admin role or temporary admin access
+      const hasDbAdminRole = userRole?.role === 'admin' || userRole?.role === 'super_admin';
+      const hasTempAccess = localStorage.getItem('temp_admin_access') === 'true';
+      
+      setIsAdmin(hasDbAdminRole || hasTempAccess);
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
@@ -117,7 +121,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -157,7 +161,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -169,14 +173,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
         return { error };
-      }
-
-      // Immediately update state after successful login
-      if (data.session && data.user) {
-        setSession(data.session);
-        setUser(data.user);
-        // Fetch profile after setting user
-        await fetchUserProfile(data.user.id);
       }
 
       toast({
@@ -202,6 +198,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setProfile(null);
       setIsAdmin(false);
+      
+      // Clear temporary admin access
+      localStorage.removeItem('temp_admin_access');
       
       toast({
         title: "Signed out successfully",

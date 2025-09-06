@@ -7,7 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+import TradingPlatform from "./pages/TradingPlatform";
+import ForexTrading from "./pages/ForexTrading";
 import Invest from "./pages/Invest";
 import Wallet from "./pages/Wallet";
 import Referrals from "./pages/Referrals";
@@ -17,6 +18,8 @@ import Leaderboard from "./pages/Leaderboard";
 import Rewards from "./pages/Rewards";
 import InvestmentRecords from "./pages/InvestmentRecords";
 import IntradayTrading from "./pages/IntradayTrading";
+import MT5Trading from "./pages/MT5Trading";
+import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,7 +34,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/trading" element={<TradingPlatform />} />
+            <Route path="/forex-trading" element={<ForexTrading />} />
             <Route path="/invest" element={<Invest />} />
             <Route path="/wallet" element={<Wallet />} />
             <Route path="/referrals" element={<Referrals />} />
@@ -41,6 +45,8 @@ const App = () => (
             <Route path="/rewards" element={<Rewards />} />
             <Route path="/investment-records" element={<InvestmentRecords />} />
             <Route path="/intraday-trading" element={<IntradayTrading />} />
+            <Route path="/mt5-trading" element={<MT5Trading />} />
+            <Route path="/admin/*" element={<AdminPanel />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
