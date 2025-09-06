@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,9 +21,16 @@ const Auth = () => {
     referralCode: ''
   });
 
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,18 +38,25 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        await signIn(formData.email, formData.password);
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in.",
-        });
-        navigate('/');
+        const { error } = await signIn(formData.email, formData.password);
+        if (!error) {
+          navigate('/dashboard');
+        }
       } else {
-        await signUp(formData.email, formData.password, formData.name);
-        toast({
-          title: "Account created!",
-          description: "Please check your email to verify your account.",
-        });
+        const { error } = await signUp(
+          formData.email, 
+          formData.password, 
+          formData.name,
+          formData.phone,
+          formData.referralCode
+        );
+        if (!error) {
+          toast({
+            title: "Account created!",
+            description: "Please check your email to verify your account, then login.",
+          });
+          setIsLogin(true);
+        }
       }
     } catch (error: any) {
       toast({
