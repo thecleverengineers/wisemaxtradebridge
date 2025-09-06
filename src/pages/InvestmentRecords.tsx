@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, TrendingUp, DollarSign, ArrowLeft, Search, Filter, Download, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -24,7 +24,7 @@ interface InvestmentRecord {
   daily_roi_amount: number;
   total_roi_expected: number;
   roi_credited_days: number;
-  investment_plans: {
+  investment_plans?: {
     name: string;
     daily_roi: number;
     duration_days: number;
@@ -34,8 +34,8 @@ interface InvestmentRecord {
 interface ROIRecord {
   id: string;
   amount: number;
-  roi_date: string;
-  credited_at: string;
+  credited_date?: string;
+  created_at?: string;  // Added created_at
   investment_id: string;
 }
 
@@ -76,8 +76,8 @@ const InvestmentRecords = () => {
       const { data: roiData, error: roiError } = await supabase
         .from('roi_ledger')
         .select('*')
-        .eq('user_id', user?.id)
-        .order('credited_at', { ascending: false });
+        .in('investment_id', investmentData?.map(inv => inv.id) || [])
+        .order('created_at', { ascending: false });
 
       if (roiError) throw roiError;
       setROIRecords(roiData || []);
@@ -293,13 +293,13 @@ const InvestmentRecords = () => {
                           <div>
                             <p className="text-white font-semibold">₹{record.amount?.toLocaleString()}</p>
                             <p className="text-purple-300 text-sm">
-                              ROI Date: {new Date(record.roi_date).toLocaleDateString()}
+                              ROI Date: {new Date(record.credited_date || record.created_at || '').toLocaleDateString()}
                             </p>
                           </div>
                           <div className="text-right">
                             <p className="text-green-400 text-sm">Credited</p>
                             <p className="text-purple-300 text-sm">
-                              {new Date(record.credited_at).toLocaleDateString()}
+                              {new Date(record.credited_date || record.created_at || '').toLocaleDateString()}
                             </p>
                           </div>
                         </div>
