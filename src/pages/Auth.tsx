@@ -40,7 +40,10 @@ const Auth = () => {
       if (isLogin) {
         const { error } = await signIn(formData.email, formData.password);
         if (!error) {
-          navigate('/dashboard');
+          // Add a small delay to ensure auth state is updated
+          setTimeout(() => {
+            navigate('/dashboard', { replace: true });
+          }, 100);
         }
       } else {
         const { error } = await signUp(

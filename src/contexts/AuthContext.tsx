@@ -157,7 +157,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -169,6 +169,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
         return { error };
+      }
+
+      // Immediately update state after successful login
+      if (data.session && data.user) {
+        setSession(data.session);
+        setUser(data.user);
+        // Fetch profile after setting user
+        await fetchUserProfile(data.user.id);
       }
 
       toast({
