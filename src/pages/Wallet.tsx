@@ -80,21 +80,39 @@ const Wallet = () => {
 
   const fetchWalletData = async () => {
     try {
-      // Fetch wallet data
-      const { data: walletResponse, error: walletError } = await supabase
+      // Fetch all wallets for the user
+      const { data: walletsResponse, error: walletError } = await supabase
         .from('wallets')
         .select('*')
-        .eq('user_id', user?.id)
-        .single();
+        .eq('user_id', user?.id);
 
       if (walletError) throw walletError;
       
-      // Add total_balance calculation
-      const walletWithTotal = {
-        ...walletResponse,
-        total_balance: walletResponse.balance + walletResponse.roi_income + walletResponse.referral_income + walletResponse.bonus_income + walletResponse.level_income
-      };
-      setWalletData(walletWithTotal);
+      // Calculate totals across all wallets
+      const totalData = walletsResponse?.reduce((acc, wallet) => ({
+        total_balance: acc.total_balance + (wallet.balance || 0),
+        roi_income: acc.roi_income + (wallet.roi_income || 0),
+        referral_income: acc.referral_income + (wallet.referral_income || 0),
+        bonus_income: acc.bonus_income + (wallet.bonus_income || 0),
+        level_income: acc.level_income + (wallet.level_income || 0),
+        total_withdrawn: acc.total_withdrawn + (wallet.total_withdrawn || 0)
+      }), {
+        total_balance: 0,
+        roi_income: 0,
+        referral_income: 0,
+        bonus_income: 0,
+        level_income: 0,
+        total_withdrawn: 0
+      });
+      
+      setWalletData(totalData || {
+        total_balance: 0,
+        roi_income: 0,
+        referral_income: 0,
+        bonus_income: 0,
+        level_income: 0,
+        total_withdrawn: 0
+      });
 
       // Fetch transactions from transactions table instead of wallet_transactions
       const { data: transactionsResponse, error: transactionsError } = await supabase
