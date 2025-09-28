@@ -65,8 +65,7 @@ const Invest = () => {
       const { data: plansData, error: plansError } = await supabase
         .from('investment_plans')
         .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
+        .order('min_amount');
 
       if (plansError) throw plansError;
       setInvestmentPlans(plansData || []);
@@ -82,7 +81,15 @@ const Invest = () => {
         .order('created_at', { ascending: false });
 
       if (investmentsError) throw investmentsError;
-      setUserInvestments(investmentsData || []);
+      
+      // Map the data to include calculated fields
+      const mappedInvestments = (investmentsData || []).map((inv: any) => ({
+        ...inv,
+        daily_roi_amount: inv.investment_plans?.daily_roi ? (inv.amount * inv.investment_plans.daily_roi / 100) : 0,
+        total_roi_expected: inv.amount * (inv.investment_plans?.daily_roi || 0) * inv.duration_days / 100,
+        roi_credited_days: Math.floor((new Date().getTime() - new Date(inv.start_date).getTime()) / (1000 * 60 * 60 * 24))
+      }));
+      setUserInvestments(mappedInvestments);
 
     } catch (error) {
       console.error('Error fetching data:', error);

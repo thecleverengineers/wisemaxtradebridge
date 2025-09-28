@@ -70,17 +70,32 @@ const InvestmentRecords = () => {
         .order('created_at', { ascending: false });
 
       if (investmentError) throw investmentError;
-      setInvestments(investmentData || []);
+      
+      // Map the data to include calculated fields
+      const mappedInvestments = (investmentData || []).map((inv: any) => ({
+        ...inv,
+        daily_roi_amount: inv.investment_plans?.daily_roi ? (inv.amount * inv.investment_plans.daily_roi / 100) : 0,
+        total_roi_expected: inv.amount * (inv.investment_plans?.total_return_percent || 0) / 100,
+        roi_credited_days: Math.floor((new Date().getTime() - new Date(inv.start_date).getTime()) / (1000 * 60 * 60 * 24))
+      }));
+      setInvestments(mappedInvestments);
 
       // Fetch ROI records
       const { data: roiData, error: roiError } = await supabase
         .from('roi_ledger')
         .select('*')
         .eq('user_id', user?.id)
-        .order('credited_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (roiError) throw roiError;
-      setROIRecords(roiData || []);
+      
+      // Map ROI records with proper fields
+      const mappedROI = (roiData || []).map((roi: any) => ({
+        ...roi,
+        roi_date: roi.created_at,
+        credited_at: roi.created_at
+      }));
+      setROIRecords(mappedROI);
 
     } catch (error) {
       console.error('Error fetching records:', error);

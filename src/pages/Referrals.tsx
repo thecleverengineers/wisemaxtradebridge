@@ -70,15 +70,18 @@ const Referrals = () => {
       // Fetch referral bonuses
       const { data: bonusesData, error: bonusesError } = await supabase
         .from('referral_bonus')
-        .select(`
-          *,
-          users!referral_bonus_from_user_id_fkey (name)
-        `)
+        .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (bonusesError) throw bonusesError;
-      setReferralBonuses(bonusesData || []);
+      
+      // Map bonuses with proper fields
+      const mappedBonuses = (bonusesData || []).map((bonus: any) => ({
+        ...bonus,
+        from_user_id: bonus.referral_id
+      }));
+      setReferralBonuses(mappedBonuses);
 
       // Calculate stats
       const totalReferrals = usersData?.length || 0;

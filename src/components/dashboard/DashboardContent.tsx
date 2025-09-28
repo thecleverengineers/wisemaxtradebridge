@@ -8,21 +8,36 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 interface WalletData {
-  total_balance: number;
+  id: string;
+  user_id: string;
+  currency: string;
+  balance: number;
+  locked_balance: number;
+  total_deposited: number;
+  total_withdrawn: number;
   roi_income: number;
   referral_income: number;
-  level_income: number;
   bonus_income: number;
+  level_income: number;
+  total_balance: number;
+  wallet_address?: string;
+  network?: string;
+  last_transaction_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface InvestmentPlan {
   id: string;
   name: string;
+  description?: string;
   min_amount: number;
   max_amount: number;
   daily_roi: number;
   duration_days: number;
   total_return_percent: number;
+  status?: string;
+  created_at?: string;
 }
 
 export const DashboardContent = () => {
@@ -47,14 +62,19 @@ export const DashboardContent = () => {
         .single();
 
       if (walletError) throw walletError;
-      setWallet(walletData);
+      
+      // Add total_balance calculation
+      const walletWithTotal = {
+        ...walletData,
+        total_balance: walletData.balance + walletData.roi_income + walletData.referral_income + walletData.bonus_income + walletData.level_income
+      };
+      setWallet(walletWithTotal);
 
       // Fetch investment plans
       const { data: plansData, error: plansError } = await supabase
         .from('investment_plans')
         .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
+        .order('min_amount');
 
       if (plansError) throw plansError;
       setInvestmentPlans(plansData || []);

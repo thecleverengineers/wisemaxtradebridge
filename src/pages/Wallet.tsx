@@ -88,18 +88,35 @@ const Wallet = () => {
         .single();
 
       if (walletError) throw walletError;
-      setWalletData(walletResponse);
+      
+      // Add total_balance calculation
+      const walletWithTotal = {
+        ...walletResponse,
+        total_balance: walletResponse.balance + walletResponse.roi_income + walletResponse.referral_income + walletResponse.bonus_income + walletResponse.level_income
+      };
+      setWalletData(walletWithTotal);
 
-      // Fetch transactions
+      // Fetch transactions from transactions table instead of wallet_transactions
       const { data: transactionsResponse, error: transactionsError } = await supabase
-        .from('wallet_transactions')
+        .from('transactions')
         .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (transactionsError) throw transactionsError;
-      setTransactions(transactionsResponse || []);
+      if (!transactionsError && transactionsResponse) {
+        // Map transactions to the expected format
+        const mappedTransactions = transactionsResponse.map((tx: any) => ({
+          id: tx.id,
+          type: tx.type || 'transfer',
+          income_type: tx.category || 'other',
+          amount: tx.amount,
+          balance_after: 0,
+          reason: tx.notes || '',
+          created_at: tx.created_at
+        }));
+        setTransactions(mappedTransactions);
+      }
 
     } catch (error) {
       console.error('Error fetching wallet data:', error);
@@ -144,8 +161,17 @@ const Wallet = () => {
       };
 
       const { error } = await supabase
-        .from('withdrawals')
-        .insert(withdrawalData);
+        .from('transactions')
+        .insert([{
+          user_id: user?.id,
+          type: 'withdrawal',
+          category: 'withdrawal',
+          currency: 'USDT',
+          amount: parseFloat(withdrawAmount.toString()),
+          status: 'pending',
+          notes: withdrawMethod === 'upi' ? `UPI: ${upiId}` : `Bank: ${bankDetails}`,
+          created_at: new Date().toISOString()
+        }]);
 
       if (error) throw error;
 

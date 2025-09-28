@@ -132,6 +132,7 @@ export type Database = {
         Row: {
           created_at: string | null
           daily_roi: number
+          description: string | null
           duration_days: number
           id: string
           max_amount: number
@@ -143,6 +144,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           daily_roi: number
+          description?: string | null
           duration_days: number
           id?: string
           max_amount: number
@@ -154,6 +156,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           daily_roi?: number
+          description?: string | null
           duration_days?: number
           id?: string
           max_amount?: number
@@ -325,6 +328,60 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      referral_bonus: {
+        Row: {
+          amount: number
+          base_amount: number | null
+          bonus_type: string
+          created_at: string | null
+          id: string
+          level: number
+          percentage: number | null
+          referral_id: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          base_amount?: number | null
+          bonus_type?: string
+          created_at?: string | null
+          id?: string
+          level?: number
+          percentage?: number | null
+          referral_id?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          base_amount?: number | null
+          bonus_type?: string
+          created_at?: string | null
+          id?: string
+          level?: number
+          percentage?: number | null
+          referral_id?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_bonus_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_bonus_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referrals: {
         Row: {
@@ -714,12 +771,16 @@ export type Database = {
       wallets: {
         Row: {
           balance: number
+          bonus_income: number | null
           created_at: string
           currency: string
           id: string
           last_transaction_at: string | null
+          level_income: number | null
           locked_balance: number
           network: string | null
+          referral_income: number | null
+          roi_income: number | null
           total_deposited: number | null
           total_withdrawn: number | null
           updated_at: string
@@ -728,12 +789,16 @@ export type Database = {
         }
         Insert: {
           balance?: number
+          bonus_income?: number | null
           created_at?: string
           currency: string
           id?: string
           last_transaction_at?: string | null
+          level_income?: number | null
           locked_balance?: number
           network?: string | null
+          referral_income?: number | null
+          roi_income?: number | null
           total_deposited?: number | null
           total_withdrawn?: number | null
           updated_at?: string
@@ -742,12 +807,16 @@ export type Database = {
         }
         Update: {
           balance?: number
+          bonus_income?: number | null
           created_at?: string
           currency?: string
           id?: string
           last_transaction_at?: string | null
+          level_income?: number | null
           locked_balance?: number
           network?: string | null
+          referral_income?: number | null
+          roi_income?: number | null
           total_deposited?: number | null
           total_withdrawn?: number | null
           updated_at?: string
