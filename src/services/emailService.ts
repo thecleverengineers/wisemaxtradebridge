@@ -13,19 +13,23 @@ export const sendEmail = async (options: EmailOptions) => {
     console.log('Sending email to:', options.to);
     console.log('Email type:', options.type);
     
-    // Use the correct Supabase project URL
-    const { data, error } = await supabase.functions.invoke('send-email', {
-      body: options,
+    // Call the edge function directly with full URL
+    const response = await fetch('https://verauoklhuanklwsuwrr.supabase.co/functions/v1/send-email', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-      }
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlcmF1b2tsaHVhbmtsd3N1d3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwMzM0NDAsImV4cCI6MjA3NDYwOTQ0MH0.rsHRaU1iupd3Ma0OQ8zomX6WFaiZYVBxjD7HTRNmG3c',
+      },
+      body: JSON.stringify(options),
     });
 
-    if (error) {
-      console.error('Supabase function error:', error);
-      throw error;
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Edge function error:', error);
+      throw new Error(error.details || error.error || 'Failed to send email');
     }
 
+    const data = await response.json();
     console.log('Email sent successfully:', data);
     return data;
   } catch (error) {
