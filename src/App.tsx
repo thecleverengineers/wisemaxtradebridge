@@ -14,6 +14,8 @@ import Settings from "./pages/Settings";
 import Calculator from "./pages/Calculator";
 import Leaderboard from "./pages/Leaderboard";
 import Rewards from "./pages/Rewards";
+import InvestmentRecords from "./pages/InvestmentRecords";
+import IntradayTrading from "./pages/IntradayTrading";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

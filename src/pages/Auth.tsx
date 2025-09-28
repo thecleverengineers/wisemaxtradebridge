@@ -39,11 +39,7 @@ const Auth = () => {
         });
         navigate('/');
       } else {
-        await signUp(formData.email, formData.password, {
-          name: formData.name,
-          phone: formData.phone,
-          referral_code: formData.referralCode
-        });
+        await signUp(formData.email, formData.password, formData.name, formData.phone, formData.referralCode);
         toast({
           title: "Account created!",
           description: "Please check your email to verify your account.",
