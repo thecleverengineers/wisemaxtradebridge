@@ -7,373 +7,511 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.5"
+  }
   public: {
     Tables: {
-      investment_plans: {
+      analytics: {
         Row: {
-          created_at: string | null
-          daily_roi: number
-          description: string | null
-          duration_days: number
+          average_loss: number | null
+          average_profit: number | null
+          best_trade: number | null
+          created_at: string
+          date: string
           id: string
-          is_active: boolean | null
-          max_amount: number | null
-          min_amount: number
-          name: string
-          sort_order: number | null
-          total_return_percent: number | null
+          max_drawdown: number | null
+          profit_loss: number | null
+          sharpe_ratio: number | null
+          successful_trades: number | null
+          total_trades: number | null
+          total_volume: number | null
           updated_at: string | null
+          user_id: string
+          win_rate: number | null
+          worst_trade: number | null
         }
         Insert: {
-          created_at?: string | null
-          daily_roi: number
-          description?: string | null
-          duration_days: number
+          average_loss?: number | null
+          average_profit?: number | null
+          best_trade?: number | null
+          created_at?: string
+          date: string
           id?: string
-          is_active?: boolean | null
-          max_amount?: number | null
-          min_amount: number
-          name: string
-          sort_order?: number | null
-          total_return_percent?: number | null
+          max_drawdown?: number | null
+          profit_loss?: number | null
+          sharpe_ratio?: number | null
+          successful_trades?: number | null
+          total_trades?: number | null
+          total_volume?: number | null
           updated_at?: string | null
+          user_id: string
+          win_rate?: number | null
+          worst_trade?: number | null
         }
         Update: {
-          created_at?: string | null
-          daily_roi?: number
-          description?: string | null
-          duration_days?: number
+          average_loss?: number | null
+          average_profit?: number | null
+          best_trade?: number | null
+          created_at?: string
+          date?: string
           id?: string
-          is_active?: boolean | null
-          max_amount?: number | null
-          min_amount?: number
-          name?: string
-          sort_order?: number | null
-          total_return_percent?: number | null
+          max_drawdown?: number | null
+          profit_loss?: number | null
+          sharpe_ratio?: number | null
+          successful_trades?: number | null
+          total_trades?: number | null
+          total_volume?: number | null
           updated_at?: string | null
+          user_id?: string
+          win_rate?: number | null
+          worst_trade?: number | null
         }
         Relationships: []
       }
-      investments: {
+      bot_strategies: {
         Row: {
-          amount: number
-          created_at: string | null
-          daily_roi_amount: number
-          end_date: string
+          config: Json
+          created_at: string
+          current_trades_today: number | null
           id: string
-          last_roi_date: string | null
-          plan_id: string | null
-          roi_credited_days: number | null
-          start_date: string
-          status: Database["public"]["Enums"]["investment_status"] | null
-          total_roi_expected: number
-          updated_at: string | null
-          user_id: string | null
+          last_trade_at: string | null
+          max_trades_per_day: number | null
+          name: string
+          status: string
+          stop_loss: number | null
+          take_profit: number | null
+          total_profit: number | null
+          total_trades: number | null
+          type: string
+          updated_at: string
+          user_id: string
+          win_rate: number | null
         }
         Insert: {
-          amount: number
-          created_at?: string | null
-          daily_roi_amount: number
-          end_date: string
+          config: Json
+          created_at?: string
+          current_trades_today?: number | null
           id?: string
-          last_roi_date?: string | null
-          plan_id?: string | null
-          roi_credited_days?: number | null
-          start_date?: string
-          status?: Database["public"]["Enums"]["investment_status"] | null
-          total_roi_expected: number
-          updated_at?: string | null
-          user_id?: string | null
+          last_trade_at?: string | null
+          max_trades_per_day?: number | null
+          name: string
+          status?: string
+          stop_loss?: number | null
+          take_profit?: number | null
+          total_profit?: number | null
+          total_trades?: number | null
+          type: string
+          updated_at?: string
+          user_id: string
+          win_rate?: number | null
         }
         Update: {
-          amount?: number
-          created_at?: string | null
-          daily_roi_amount?: number
-          end_date?: string
+          config?: Json
+          created_at?: string
+          current_trades_today?: number | null
           id?: string
-          last_roi_date?: string | null
-          plan_id?: string | null
-          roi_credited_days?: number | null
-          start_date?: string
-          status?: Database["public"]["Enums"]["investment_status"] | null
-          total_roi_expected?: number
-          updated_at?: string | null
-          user_id?: string | null
+          last_trade_at?: string | null
+          max_trades_per_day?: number | null
+          name?: string
+          status?: string
+          stop_loss?: number | null
+          take_profit?: number | null
+          total_profit?: number | null
+          total_trades?: number | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+          win_rate?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "investments_plan_id_fkey"
-            columns: ["plan_id"]
-            isOneToOne: false
-            referencedRelation: "investment_plans"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "investments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      market_data: {
+        Row: {
+          change_percent: number | null
+          close: number | null
+          created_at: string | null
+          high: number | null
+          id: string
+          low: number | null
+          open: number | null
+          price: number
+          symbol: string
+          timestamp: string | null
+          volume: number | null
+        }
+        Insert: {
+          change_percent?: number | null
+          close?: number | null
+          created_at?: string | null
+          high?: number | null
+          id?: string
+          low?: number | null
+          open?: number | null
+          price: number
+          symbol: string
+          timestamp?: string | null
+          volume?: number | null
+        }
+        Update: {
+          change_percent?: number | null
+          close?: number | null
+          created_at?: string | null
+          high?: number | null
+          id?: string
+          low?: number | null
+          open?: number | null
+          price?: number
+          symbol?: string
+          timestamp?: string | null
+          volume?: number | null
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
           created_at: string | null
+          data: Json | null
           id: string
-          is_read: boolean | null
           message: string
+          read: boolean | null
           title: string
-          type: string | null
-          user_id: string | null
+          type: string
+          user_id: string
         }
         Insert: {
           created_at?: string | null
+          data?: Json | null
           id?: string
-          is_read?: boolean | null
           message: string
+          read?: boolean | null
           title: string
-          type?: string | null
-          user_id?: string | null
+          type: string
+          user_id: string
         }
         Update: {
           created_at?: string | null
+          data?: Json | null
           id?: string
-          is_read?: boolean | null
           message?: string
+          read?: boolean | null
           title?: string
-          type?: string | null
-          user_id?: string | null
+          type?: string
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      referral_bonus: {
+      profiles: {
         Row: {
-          amount: number
-          base_amount: number
-          bonus_type: string
-          created_at: string | null
-          from_user_id: string | null
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
           id: string
-          investment_id: string | null
-          level: number
-          percentage: number
-          user_id: string | null
+          kyc_status: string | null
+          updated_at: string
+          username: string | null
         }
         Insert: {
-          amount: number
-          base_amount: number
-          bonus_type: string
-          created_at?: string | null
-          from_user_id?: string | null
-          id?: string
-          investment_id?: string | null
-          level: number
-          percentage: number
-          user_id?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          kyc_status?: string | null
+          updated_at?: string
+          username?: string | null
         }
         Update: {
-          amount?: number
-          base_amount?: number
-          bonus_type?: string
-          created_at?: string | null
-          from_user_id?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
           id?: string
-          investment_id?: string | null
+          kyc_status?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          commission_earned: number | null
+          created_at: string
+          id: string
+          last_activity_at: string | null
+          level: number
+          referred_id: string
+          referrer_id: string
+          status: string | null
+          total_deposits: number | null
+        }
+        Insert: {
+          commission_earned?: number | null
+          created_at?: string
+          id?: string
+          last_activity_at?: string | null
           level?: number
-          percentage?: number
-          user_id?: string | null
+          referred_id: string
+          referrer_id: string
+          status?: string | null
+          total_deposits?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "referral_bonus_from_user_id_fkey"
-            columns: ["from_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "referral_bonus_investment_id_fkey"
-            columns: ["investment_id"]
-            isOneToOne: false
-            referencedRelation: "investments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "referral_bonus_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Update: {
+          commission_earned?: number | null
+          created_at?: string
+          id?: string
+          last_activity_at?: string | null
+          level?: number
+          referred_id?: string
+          referrer_id?: string
+          status?: string | null
+          total_deposits?: number | null
+        }
+        Relationships: []
       }
-      roi_ledger: {
+      roi_investments: {
         Row: {
           amount: number
-          credited_at: string | null
+          created_at: string | null
+          daily_return: number
+          duration_days: number
+          expires_at: string
           id: string
-          investment_id: string | null
-          roi_date: string
-          user_id: string | null
+          last_payout_at: string | null
+          plan_name: string
+          started_at: string | null
+          status: string | null
+          total_paid_out: number | null
+          total_return: number
+          user_id: string
         }
         Insert: {
           amount: number
-          credited_at?: string | null
+          created_at?: string | null
+          daily_return: number
+          duration_days: number
+          expires_at: string
           id?: string
-          investment_id?: string | null
-          roi_date?: string
-          user_id?: string | null
+          last_payout_at?: string | null
+          plan_name: string
+          started_at?: string | null
+          status?: string | null
+          total_paid_out?: number | null
+          total_return: number
+          user_id: string
         }
         Update: {
           amount?: number
-          credited_at?: string | null
+          created_at?: string | null
+          daily_return?: number
+          duration_days?: number
+          expires_at?: string
           id?: string
-          investment_id?: string | null
-          roi_date?: string
-          user_id?: string | null
+          last_payout_at?: string | null
+          plan_name?: string
+          started_at?: string | null
+          status?: string | null
+          total_paid_out?: number | null
+          total_return?: number
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "roi_ledger_investment_id_fkey"
-            columns: ["investment_id"]
-            isOneToOne: false
-            referencedRelation: "investments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "roi_ledger_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      settings: {
+      staking_positions: {
         Row: {
-          category: string | null
-          data_type: string | null
-          description: string | null
+          amount: number
+          apy: number
+          auto_compound: boolean | null
+          created_at: string
           id: string
-          is_public: boolean | null
-          key: string
-          updated_at: string | null
-          updated_by: string | null
-          value: string
+          last_claim_date: string | null
+          locked_until: string | null
+          penalty_rate: number | null
+          rewards_earned: number | null
+          status: string
+          token: string
+          total_rewards_claimed: number | null
+          updated_at: string
+          user_id: string
         }
         Insert: {
-          category?: string | null
-          data_type?: string | null
-          description?: string | null
+          amount: number
+          apy: number
+          auto_compound?: boolean | null
+          created_at?: string
           id?: string
-          is_public?: boolean | null
-          key: string
-          updated_at?: string | null
-          updated_by?: string | null
-          value: string
+          last_claim_date?: string | null
+          locked_until?: string | null
+          penalty_rate?: number | null
+          rewards_earned?: number | null
+          status?: string
+          token: string
+          total_rewards_claimed?: number | null
+          updated_at?: string
+          user_id: string
         }
         Update: {
-          category?: string | null
-          data_type?: string | null
-          description?: string | null
+          amount?: number
+          apy?: number
+          auto_compound?: boolean | null
+          created_at?: string
           id?: string
-          is_public?: boolean | null
-          key?: string
-          updated_at?: string | null
-          updated_by?: string | null
-          value?: string
+          last_claim_date?: string | null
+          locked_until?: string | null
+          penalty_rate?: number | null
+          rewards_earned?: number | null
+          status?: string
+          token?: string
+          total_rewards_claimed?: number | null
+          updated_at?: string
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "settings_updated_by_fkey"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      system_logs: {
+      trades: {
         Row: {
-          action: string
+          amount: number
+          closed_at: string | null
+          commission: number | null
+          created_at: string
+          entry_price: number | null
+          exit_price: number | null
+          id: string
+          leverage: number | null
+          notes: string | null
+          pair: string
+          price: number
+          profit_loss: number | null
+          status: string
+          stop_loss: number | null
+          swap: number | null
+          take_profit: number | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          closed_at?: string | null
+          commission?: number | null
+          created_at?: string
+          entry_price?: number | null
+          exit_price?: number | null
+          id?: string
+          leverage?: number | null
+          notes?: string | null
+          pair: string
+          price: number
+          profit_loss?: number | null
+          status?: string
+          stop_loss?: number | null
+          swap?: number | null
+          take_profit?: number | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          closed_at?: string | null
+          commission?: number | null
+          created_at?: string
+          entry_price?: number | null
+          exit_price?: number | null
+          id?: string
+          leverage?: number | null
+          notes?: string | null
+          pair?: string
+          price?: number
+          profit_loss?: number | null
+          status?: string
+          stop_loss?: number | null
+          swap?: number | null
+          take_profit?: number | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category: string
           created_at: string | null
-          details: Json | null
+          currency: string
+          fee: number | null
+          from_address: string | null
           id: string
-          ip_address: unknown | null
-          user_agent: string | null
-          user_id: string | null
+          network: string | null
+          notes: string | null
+          processed_at: string | null
+          reference_id: string | null
+          status: string | null
+          to_address: string | null
+          tx_hash: string | null
+          type: string
+          user_id: string
         }
         Insert: {
-          action: string
+          amount: number
+          category: string
           created_at?: string | null
-          details?: Json | null
+          currency: string
+          fee?: number | null
+          from_address?: string | null
           id?: string
-          ip_address?: unknown | null
-          user_agent?: string | null
-          user_id?: string | null
+          network?: string | null
+          notes?: string | null
+          processed_at?: string | null
+          reference_id?: string | null
+          status?: string | null
+          to_address?: string | null
+          tx_hash?: string | null
+          type: string
+          user_id: string
         }
         Update: {
-          action?: string
+          amount?: number
+          category?: string
           created_at?: string | null
-          details?: Json | null
+          currency?: string
+          fee?: number | null
+          from_address?: string | null
           id?: string
-          ip_address?: unknown | null
-          user_agent?: string | null
-          user_id?: string | null
+          network?: string | null
+          notes?: string | null
+          processed_at?: string | null
+          reference_id?: string | null
+          status?: string | null
+          to_address?: string | null
+          tx_hash?: string | null
+          type?: string
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "system_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_roles: {
         Row: {
-          assigned_at: string | null
-          assigned_by: string | null
+          created_at: string | null
           id: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string | null
+          role: string
+          user_id: string
         }
         Insert: {
-          assigned_at?: string | null
-          assigned_by?: string | null
+          created_at?: string | null
           id?: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id?: string | null
+          role: string
+          user_id: string
         }
         Update: {
-          assigned_at?: string | null
-          assigned_by?: string | null
+          created_at?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          user_id?: string | null
+          role?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "user_roles_assigned_by_fkey"
-            columns: ["assigned_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "user_roles_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -382,10 +520,10 @@ export type Database = {
       users: {
         Row: {
           created_at: string | null
+          email: string
           id: string
           is_active: boolean | null
-          kyc_documents: Json | null
-          kyc_status: Database["public"]["Enums"]["kyc_status"] | null
+          kyc_status: string | null
           name: string
           parent_id: string | null
           phone: string | null
@@ -397,10 +535,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          email: string
           id: string
           is_active?: boolean | null
-          kyc_documents?: Json | null
-          kyc_status?: Database["public"]["Enums"]["kyc_status"] | null
+          kyc_status?: string | null
           name: string
           parent_id?: string | null
           phone?: string | null
@@ -412,10 +550,10 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          email?: string
           id?: string
           is_active?: boolean | null
-          kyc_documents?: Json | null
-          kyc_status?: Database["public"]["Enums"]["kyc_status"] | null
+          kyc_status?: string | null
           name?: string
           parent_id?: string | null
           phone?: string | null
@@ -435,201 +573,63 @@ export type Database = {
           },
         ]
       }
-      wallet_transactions: {
-        Row: {
-          amount: number
-          balance_after: number
-          balance_before: number
-          created_at: string | null
-          id: string
-          income_type: Database["public"]["Enums"]["income_type"]
-          reason: string | null
-          reference_id: string | null
-          type: Database["public"]["Enums"]["transaction_type"]
-          user_id: string | null
-          wallet_id: string | null
-        }
-        Insert: {
-          amount: number
-          balance_after: number
-          balance_before: number
-          created_at?: string | null
-          id?: string
-          income_type: Database["public"]["Enums"]["income_type"]
-          reason?: string | null
-          reference_id?: string | null
-          type: Database["public"]["Enums"]["transaction_type"]
-          user_id?: string | null
-          wallet_id?: string | null
-        }
-        Update: {
-          amount?: number
-          balance_after?: number
-          balance_before?: number
-          created_at?: string | null
-          id?: string
-          income_type?: Database["public"]["Enums"]["income_type"]
-          reason?: string | null
-          reference_id?: string | null
-          type?: Database["public"]["Enums"]["transaction_type"]
-          user_id?: string | null
-          wallet_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "wallet_transactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "wallet_transactions_wallet_id_fkey"
-            columns: ["wallet_id"]
-            isOneToOne: false
-            referencedRelation: "wallets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       wallets: {
         Row: {
-          bonus_income: number | null
-          created_at: string | null
+          balance: number
+          created_at: string
+          currency: string
           id: string
-          level_income: number | null
-          referral_income: number | null
-          roi_income: number | null
-          total_balance: number | null
+          last_transaction_at: string | null
+          locked_balance: number
+          network: string | null
+          total_deposited: number | null
           total_withdrawn: number | null
-          updated_at: string | null
-          user_id: string | null
+          updated_at: string
+          user_id: string
+          wallet_address: string | null
         }
         Insert: {
-          bonus_income?: number | null
-          created_at?: string | null
+          balance?: number
+          created_at?: string
+          currency: string
           id?: string
-          level_income?: number | null
-          referral_income?: number | null
-          roi_income?: number | null
-          total_balance?: number | null
+          last_transaction_at?: string | null
+          locked_balance?: number
+          network?: string | null
+          total_deposited?: number | null
           total_withdrawn?: number | null
-          updated_at?: string | null
-          user_id?: string | null
+          updated_at?: string
+          user_id: string
+          wallet_address?: string | null
         }
         Update: {
-          bonus_income?: number | null
-          created_at?: string | null
+          balance?: number
+          created_at?: string
+          currency?: string
           id?: string
-          level_income?: number | null
-          referral_income?: number | null
-          roi_income?: number | null
-          total_balance?: number | null
+          last_transaction_at?: string | null
+          locked_balance?: number
+          network?: string | null
+          total_deposited?: number | null
           total_withdrawn?: number | null
-          updated_at?: string | null
-          user_id?: string | null
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      withdrawals: {
-        Row: {
-          admin_notes: string | null
-          amount: number
-          approved_at: string | null
-          approved_by: string | null
-          bank_details: Json | null
-          fee_amount: number | null
-          id: string
-          net_amount: number
-          processed_at: string | null
-          requested_at: string | null
-          status: Database["public"]["Enums"]["withdrawal_status"] | null
-          upi_id: string | null
-          user_id: string | null
-          withdrawal_method: string
-        }
-        Insert: {
-          admin_notes?: string | null
-          amount: number
-          approved_at?: string | null
-          approved_by?: string | null
-          bank_details?: Json | null
-          fee_amount?: number | null
-          id?: string
-          net_amount: number
-          processed_at?: string | null
-          requested_at?: string | null
-          status?: Database["public"]["Enums"]["withdrawal_status"] | null
-          upi_id?: string | null
-          user_id?: string | null
-          withdrawal_method: string
-        }
-        Update: {
-          admin_notes?: string | null
-          amount?: number
-          approved_at?: string | null
-          approved_by?: string | null
-          bank_details?: Json | null
-          fee_amount?: number | null
-          id?: string
-          net_amount?: number
-          processed_at?: string | null
-          requested_at?: string | null
-          status?: Database["public"]["Enums"]["withdrawal_status"] | null
-          upi_id?: string | null
-          user_id?: string | null
-          withdrawal_method?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "withdrawals_approved_by_fkey"
-            columns: ["approved_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "withdrawals_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      get_user_role: {
-        Args: { user_uuid: string }
-        Returns: Database["public"]["Enums"]["user_role"]
-      }
-      is_admin: {
+      process_roi_payouts: {
         Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
+        Returns: undefined
       }
     }
     Enums: {
-      income_type: "roi" | "referral" | "level" | "bonus" | "manual"
-      investment_status: "active" | "completed" | "cancelled"
-      kyc_status: "pending" | "approved" | "rejected"
-      transaction_type: "credit" | "debit"
-      user_role: "user" | "admin" | "super_admin"
-      withdrawal_status: "pending" | "approved" | "rejected" | "processed"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -637,21 +637,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -669,14 +673,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -692,14 +698,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -715,14 +723,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -730,27 +740,22 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
   public: {
-    Enums: {
-      income_type: ["roi", "referral", "level", "bonus", "manual"],
-      investment_status: ["active", "completed", "cancelled"],
-      kyc_status: ["pending", "approved", "rejected"],
-      transaction_type: ["credit", "debit"],
-      user_role: ["user", "admin", "super_admin"],
-      withdrawal_status: ["pending", "approved", "rejected", "processed"],
-    },
+    Enums: {},
   },
 } as const
