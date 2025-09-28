@@ -623,6 +623,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_profile: {
+        Args: { _user_id: string }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          kyc_status: string
+          name: string
+          parent_id: string
+          phone: string
+          referral_code: string
+          role: string
+          total_investment: number
+          total_referral_earned: number
+          total_roi_earned: number
+          updated_at: string
+        }[]
+      }
+      has_role: {
+        Args: { _role: string; _user_id: string }
+        Returns: boolean
+      }
       process_roi_payouts: {
         Args: Record<PropertyKey, never>
         Returns: undefined
