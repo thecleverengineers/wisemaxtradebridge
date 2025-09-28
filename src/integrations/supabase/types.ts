@@ -128,6 +128,99 @@ export type Database = {
         }
         Relationships: []
       }
+      investment_plans: {
+        Row: {
+          created_at: string | null
+          daily_roi: number
+          duration_days: number
+          id: string
+          max_amount: number
+          min_amount: number
+          name: string
+          status: string | null
+          total_return_percent: number
+        }
+        Insert: {
+          created_at?: string | null
+          daily_roi: number
+          duration_days: number
+          id?: string
+          max_amount: number
+          min_amount: number
+          name: string
+          status?: string | null
+          total_return_percent: number
+        }
+        Update: {
+          created_at?: string | null
+          daily_roi?: number
+          duration_days?: number
+          id?: string
+          max_amount?: number
+          min_amount?: number
+          name?: string
+          status?: string | null
+          total_return_percent?: number
+        }
+        Relationships: []
+      }
+      investments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          end_date: string
+          id: string
+          last_payout_date: string | null
+          plan_id: string
+          start_date: string
+          status: string | null
+          total_roi_earned: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          end_date: string
+          id?: string
+          last_payout_date?: string | null
+          plan_id: string
+          start_date?: string
+          status?: string | null
+          total_roi_earned?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          last_payout_date?: string | null
+          plan_id?: string
+          start_date?: string
+          status?: string | null
+          total_roi_earned?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "investment_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       market_data: {
         Row: {
           change_percent: number | null
@@ -316,6 +409,51 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      roi_ledger: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          investment_id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          investment_id: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          investment_id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roi_ledger_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roi_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       staking_positions: {
         Row: {

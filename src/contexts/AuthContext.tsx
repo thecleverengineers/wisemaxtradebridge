@@ -49,24 +49,59 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      const { data: userProfile, error: profileError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      // Use the get_user_profile function for better performance and type safety
+      const { data: profileData, error: profileError } = await supabase
+        .rpc('get_user_profile', { _user_id: userId });
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        // Fallback to direct query
+        const { data: userProfile } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .single();
+        
+        const { data: userRole } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .single();
+        
+        if (userProfile) {
+          setProfile({
+            id: userProfile.id,
+            name: userProfile.name,
+            phone: userProfile.phone,
+            referral_code: userProfile.referral_code,
+            parent_id: userProfile.parent_id,
+            is_active: userProfile.is_active,
+            kyc_status: userProfile.kyc_status,
+            total_investment: userProfile.total_investment || 0,
+            total_roi_earned: userProfile.total_roi_earned || 0,
+            total_referral_earned: userProfile.total_referral_earned || 0
+          });
+          setIsAdmin(userRole?.role === 'admin' || userRole?.role === 'super_admin');
+        }
+        return;
+      }
 
-      const { data: userRole, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
-
-      if (roleError) console.error('Role error:', roleError);
-
-      setProfile(userProfile);
-      setIsAdmin(userRole?.role === 'admin' || userRole?.role === 'super_admin');
+      if (profileData && profileData.length > 0) {
+        const profile = profileData[0];
+        setProfile({
+          id: profile.id,
+          name: profile.name,
+          phone: profile.phone,
+          referral_code: profile.referral_code,
+          parent_id: profile.parent_id,
+          is_active: profile.is_active,
+          kyc_status: profile.kyc_status,
+          total_investment: profile.total_investment || 0,
+          total_roi_earned: profile.total_roi_earned || 0,
+          total_referral_earned: profile.total_referral_earned || 0
+        });
+        setIsAdmin(profile.role === 'admin' || profile.role === 'super_admin');
+      }
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
