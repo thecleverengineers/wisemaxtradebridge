@@ -124,7 +124,7 @@ const Referrals = () => {
   };
 
   const shareReferralLink = () => {
-    const referralLink = `${window.location.origin}/auth?ref=${profile?.referral_code}`;
+    const referralLink = `https://laktoken.in/auth?ref=${profile?.referral_code}`;
     if (navigator.share) {
       navigator.share({
         title: 'Join LakToken',
