@@ -28,17 +28,15 @@ interface InvestmentPlan {
 interface UserInvestment {
   id: string;
   amount: number;
-  plan_id: string;
-  start_date: string;
-  end_date: string;
+  plan_name: string;
+  daily_return: number;
+  total_return: number;
+  duration_days: number;
+  started_at: string;
+  expires_at: string;
   status: string;
-  daily_roi_amount: number;
-  total_roi_expected: number;
-  roi_credited_days: number;
-  investment_plans: {
-    name: string;
-    daily_roi: number;
-  };
+  total_paid_out: number;
+  last_payout_at: string | null;
 }
 
 const Invest = () => {
@@ -70,26 +68,16 @@ const Invest = () => {
       if (plansError) throw plansError;
       setInvestmentPlans(plansData || []);
 
-      // Fetch user's investments
+      // Fetch user's investments from roi_investments table
       const { data: investmentsData, error: investmentsError } = await supabase
-        .from('investments')
-        .select(`
-          *,
-          investment_plans (name, daily_roi)
-        `)
+        .from('roi_investments')
+        .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (investmentsError) throw investmentsError;
       
-      // Map the data to include calculated fields
-      const mappedInvestments = (investmentsData || []).map((inv: any) => ({
-        ...inv,
-        daily_roi_amount: inv.investment_plans?.daily_roi ? (inv.amount * inv.investment_plans.daily_roi / 100) : 0,
-        total_roi_expected: inv.amount * (inv.investment_plans?.daily_roi || 0) * inv.duration_days / 100,
-        roi_credited_days: Math.floor((new Date().getTime() - new Date(inv.start_date).getTime()) / (1000 * 60 * 60 * 24))
-      }));
-      setUserInvestments(mappedInvestments);
+      setUserInvestments(investmentsData || []);
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -118,21 +106,21 @@ const Invest = () => {
 
     setInvesting(true);
     try {
-      const dailyRoiAmount = (amount * selectedPlan.daily_roi) / 100;
-      const totalRoiExpected = (amount * selectedPlan.total_return_percent) / 100;
-      const startDate = new Date().toISOString().split('T')[0];
-      const endDate = new Date(Date.now() + selectedPlan.duration_days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const startDate = new Date();
+      const expiresAt = new Date(Date.now() + selectedPlan.duration_days * 24 * 60 * 60 * 1000);
 
       const { error } = await supabase
-        .from('investments')
+        .from('roi_investments')
         .insert({
           user_id: user.id,
-          plan_id: selectedPlan.id,
+          plan_name: selectedPlan.name,
           amount,
-          daily_roi_amount: dailyRoiAmount,
-          total_roi_expected: totalRoiExpected,
-          start_date: startDate,
-          end_date: endDate,
+          daily_return: selectedPlan.daily_roi,
+          total_return: amount * (selectedPlan.total_return_percent / 100),
+          duration_days: selectedPlan.duration_days,
+          started_at: startDate.toISOString(),
+          expires_at: expiresAt.toISOString(),
+          status: 'active'
         });
 
       if (error) throw error;
@@ -302,34 +290,39 @@ const Invest = () => {
                 <p className="text-purple-300 text-center py-8">No investments found. Start investing to see them here.</p>
               ) : (
                 <div className="space-y-4">
-                  {userInvestments.map((investment) => (
-                    <div key={investment.id} className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-4 border border-white/10">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-white font-semibold">{investment.investment_plans?.name}</h3>
-                        <Badge className={`${investment.status === 'active' ? 'bg-green-500' : 'bg-gray-500'} text-white`}>
-                          {investment.status}
-                        </Badge>
+                  {userInvestments.map((investment) => {
+                    const dailyAmount = (investment.amount * investment.daily_return) / 100;
+                    const daysElapsed = Math.floor((new Date().getTime() - new Date(investment.started_at).getTime()) / (1000 * 60 * 60 * 24));
+                    
+                    return (
+                      <div key={investment.id} className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-4 border border-white/10">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-white font-semibold">{investment.plan_name}</h3>
+                          <Badge className={`${investment.status === 'active' ? 'bg-green-500' : 'bg-gray-500'} text-white`}>
+                            {investment.status}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <p className="text-purple-300">Amount</p>
+                            <p className="text-white font-semibold">₹{investment.amount?.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-purple-300">Daily ROI</p>
+                            <p className="text-white font-semibold">₹{dailyAmount.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="text-purple-300">Progress</p>
+                            <p className="text-white font-semibold">{daysElapsed} / {investment.duration_days} days</p>
+                          </div>
+                          <div>
+                            <p className="text-purple-300">Total Return</p>
+                            <p className="text-white font-semibold">₹{investment.total_return?.toFixed(2)}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <p className="text-purple-300">Amount</p>
-                          <p className="text-white font-semibold">₹{investment.amount?.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-purple-300">Daily ROI</p>
-                          <p className="text-white font-semibold">₹{investment.daily_roi_amount?.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-purple-300">Progress</p>
-                          <p className="text-white font-semibold">{investment.roi_credited_days || 0} days</p>
-                        </div>
-                        <div>
-                          <p className="text-purple-300">Expected Return</p>
-                          <p className="text-white font-semibold">₹{investment.total_roi_expected?.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
