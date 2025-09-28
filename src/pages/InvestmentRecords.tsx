@@ -57,6 +57,48 @@ const InvestmentRecords = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    // Set up real-time subscriptions
+    const investmentChannel = supabase
+      .channel('investment-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'investments',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchRecords();
+        }
+      )
+      .subscribe();
+
+    const roiChannel = supabase
+      .channel('roi-ledger-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'roi_ledger',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchRecords();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(investmentChannel);
+      supabase.removeChannel(roiChannel);
+    };
+  }, [user]);
+
   const fetchRecords = async () => {
     try {
       // Fetch investment records

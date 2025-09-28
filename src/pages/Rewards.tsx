@@ -42,6 +42,71 @@ const Rewards = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    // Set up real-time subscriptions for various tables that affect rewards
+    const channels = [];
+
+    // Subscribe to investments changes
+    const investmentChannel = supabase
+      .channel('rewards-investments')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'investments',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchRewards();
+        }
+      )
+      .subscribe();
+    channels.push(investmentChannel);
+
+    // Subscribe to user changes (for referral count)
+    const userChannel = supabase
+      .channel('rewards-users')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'users',
+          filter: `parent_id=eq.${user.id}`
+        },
+        () => {
+          fetchRewards();
+        }
+      )
+      .subscribe();
+    channels.push(userChannel);
+
+    // Subscribe to wallet changes (for ROI income)
+    const walletChannel = supabase
+      .channel('rewards-wallets')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wallets',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchRewards();
+        }
+      )
+      .subscribe();
+    channels.push(walletChannel);
+
+    return () => {
+      channels.forEach(channel => supabase.removeChannel(channel));
+    };
+  }, [user]);
+
   const fetchRewards = async () => {
     try {
       // Get user statistics for reward calculations

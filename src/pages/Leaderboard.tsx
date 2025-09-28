@@ -36,6 +36,29 @@ const Leaderboard = () => {
     fetchLeaderboardData();
   }, [activeTab]);
 
+  useEffect(() => {
+    // Set up real-time subscription for users table
+    const channel = supabase
+      .channel('leaderboard-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'users'
+        },
+        () => {
+          // Refetch data when any user data changes
+          fetchLeaderboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeTab]);
+
   const fetchLeaderboardData = async () => {
     try {
       let orderBy = '';
