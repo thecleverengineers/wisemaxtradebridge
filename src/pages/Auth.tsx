@@ -96,7 +96,7 @@ const Auth = () => {
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
-        navigate('/advanced-dashboard');
+        navigate('/');
       } else {
         // Direct registration without email verification
         if (!formData.name || !formData.email || !formData.phone || !formData.password) {
@@ -125,7 +125,7 @@ const Auth = () => {
           title: "Account created!",
           description: "Welcome to InvestX Pro!",
         });
-        navigate('/advanced-dashboard');
+        navigate('/');
       }
     } catch (error: any) {
       toast({
