@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { TrendingUp, Clock, Target, DollarSign, ArrowLeft, Calendar, CheckCircle } from 'lucide-react';
+import { TrendingUp, Clock, Target, DollarSign, ArrowLeft, Calendar, CheckCircle, Wallet } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -50,6 +50,7 @@ const Invest = () => {
   const [investAmount, setInvestAmount] = useState('');
   const [loading, setLoading] = useState(true);
   const [investing, setInvesting] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -79,6 +80,18 @@ const Invest = () => {
       
       setUserInvestments(investmentsData || []);
 
+      // Fetch wallet balance
+      const { data: walletData, error: walletError } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', user?.id)
+        .eq('currency', 'USDT');
+
+      if (walletError) throw walletError;
+      
+      const totalBalance = walletData?.reduce((sum, wallet) => sum + (wallet.balance || 0), 0) || 0;
+      setWalletBalance(totalBalance);
+
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -98,7 +111,17 @@ const Invest = () => {
     if (amount < selectedPlan.min_amount || (selectedPlan.max_amount && amount > selectedPlan.max_amount)) {
       toast({
         title: "Invalid Amount",
-        description: `Investment amount must be between ₹${selectedPlan.min_amount.toLocaleString()} and ₹${selectedPlan.max_amount?.toLocaleString() || 'unlimited'}`,
+        description: `Investment amount must be between ${selectedPlan.min_amount.toLocaleString()} and ${selectedPlan.max_amount?.toLocaleString() || 'unlimited'} USDT`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check wallet balance
+    if (amount > walletBalance) {
+      toast({
+        title: "Insufficient Balance",
+        description: `Your wallet balance (${walletBalance.toFixed(2)} USDT) is insufficient for this investment`,
         variant: "destructive",
       });
       return;
@@ -109,7 +132,8 @@ const Invest = () => {
       const startDate = new Date();
       const expiresAt = new Date(Date.now() + selectedPlan.duration_days * 24 * 60 * 60 * 1000);
 
-      const { error } = await supabase
+      // Start a transaction
+      const { error: investError } = await supabase
         .from('roi_investments')
         .insert({
           user_id: user.id,
@@ -123,11 +147,39 @@ const Invest = () => {
           status: 'active'
         });
 
-      if (error) throw error;
+      if (investError) throw investError;
+
+      // Update wallet balance
+      const { error: walletError } = await supabase
+        .from('wallets')
+        .update({ 
+          balance: walletBalance - amount,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('currency', 'USDT');
+
+      if (walletError) throw walletError;
+
+      // Create transaction record
+      const { error: txError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'investment',
+          amount,
+          currency: 'USDT',
+          category: 'investment',
+          status: 'success',
+          notes: `Investment in ${selectedPlan.name} plan`,
+          processed_at: new Date().toISOString()
+        });
+
+      if (txError) throw txError;
 
       toast({
         title: "Investment Successful!",
-        description: `You have successfully invested ₹${amount.toLocaleString()} in ${selectedPlan.name}`,
+        description: `You have successfully invested ${amount.toLocaleString()} USDT in ${selectedPlan.name}`,
       });
 
       setInvestAmount('');
@@ -202,7 +254,7 @@ const Invest = () => {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-purple-300">Min Amount</p>
-                      <p className="text-white font-semibold">₹{plan.min_amount?.toLocaleString()}</p>
+                      <p className="text-white font-semibold">{plan.min_amount?.toLocaleString()} USDT</p>
                     </div>
                     <div>
                       <p className="text-purple-300">Duration</p>
@@ -210,7 +262,7 @@ const Invest = () => {
                     </div>
                     <div>
                       <p className="text-purple-300">Max Amount</p>
-                      <p className="text-white font-semibold">₹{plan.max_amount?.toLocaleString() || 'No Limit'}</p>
+                      <p className="text-white font-semibold">{plan.max_amount?.toLocaleString() || 'No Limit'} USDT</p>
                     </div>
                     <div>
                       <p className="text-purple-300">Total Return</p>
@@ -232,16 +284,25 @@ const Invest = () => {
                       <DialogHeader>
                         <DialogTitle className="text-white">Invest in {selectedPlan?.name}</DialogTitle>
                         <DialogDescription className="text-purple-300">
-                          Enter the amount you want to invest
+                          Enter the amount you want to invest from your wallet
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4">
+                        <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-lg p-3 border border-white/10">
+                          <div className="flex items-center justify-between">
+                            <span className="text-purple-300 flex items-center">
+                              <Wallet className="h-4 w-4 mr-2" />
+                              Wallet Balance:
+                            </span>
+                            <span className="text-white font-semibold">{walletBalance.toFixed(2)} USDT</span>
+                          </div>
+                        </div>
                         <div>
-                          <Label htmlFor="amount" className="text-white">Investment Amount (₹)</Label>
+                          <Label htmlFor="amount" className="text-white">Investment Amount (USDT)</Label>
                           <Input
                             id="amount"
                             type="number"
-                            placeholder={`Min: ₹${selectedPlan?.min_amount?.toLocaleString()}`}
+                            placeholder={`Min: ${selectedPlan?.min_amount?.toLocaleString()} USDT`}
                             value={investAmount}
                             onChange={(e) => setInvestAmount(e.target.value)}
                             className="bg-white/5 border-white/10 text-white"
@@ -251,17 +312,22 @@ const Invest = () => {
                           <div className="bg-white/5 rounded-lg p-4 space-y-2">
                             <div className="flex justify-between text-sm">
                               <span className="text-purple-300">Daily ROI:</span>
-                              <span className="text-white">₹{((parseFloat(investAmount) * selectedPlan.daily_roi) / 100).toLocaleString()}</span>
+                              <span className="text-white">{((parseFloat(investAmount) * selectedPlan.daily_roi) / 100).toFixed(2)} USDT</span>
                             </div>
                             <div className="flex justify-between text-sm">
                               <span className="text-purple-300">Total Return:</span>
-                              <span className="text-white">₹{((parseFloat(investAmount) * selectedPlan.total_return_percent) / 100).toLocaleString()}</span>
+                              <span className="text-white">{((parseFloat(investAmount) * selectedPlan.total_return_percent) / 100).toFixed(2)} USDT</span>
                             </div>
+                            {parseFloat(investAmount) > walletBalance && (
+                              <div className="text-red-400 text-sm mt-2">
+                                Insufficient wallet balance
+                              </div>
+                            )}
                           </div>
                         )}
                         <Button 
                           onClick={handleInvest} 
-                          disabled={investing || !investAmount}
+                          disabled={investing || !investAmount || parseFloat(investAmount) > walletBalance}
                           className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                         >
                           {investing ? 'Processing...' : 'Confirm Investment'}
@@ -305,11 +371,11 @@ const Invest = () => {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
                             <p className="text-purple-300">Amount</p>
-                            <p className="text-white font-semibold">₹{investment.amount?.toLocaleString()}</p>
+                            <p className="text-white font-semibold">{investment.amount?.toLocaleString()} USDT</p>
                           </div>
                           <div>
                             <p className="text-purple-300">Daily ROI</p>
-                            <p className="text-white font-semibold">₹{dailyAmount.toFixed(2)}</p>
+                            <p className="text-white font-semibold">{dailyAmount.toFixed(2)} USDT</p>
                           </div>
                           <div>
                             <p className="text-purple-300">Progress</p>
@@ -317,7 +383,7 @@ const Invest = () => {
                           </div>
                           <div>
                             <p className="text-purple-300">Total Return</p>
-                            <p className="text-white font-semibold">₹{investment.total_return?.toFixed(2)}</p>
+                            <p className="text-white font-semibold">{investment.total_return?.toFixed(2)} USDT</p>
                           </div>
                         </div>
                       </div>
