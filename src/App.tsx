@@ -19,6 +19,8 @@ import Rewards from "./pages/Rewards";
 import InvestmentRecords from "./pages/InvestmentRecords";
 import IntradayTrading from "./pages/IntradayTrading";
 import MT5Trading from "./pages/MT5Trading";
+import AdvancedDashboard from "./pages/AdvancedDashboard";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
