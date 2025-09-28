@@ -17,7 +17,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -38,11 +38,11 @@ interface InvestmentPlan {
 
 interface WalletData {
   total_balance: number;
-  roi_income?: number;
-  referral_income?: number;
-  bonus_income?: number;
-  level_income?: number;
-  total_withdrawn?: number;
+  roi_income: number;
+  referral_income: number;
+  bonus_income: number;
+  level_income: number;
+  total_withdrawn: number;
 }
 
 const Invest = () => {

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Medal, Award, Crown, TrendingUp, Users, ArrowLeft, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -70,7 +70,7 @@ const Leaderboard = () => {
 
       // Get referral counts for each user
       const leaderboard = await Promise.all(
-        usersData.map(async (user: any, index: number) => {
+        usersData.map(async (user, index) => {
           const { count } = await supabase
             .from('users')
             .select('*', { count: 'exact', head: true })

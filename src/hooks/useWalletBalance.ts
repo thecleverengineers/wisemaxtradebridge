@@ -1,16 +1,16 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface WalletData {
   total_balance: number;
-  roi_income?: number;
-  referral_income?: number;
-  bonus_income?: number;
-  level_income?: number;
-  total_withdrawn?: number;
+  roi_income: number;
+  referral_income: number;
+  bonus_income: number;
+  level_income: number;
+  total_withdrawn: number;
 }
 
 export const useWalletBalance = () => {

@@ -1,63 +1,73 @@
 
 import React from 'react';
+import { Menu, Bell, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Menu, User, LogOut, Wallet } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { AdminLink } from './AdminLink';
-import { TempAdminAccess } from './TempAdminAccess';
+import { Badge } from '@/components/ui/badge';
 
 interface AppHeaderProps {
   onMenuClick: () => void;
 }
 
 export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
-  const { user, signOut, profile } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
 
   return (
-    <header className="bg-slate-950/80 backdrop-blur-xl border-b border-white/10 px-4 py-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" onClick={onMenuClick} className="lg:hidden">
-            <Menu className="h-5 w-5" />
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 backdrop-blur-md border-b border-white/10">
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onMenuClick}
+            className="text-white hover:bg-white/10"
+          >
+            <Menu className="h-6 w-6" />
           </Button>
-          
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-display font-bold text-sm">IX</span>
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">IX</span>
             </div>
-            <h1 className="text-xl font-display font-bold holographic-text">InvestX</h1>
+            <div>
+              <span className="text-white font-bold text-lg">InvestX</span>
+              {isAdmin && (
+                <Badge className="ml-2 bg-yellow-500 text-black text-xs">
+                  Admin
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
-
-        <div className="flex items-center space-x-4">
-          {user && (
-            <>
-              <div className="flex items-center space-x-2 text-white">
-                <Wallet className="h-4 w-4 text-purple-400" />
-                <span className="font-mono text-sm">
-                  ${profile?.total_investment?.toLocaleString() || '0'}
-                </span>
-              </div>
-              
-              <AdminLink />
-              
-              <div className="flex items-center space-x-2 text-white">
-                <User className="h-4 w-4" />
-                <span className="text-sm">{profile?.name || user.email}</span>
-              </div>
-              
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={signOut}
-                className="text-red-400 hover:text-red-300"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </>
-          )}
+        
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/10 relative"
+          >
+            <Bell className="h-5 w-5" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+          </Button>
           
-          {!user && <TempAdminAccess />}
+          {user ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={signOut}
+              className="text-white hover:bg-white/10"
+              title="Sign Out"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/10"
+            >
+              <User className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </div>
     </header>

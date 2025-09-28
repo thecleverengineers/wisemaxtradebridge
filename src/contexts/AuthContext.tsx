@@ -1,6 +1,7 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabaseUntyped as supabase } from '@/integrations/supabase/untyped';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserProfile {
@@ -65,12 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (roleError) console.error('Role error:', roleError);
 
       setProfile(userProfile);
-      
-      // Check for database admin role or temporary admin access
-      const hasDbAdminRole = userRole?.role === 'admin' || userRole?.role === 'super_admin';
-      const hasTempAccess = localStorage.getItem('temp_admin_access') === 'true';
-      
-      setIsAdmin(hasDbAdminRole || hasTempAccess);
+      setIsAdmin(userRole?.role === 'admin' || userRole?.role === 'super_admin');
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
@@ -85,12 +81,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Defer profile fetching to avoid deadlock
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 0);
@@ -120,15 +115,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string, phone?: string, referralCode?: string) => {
     try {
-      // First check if user already exists
-      const { data: existingUser } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'dummy_check' // This will fail but tells us if email exists
-      });
-
-      const redirectUrl = `${window.location.origin}/auth`;
+      const redirectUrl = `${window.location.origin}/`;
       
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -142,36 +131,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) {
-        // Handle specific error cases
-        if (error.message.includes('already registered')) {
-          toast({
-            title: "Email already registered",
-            description: "This email is already in use. Please sign in instead.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Sign up failed",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Sign up failed",
+          description: error.message,
+          variant: "destructive",
+        });
         return { error };
       }
 
-      // Check if email confirmation is required
-      if (data.user && !data.session) {
-        toast({
-          title: "Account created successfully!",
-          description: "Please check your email to verify your account before signing in.",
-        });
-      } else if (data.session) {
-        // Auto sign-in successful
-        toast({
-          title: "Welcome to InvestX!",
-          description: "Your account has been created and you're now signed in.",
-        });
-      }
+      toast({
+        title: "Account created successfully!",
+        description: "Please check your email to verify your account.",
+      });
 
       return { error: null };
     } catch (error: any) {
@@ -186,36 +157,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        // Handle specific error cases
-        if (error.message.includes('Invalid login credentials')) {
-          toast({
-            title: "Invalid credentials",
-            description: "The email or password you entered is incorrect.",
-            variant: "destructive",
-          });
-        } else if (error.message.includes('Email not confirmed')) {
-          toast({
-            title: "Email not verified",
-            description: "Please verify your email address before signing in.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Sign in failed",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Sign in failed",
+          description: error.message,
+          variant: "destructive",
+        });
         return { error };
       }
 
-      // Success - session will be handled by onAuthStateChange
       toast({
         title: "Welcome back!",
         description: "You have successfully signed in.",
@@ -239,9 +194,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setProfile(null);
       setIsAdmin(false);
-      
-      // Clear temporary admin access
-      localStorage.removeItem('temp_admin_access');
       
       toast({
         title: "Signed out successfully",

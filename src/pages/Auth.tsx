@@ -5,31 +5,31 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Smartphone, Mail, Zap, Shield, TrendingUp } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Eye, EyeOff, Smartphone, Mail, Shield, Fingerprint, Camera } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1); // Multi-step auth
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     password: '',
-    referralCode: ''
+    referralCode: '',
+    agreeToTerms: false,
+    enableBiometric: false,
+    enable2FA: false
   });
 
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  // Redirect if already authenticated
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,325 +37,360 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        // Validate login fields
-        if (!formData.email || !formData.password) {
-          toast({
-            title: "Missing Information",
-            description: "Please enter both email and password.",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-
-        const { error } = await signIn(formData.email.trim(), formData.password);
-        if (!error) {
-          toast({
-            title: "Welcome back to InvestX",
-            description: "Successfully signed in to your premium trading account.",
-          });
-          // Force navigation to home
-          setTimeout(() => {
-            navigate('/', { replace: true });
-          }, 100);
-        } else {
-          // Error already handled by signIn function
-          setLoading(false);
-        }
+        await signIn(formData.email, formData.password);
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully signed in.",
+        });
+        navigate('/advanced-dashboard');
       } else {
-        // Validate signup fields
-        if (!formData.name || !formData.email || !formData.phone || !formData.password) {
-          toast({
-            title: "Missing Information",
-            description: "Please fill in all required fields.",
-            variant: "destructive",
-          });
+        if (step === 1) {
+          // Move to verification step
+          setStep(2);
           setLoading(false);
           return;
         }
-
-        // Password validation
-        if (formData.password.length < 6) {
-          toast({
-            title: "Weak Password",
-            description: "Password must be at least 6 characters long.",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-
-        const { error } = await signUp(
-          formData.email.trim(), 
-          formData.password, 
-          formData.name.trim(),
-          formData.phone.trim(),
-          formData.referralCode?.trim()
-        );
-        if (!error) {
-          toast({
-            title: "Welcome to InvestX Premium",
-            description: "Your account has been created. Please check your email to verify your account.",
-          });
-          // Clear form after successful signup
-          setFormData({
-            name: '',
-            email: '',
-            phone: '',
-            password: '',
-            referralCode: ''
-          });
-          setIsLogin(true); // Switch to login tab
-        } else {
-          // Error already handled by signUp function
-          setLoading(false);
-        }
+        
+        await signUp(formData.email, formData.password, formData.name, {
+          phone: formData.phone,
+          referral_code: formData.referralCode
+        });
+        toast({
+          title: "Account created!",
+          description: "Please check your email to verify your account.",
+        });
+        setStep(3); // KYC step
       }
     } catch (error: any) {
       toast({
-        title: "Authentication Error",
-        description: error.message || "Something went wrong. Please try again.",
+        title: "Error",
+        description: error.message || "Something went wrong",
         variant: "destructive",
       });
-      setLoading(false);
     } finally {
-      // Only set loading to false if there was no successful auth
-      if (isLogin) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-cyan-500/20 rounded-full blur-2xl animate-pulse delay-500"></div>
+  const AuthStep1 = () => (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <Label htmlFor="name" className="text-white">Full Name</Label>
+        <Input
+          id="name"
+          type="text"
+          placeholder="Enter your full name"
+          value={formData.name}
+          onChange={(e) => setFormData({...formData, name: e.target.value})}
+          className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+          required
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="email" className="text-white">Email Address</Label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
+            required
+          />
+        </div>
       </div>
 
-      <div className="relative z-10 w-full max-w-md">
-        <Card className="glass-card border-glass backdrop-blur-2xl">
-          <CardHeader className="text-center space-y-6">
-            <div className="mx-auto">
-              <div className="w-20 h-20 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-6 pulse-glow">
-                <span className="text-white font-display font-bold text-2xl">IX</span>
-              </div>
-              <div className="space-y-2">
-                <CardTitle className="text-3xl font-display font-bold holographic-text">
-                  {isLogin ? 'Welcome Back' : 'Join InvestX'}
-                </CardTitle>
-                <CardDescription className="text-slate-300 font-body">
-                  {isLogin ? 'Access your premium trading platform' : 'Create your premium AI-powered trading account'}
-                </CardDescription>
-              </div>
+      <div>
+        <Label htmlFor="phone" className="text-white">Phone Number</Label>
+        <div className="relative">
+          <Smartphone className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+          <Input
+            id="phone"
+            type="tel"
+            placeholder="+1 234 567 8900"
+            value={formData.phone}
+            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
+            required
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="password" className="text-white">Password</Label>
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Create a strong password"
+            value={formData.password}
+            onChange={(e) => setFormData({...formData, password: e.target.value})}
+            className="pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
+            required
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="referralCode" className="text-white">Referral Code (Optional)</Label>
+        <Input
+          id="referralCode"
+          type="text"
+          placeholder="Enter referral code"
+          value={formData.referralCode}
+          onChange={(e) => setFormData({...formData, referralCode: e.target.value})}
+          className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+        />
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="terms"
+            checked={formData.agreeToTerms}
+            onCheckedChange={(checked) => setFormData({...formData, agreeToTerms: checked as boolean})}
+            className="border-white/20 data-[state=checked]:bg-purple-600"
+          />
+          <Label htmlFor="terms" className="text-sm text-white/80">
+            I agree to the Terms of Service and Privacy Policy
+          </Label>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="biometric"
+            checked={formData.enableBiometric}
+            onCheckedChange={(checked) => setFormData({...formData, enableBiometric: checked as boolean})}
+            className="border-white/20 data-[state=checked]:bg-purple-600"
+          />
+          <Label htmlFor="biometric" className="text-sm text-white/80 flex items-center">
+            <Fingerprint className="w-4 h-4 mr-1" />
+            Enable biometric authentication
+          </Label>
+        </div>
+      </div>
+
+      <Button 
+        type="submit" 
+        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+        disabled={loading || !formData.agreeToTerms}
+      >
+        {loading ? 'Creating Account...' : 'Continue to Verification'}
+      </Button>
+    </form>
+  );
+
+  const AuthStep2 = () => (
+    <div className="space-y-6 text-center">
+      <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto">
+        <Shield className="w-8 h-8 text-white" />
+      </div>
+      <div>
+        <h3 className="text-xl font-semibold text-white mb-2">Verify Your Identity</h3>
+        <p className="text-purple-300">We've sent a verification code to {formData.email}</p>
+      </div>
+      
+      <div className="grid grid-cols-6 gap-2">
+        {[...Array(6)].map((_, i) => (
+          <Input
+            key={i}
+            type="text"
+            maxLength={1}
+            className="text-center bg-white/5 border-white/10 text-white h-12 text-lg"
+          />
+        ))}
+      </div>
+
+      <div className="space-y-3">
+        <Button 
+          onClick={() => setStep(3)}
+          className="w-full bg-gradient-to-r from-purple-600 to-blue-600"
+        >
+          Verify & Continue
+        </Button>
+        <Button variant="ghost" className="w-full text-purple-300">
+          Resend Code
+        </Button>
+      </div>
+    </div>
+  );
+
+  const AuthStep3 = () => (
+    <div className="space-y-6 text-center">
+      <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto">
+        <Camera className="w-8 h-8 text-white" />
+      </div>
+      <div>
+        <h3 className="text-xl font-semibold text-white mb-2">Complete KYC Verification</h3>
+        <p className="text-purple-300">Upload your documents to start trading</p>
+      </div>
+      
+      <div className="space-y-4">
+        <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="text-left">
+              <div className="font-medium text-white">Government ID</div>
+              <div className="text-sm text-purple-300">Passport, Driver's License, or National ID</div>
             </div>
+            <Button variant="outline" size="sm">Upload</Button>
+          </div>
+        </div>
 
-            {/* Feature highlights */}
-            <div className="grid grid-cols-3 gap-4 pt-4">
-              <div className="text-center">
-                <Zap className="w-6 h-6 mx-auto mb-2 text-yellow-400" />
-                <span className="text-xs text-slate-400 font-mono">AI Trading</span>
-              </div>
-              <div className="text-center">
-                <Shield className="w-6 h-6 mx-auto mb-2 text-green-400" />
-                <span className="text-xs text-slate-400 font-mono">Secure</span>
-              </div>
-              <div className="text-center">
-                <TrendingUp className="w-6 h-6 mx-auto mb-2 text-blue-400" />
-                <span className="text-xs text-slate-400 font-mono">Premium</span>
-              </div>
+        <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="text-left">
+              <div className="font-medium text-white">Proof of Address</div>
+              <div className="text-sm text-purple-300">Utility bill or bank statement</div>
             </div>
-          </CardHeader>
+            <Button variant="outline" size="sm">Upload</Button>
+          </div>
+        </div>
 
-          <CardContent>
-            <Tabs value={isLogin ? 'login' : 'signup'} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-slate-800/50 rounded-xl">
-                <TabsTrigger 
-                  value="login" 
-                  onClick={() => setIsLogin(true)}
-                  className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white font-semibold"
-                >
-                  Sign In
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="signup" 
-                  onClick={() => setIsLogin(false)}
-                  className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white font-semibold"
-                >
-                  Sign Up
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="login" className="space-y-6 mt-6">
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-200 font-medium">Email Address</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
-                        className="futuristic-input pl-11 h-12 text-white placeholder:text-slate-500"
-                        required
-                      />
-                    </div>
-                  </div>
+        <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="text-left">
+              <div className="font-medium text-white">Selfie Verification</div>
+              <div className="text-sm text-purple-300">Live photo for identity confirmation</div>
+            </div>
+            <Button variant="outline" size="sm">Take Photo</Button>
+          </div>
+        </div>
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-slate-200 font-medium">Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Enter your password"
-                        value={formData.password}
-                        onChange={(e) => setFormData({...formData, password: e.target.value})}
-                        className="futuristic-input pr-11 h-12 text-white placeholder:text-slate-500"
-                        required
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </Button>
-                    </div>
-                  </div>
+      <div className="space-y-3">
+        <Button 
+          onClick={() => navigate('/advanced-dashboard')}
+          className="w-full bg-gradient-to-r from-green-600 to-blue-600"
+        >
+          Complete Registration
+        </Button>
+        <Button variant="ghost" className="w-full text-purple-300">
+          Skip for Now (Limited Access)
+        </Button>
+      </div>
+    </div>
+  );
 
-                  <Button 
-                    type="submit" 
-                    className="neon-button w-full h-12 font-semibold font-display"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        <span>Signing In...</span>
-                      </div>
-                    ) : (
-                      'Access Platform'
-                    )}
-                  </Button>
-                </form>
-              </TabsContent>
-              
-              <TabsContent value="signup" className="space-y-6 mt-6">
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-slate-200 font-medium">Full Name</Label>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white/10 border-white/20 backdrop-blur-xl">
+        <CardHeader className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-xl">IX</span>
+          </div>
+          <CardTitle className="text-2xl font-bold text-white">
+            {isLogin ? 'Welcome Back' : step === 1 ? 'Join InvestX Pro' : step === 2 ? 'Verify Account' : 'Complete Setup'}
+          </CardTitle>
+          <CardDescription className="text-purple-300">
+            {isLogin ? 'Sign in to your premium account' : step === 1 ? 'Create your AI-powered investment account' : step === 2 ? 'Security verification required' : 'Unlock full platform access'}
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          <Tabs value={isLogin ? 'login' : 'signup'} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-white/10 mb-6">
+              <TabsTrigger 
+                value="login" 
+                onClick={() => {setIsLogin(true); setStep(1);}}
+                className="data-[state=active]:bg-purple-600"
+              >
+                Sign In
+              </TabsTrigger>
+              <TabsTrigger 
+                value="signup" 
+                onClick={() => {setIsLogin(false); setStep(1);}}
+                className="data-[state=active]:bg-purple-600"
+              >
+                Sign Up
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="email" className="text-white">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
                     <Input
-                      id="name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className="futuristic-input h-12 text-white placeholder:text-slate-500"
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
                       required
                     />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="text-slate-200 font-medium">Email Address</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
-                        className="futuristic-input pl-11 h-12 text-white placeholder:text-slate-500"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-slate-200 font-medium">Phone Number</Label>
-                    <div className="relative">
-                      <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="Enter your phone number"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                        className="futuristic-input pl-11 h-12 text-white placeholder:text-slate-500"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-slate-200 font-medium">Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="signup-password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Create a strong password"
-                        value={formData.password}
-                        onChange={(e) => setFormData({...formData, password: e.target.value})}
-                        className="futuristic-input pr-11 h-12 text-white placeholder:text-slate-500"
-                        required
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="referralCode" className="text-slate-200 font-medium">Referral Code <span className="text-slate-500">(Optional)</span></Label>
+                </div>
+                <div>
+                  <Label htmlFor="password" className="text-white">Password</Label>
+                  <div className="relative">
                     <Input
-                      id="referralCode"
-                      type="text"
-                      placeholder="Enter referral code for bonuses"
-                      value={formData.referralCode}
-                      onChange={(e) => setFormData({...formData, referralCode: e.target.value})}
-                      className="futuristic-input h-12 text-white placeholder:text-slate-500"
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Enter your password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      className="pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                      required
                     />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
                   </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="biometric-login"
+                    className="border-white/20 data-[state=checked]:bg-purple-600"
+                  />
+                  <Label htmlFor="biometric-login" className="text-sm text-white/80 flex items-center">
+                    <Fingerprint className="w-4 h-4 mr-1" />
+                    Use biometric login
+                  </Label>
+                </div>
 
-                  <Button 
-                    type="submit" 
-                    className="neon-button w-full h-12 font-semibold font-display"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        <span>Creating Account...</span>
-                      </div>
-                    ) : (
-                      'Join InvestX Premium'
-                    )}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-
-            <div className="mt-6 text-center">
-              <p className="text-xs text-slate-500 font-mono">
-                Powered by advanced AI • Institutional-grade security
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  disabled={loading}
+                >
+                  {loading ? 'Signing In...' : 'Sign In'}
+                </Button>
+                
+                <Button variant="ghost" className="w-full text-purple-400">
+                  Forgot Password?
+                </Button>
+              </form>
+            </TabsContent>
+            
+            <TabsContent value="signup">
+              {step === 1 && <AuthStep1 />}
+              {step === 2 && <AuthStep2 />}
+              {step === 3 && <AuthStep3 />}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };
