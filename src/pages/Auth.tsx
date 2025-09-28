@@ -33,7 +33,7 @@ const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || '/dashboard';
 
   // Redirect if already logged in
   useEffect(() => {
@@ -133,7 +133,7 @@ const Auth = () => {
             title: "Account created!",
             description: "Welcome to InvestX. Your account has been created successfully.",
           });
-          navigate('/', { replace: true });
+          navigate('/dashboard', { replace: true });
         }
       }
     } catch (error: any) {
