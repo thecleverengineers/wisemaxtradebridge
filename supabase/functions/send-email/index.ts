@@ -75,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
       connection: {
         hostname: smtpHost,
         port: smtpPort,
-        tls: true, // Always use TLS for Gmail
+        tls: false, // Mailer91 uses STARTTLS on port 587
         auth: {
           username: smtpUser,
           password: smtpPassword,
