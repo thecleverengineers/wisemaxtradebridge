@@ -98,31 +98,34 @@ const Auth = () => {
         });
         navigate('/advanced-dashboard');
       } else {
-        if (step === 1) {
-          // Move to verification step and send email
-          const emailSent = await sendVerificationCode();
-          if (emailSent) {
-            setStep(2);
-          }
+        // Direct registration without email verification
+        if (!formData.name || !formData.email || !formData.phone || !formData.password) {
+          toast({
+            title: "Error",
+            description: "Please fill in all required fields",
+            variant: "destructive",
+          });
           setLoading(false);
           return;
         }
-        
-        if (step === 2) {
-          // Verify the code before creating account
-          if (!verifyCode()) {
-            setLoading(false);
-            return;
-          }
-          
-          // Create the account after successful verification
-          await signUp(formData.email, formData.password, formData.name, formData.phone, formData.referralCode);
+
+        if (!formData.agreeToTerms) {
           toast({
-            title: "Account created!",
-            description: "Your email has been verified successfully.",
+            title: "Error",
+            description: "Please agree to the terms and conditions",
+            variant: "destructive",
           });
-          setStep(3); // KYC step
+          setLoading(false);
+          return;
         }
+
+        // Create the account directly without email verification
+        await signUp(formData.email, formData.password, formData.name, formData.phone, formData.referralCode);
+        toast({
+          title: "Account created!",
+          description: "Welcome to InvestX Pro!",
+        });
+        navigate('/advanced-dashboard');
       }
     } catch (error: any) {
       toast({
@@ -273,7 +276,7 @@ const Auth = () => {
         className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
         disabled={loading || !formData.agreeToTerms}
       >
-        {loading ? 'Creating Account...' : 'Continue to Verification'}
+        {loading ? 'Creating Account...' : 'Create Account'}
       </Button>
     </form>
   );
@@ -495,9 +498,7 @@ const Auth = () => {
             </TabsContent>
             
             <TabsContent value="signup">
-              {step === 1 && <AuthStep1 />}
-              {step === 2 && <AuthStep2 />}
-              {step === 3 && <AuthStep3 />}
+              <AuthStep1 />
             </TabsContent>
           </Tabs>
         </CardContent>
