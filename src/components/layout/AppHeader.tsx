@@ -26,10 +26,10 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
           </Button>
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">IX</span>
+              <span className="text-white font-bold text-sm">LT</span>
             </div>
             <div>
-              <span className="text-white font-bold text-lg">InvestX</span>
+              <span className="text-white font-bold text-lg">LakToken</span>
               {isAdmin && (
                 <Badge className="ml-2 bg-yellow-500 text-black text-xs">
                   Admin

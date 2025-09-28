@@ -276,7 +276,7 @@ export function Dashboard() {
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-white text-center">
           <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-white font-bold text-sm">IX</span>
+            <span className="text-white font-bold text-sm">LT</span>
           </div>
           <p>Loading dashboard...</p>
         </div>

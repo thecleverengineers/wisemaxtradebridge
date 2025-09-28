@@ -62,10 +62,10 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
           <div className="flex items-center justify-between p-6 border-b border-white/10">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold">IX</span>
+                <span className="text-white font-bold">LT</span>
               </div>
               <div>
-                <h2 className="text-white font-bold text-lg">InvestX</h2>
+                <h2 className="text-white font-bold text-lg">LakToken</h2>
                 <p className="text-purple-300 text-sm">Premium Trading</p>
               </div>
             </div>

@@ -127,8 +127,8 @@ const Referrals = () => {
     const referralLink = `${window.location.origin}/auth?ref=${profile?.referral_code}`;
     if (navigator.share) {
       navigator.share({
-        title: 'Join InvestX',
-        text: 'Start investing with InvestX and earn guaranteed returns!',
+        title: 'Join LakToken',
+        text: 'Start investing with LakToken and earn guaranteed returns!',
         url: referralLink,
       });
     } else {
@@ -145,7 +145,7 @@ const Referrals = () => {
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-white text-center">
           <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-white font-bold text-sm">IX</span>
+            <span className="text-white font-bold text-sm">LT</span>
           </div>
           <p>Loading referrals...</p>
         </div>

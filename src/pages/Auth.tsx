@@ -131,7 +131,7 @@ const Auth = () => {
         if (!error) {
           toast({
             title: "Account created!",
-            description: "Welcome to InvestX. Your account has been created successfully.",
+            description: "Welcome to LakToken. Your account has been created successfully.",
           });
           navigate('/dashboard', { replace: true });
         }
@@ -152,10 +152,10 @@ const Auth = () => {
       <Card className="w-full max-w-md bg-white/10 border-white/20 backdrop-blur-xl">
         <CardHeader className="text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-white font-bold text-xl">IX</span>
+            <span className="text-white font-bold text-xl">LT</span>
           </div>
           <CardTitle className="text-2xl font-bold text-white">
-            {isLogin ? 'Welcome Back' : 'Join InvestX'}
+            {isLogin ? 'Welcome Back' : 'Join LakToken'}
           </CardTitle>
           <CardDescription className="text-purple-300">
             {isLogin ? 'Sign in to your secure account' : 'Create your premium trading account'}

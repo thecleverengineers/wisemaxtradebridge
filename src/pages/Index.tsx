@@ -19,7 +19,7 @@ const Index = () => {
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-white text-center">
           <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-white font-bold text-lg">IX</span>
+            <span className="text-white font-bold text-lg">LT</span>
           </div>
           <p>Loading...</p>
         </div>
@@ -33,9 +33,9 @@ const Index = () => {
         <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
           <div className="mb-8">
             <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <span className="text-white font-bold text-2xl">IX</span>
+              <span className="text-white font-bold text-2xl">LT</span>
             </div>
-            <h1 className="text-4xl font-bold text-white mb-4">Welcome to InvestX</h1>
+            <h1 className="text-4xl font-bold text-white mb-4">Welcome to LakToken</h1>
             <p className="text-purple-300 text-lg max-w-md mx-auto">
               Your premium trading platform for smart investments and financial growth
             </p>
@@ -49,7 +49,7 @@ const Index = () => {
               Get Started
             </Button>
             <p className="text-purple-400 text-sm">
-              Join thousands of investors already earning with InvestX
+              Join thousands of investors already earning with LakToken
             </p>
           </div>
         </div>
