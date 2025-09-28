@@ -48,6 +48,9 @@ const Auth = () => {
       const code = generateVerificationCode();
       setVerificationCode(code);
       
+      console.log('Generated verification code:', code);
+      console.log('Sending to email:', formData.email);
+      
       await sendVerificationEmail(formData.email, code);
       
       toast({
@@ -56,9 +59,10 @@ const Auth = () => {
       });
       return true;
     } catch (error: any) {
+      console.error('Error sending verification email:', error);
       toast({
         title: "Failed to send email",
-        description: "Please check your email address and try again.",
+        description: error.message || "Please check your email address and try again.",
         variant: "destructive",
       });
       return false;

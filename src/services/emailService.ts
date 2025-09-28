@@ -1,4 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
+// Direct API call to edge function since we're using external Supabase
+const SUPABASE_PROJECT_URL = "https://verauoklhuanklwsuwrr.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlcmF1b2tsaHVhbmtsd3N1d3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwMzM0NDAsImV4cCI6MjA3NDYwOTQ0MH0.rsHRaU1iupd3Ma0OQ8zomX6WFaiZYVBxjD7HTRNmG3c";
 
 export interface EmailOptions {
   to: string;
@@ -10,30 +12,43 @@ export interface EmailOptions {
 
 export const sendEmail = async (options: EmailOptions) => {
   try {
-    console.log('Sending email to:', options.to);
+    console.log('Attempting to send email to:', options.to);
     console.log('Email type:', options.type);
+    console.log('Using Supabase URL:', SUPABASE_PROJECT_URL);
     
-    // Call the edge function directly with full URL
-    const response = await fetch('https://verauoklhuanklwsuwrr.supabase.co/functions/v1/send-email', {
+    const response = await fetch(`${SUPABASE_PROJECT_URL}/functions/v1/send-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlcmF1b2tsaHVhbmtsd3N1d3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwMzM0NDAsImV4cCI6MjA3NDYwOTQ0MH0.rsHRaU1iupd3Ma0OQ8zomX6WFaiZYVBxjD7HTRNmG3c',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
       },
       body: JSON.stringify(options),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('Edge function error:', error);
-      throw new Error(error.details || error.error || 'Failed to send email');
+    console.log('Response status:', response.status);
+    const responseText = await response.text();
+    console.log('Response text:', responseText);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse response:', responseText);
+      throw new Error('Invalid response from email service');
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      console.error('Edge function error:', data);
+      throw new Error(data.details || data.error || 'Failed to send email');
+    }
+
     console.log('Email sent successfully:', data);
     return data;
-  } catch (error) {
-    console.error('Failed to send email:', error);
+  } catch (error: any) {
+    console.error('Failed to send email - Full error:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     throw error;
   }
 };
