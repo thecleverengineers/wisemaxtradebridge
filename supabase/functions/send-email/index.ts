@@ -15,16 +15,22 @@ interface EmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('Received request:', req.method);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { to, subject, html, text, type = 'generic' }: EmailRequest = await req.json();
+    const body = await req.json();
+    console.log('Request body:', JSON.stringify(body));
+    
+    const { to, subject, html, text, type = 'generic' }: EmailRequest = body;
 
     // Validate required fields
     if (!to || !subject || (!html && !text)) {
+      console.error('Missing required fields');
       return new Response(
         JSON.stringify({ error: "Missing required fields: to, subject, and either html or text" }),
         {
@@ -40,8 +46,19 @@ const handler = async (req: Request): Promise<Response> => {
     const smtpUser = Deno.env.get("SMTP_USER");
     const smtpPassword = Deno.env.get("SMTP_PASSWORD");
 
+    console.log('SMTP Config:', {
+      host: smtpHost,
+      port: smtpPort,
+      user: smtpUser,
+      passwordExists: !!smtpPassword
+    });
+
     if (!smtpHost || !smtpUser || !smtpPassword) {
-      console.error("Missing SMTP configuration");
+      console.error("Missing SMTP configuration", {
+        host: !!smtpHost,
+        user: !!smtpUser,
+        password: !!smtpPassword
+      });
       return new Response(
         JSON.stringify({ error: "Email service not configured" }),
         {
@@ -51,12 +68,14 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    console.log('Creating SMTP client...');
+    
     // Create SMTP client
     const client = new SMTPClient({
       connection: {
         hostname: smtpHost,
         port: smtpPort,
-        tls: smtpPort === 465, // Use TLS for port 465, STARTTLS for 587
+        tls: true, // Always use TLS for Gmail
         auth: {
           username: smtpUser,
           password: smtpPassword,
@@ -85,26 +104,26 @@ const handler = async (req: Request): Promise<Response> => {
           <body>
             <div class="container">
               <div class="header">
-                <h1>Welcome to Our Trading Platform!</h1>
+                <h1>Welcome to InvestX Pro!</h1>
               </div>
               <div class="content">
                 <p>Thank you for joining our trading community. We're excited to have you on board!</p>
                 <p>Start your trading journey with confidence using our advanced tools and features.</p>
-                <a href="${Deno.env.get('SUPABASE_URL')}" class="button">Get Started</a>
                 <p>If you have any questions, our support team is here to help.</p>
               </div>
               <div class="footer">
-                <p>© 2024 Trading Platform. All rights reserved.</p>
+                <p>© 2024 InvestX Pro. All rights reserved.</p>
               </div>
             </div>
           </body>
         </html>
       `;
-      emailText = text || "Welcome to our Trading Platform! Thank you for joining our community.";
+      emailText = text || "Welcome to InvestX Pro! Thank you for joining our community.";
     }
 
     if (type === 'verification' && !html) {
-      emailHtml = `
+      // The HTML already contains the code, no need to generate random one
+      emailHtml = html || `
         <!DOCTYPE html>
         <html>
           <head>
@@ -124,12 +143,12 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               <div class="content">
                 <p>Please verify your email address to activate your account.</p>
-                <p>Click the link below or use the verification code provided:</p>
-                <div class="code">VERIFY-${Math.random().toString(36).substring(2, 8).toUpperCase()}</div>
+                <p>Your verification code is:</p>
+                <div class="code">VERIFY-CODE</div>
                 <p>This code will expire in 24 hours.</p>
               </div>
               <div class="footer">
-                <p>© 2024 Trading Platform. All rights reserved.</p>
+                <p>© 2024 InvestX Pro. All rights reserved.</p>
               </div>
             </div>
           </body>
@@ -138,33 +157,56 @@ const handler = async (req: Request): Promise<Response> => {
       emailText = text || "Please verify your email address to activate your account.";
     }
 
+    console.log('Attempting to send email to:', to);
+    
     // Send email
-    await client.send({
-      from: smtpUser,
-      to: to,
-      subject: subject,
-      content: emailText || "",
-      html: emailHtml || undefined,
-    });
+    try {
+      await client.send({
+        from: smtpUser,
+        to: to,
+        subject: subject,
+        content: emailText || "",
+        html: emailHtml || undefined,
+      });
+      
+      console.log(`Email sent successfully to ${to} with subject: ${subject}`);
 
-    console.log(`Email sent successfully to ${to} with subject: ${subject}`);
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "Email sent successfully",
-        recipient: to 
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Email sent successfully",
+          recipient: to 
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    } catch (smtpError: any) {
+      console.error("SMTP Error:", smtpError);
+      console.error("SMTP Error Details:", {
+        message: smtpError.message,
+        code: smtpError.code,
+        command: smtpError.command
+      });
+      
+      return new Response(
+        JSON.stringify({ 
+          error: "Failed to send email via SMTP", 
+          details: smtpError.message,
+          code: smtpError.code
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
   } catch (error: any) {
-    console.error("Error sending email:", error);
+    console.error("General error in send-email function:", error);
     return new Response(
       JSON.stringify({ 
-        error: "Failed to send email", 
+        error: "Failed to process email request", 
         details: error.message 
       }),
       {

@@ -10,15 +10,23 @@ export interface EmailOptions {
 
 export const sendEmail = async (options: EmailOptions) => {
   try {
+    console.log('Sending email to:', options.to);
+    console.log('Email type:', options.type);
+    
+    // Use the correct Supabase project URL
     const { data, error } = await supabase.functions.invoke('send-email', {
-      body: options
+      body: options,
+      headers: {
+        'Content-Type': 'application/json',
+      }
     });
 
     if (error) {
-      console.error('Error sending email:', error);
+      console.error('Supabase function error:', error);
       throw error;
     }
 
+    console.log('Email sent successfully:', data);
     return data;
   } catch (error) {
     console.error('Failed to send email:', error);
