@@ -15,7 +15,7 @@ interface EmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log('Received request:', req.method);
+  console.log('Edge function invoked:', req.method, req.url);
   
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -24,7 +24,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const body = await req.json();
-    console.log('Request body:', JSON.stringify(body));
+    console.log('Request received:', JSON.stringify(body));
     
     const { to, subject, html, text, type = 'generic' }: EmailRequest = body;
 
@@ -41,46 +41,16 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Get SMTP configuration from environment variables
-    const smtpHost = Deno.env.get("SMTP_HOST");
+    const smtpHost = Deno.env.get("SMTP_HOST") || "smtp.mailer91.com";
     const smtpPort = parseInt(Deno.env.get("SMTP_PORT") || "587");
-    const smtpUser = Deno.env.get("SMTP_USER");
-    const smtpPassword = Deno.env.get("SMTP_PASSWORD");
+    const smtpUser = Deno.env.get("SMTP_USER") || "emailer@5p1v83.mailer91.com";
+    const smtpPassword = Deno.env.get("SMTP_PASSWORD") || "j6w6bdif7ptxgok";
 
-    console.log('SMTP Config:', {
+    console.log('SMTP Configuration:', {
       host: smtpHost,
       port: smtpPort,
       user: smtpUser,
-      passwordExists: !!smtpPassword
-    });
-
-    if (!smtpHost || !smtpUser || !smtpPassword) {
-      console.error("Missing SMTP configuration", {
-        host: !!smtpHost,
-        user: !!smtpUser,
-        password: !!smtpPassword
-      });
-      return new Response(
-        JSON.stringify({ error: "Email service not configured" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
-    console.log('Creating SMTP client...');
-    
-    // Create SMTP client
-    const client = new SMTPClient({
-      connection: {
-        hostname: smtpHost,
-        port: smtpPort,
-        tls: false, // Mailer91 uses STARTTLS on port 587
-        auth: {
-          username: smtpUser,
-          password: smtpPassword,
-        },
-      },
+      passwordLength: smtpPassword?.length
     });
 
     // Generate email content based on type
@@ -122,7 +92,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (type === 'verification' && !html) {
-      // The HTML already contains the code, no need to generate random one
       emailHtml = html || `
         <!DOCTYPE html>
         <html>
@@ -157,10 +126,25 @@ const handler = async (req: Request): Promise<Response> => {
       emailText = text || "Please verify your email address to activate your account.";
     }
 
-    console.log('Attempting to send email to:', to);
+    console.log('Creating SMTP client...');
     
-    // Send email
     try {
+      // Create SMTP client with proper Mailer91 configuration
+      const client = new SMTPClient({
+        connection: {
+          hostname: smtpHost,
+          port: smtpPort,
+          tls: false, // Mailer91 uses STARTTLS
+          auth: {
+            username: smtpUser,
+            password: smtpPassword,
+          },
+        },
+      });
+
+      console.log('Sending email to:', to);
+      
+      // Send email
       await client.send({
         from: smtpUser,
         to: to,
@@ -169,7 +153,10 @@ const handler = async (req: Request): Promise<Response> => {
         html: emailHtml || undefined,
       });
       
-      console.log(`Email sent successfully to ${to} with subject: ${subject}`);
+      console.log(`Email sent successfully to ${to}`);
+      
+      // Close the connection
+      await client.close();
 
       return new Response(
         JSON.stringify({ 
@@ -184,17 +171,17 @@ const handler = async (req: Request): Promise<Response> => {
       );
     } catch (smtpError: any) {
       console.error("SMTP Error:", smtpError);
-      console.error("SMTP Error Details:", {
-        message: smtpError.message,
-        code: smtpError.code,
-        command: smtpError.command
-      });
+      console.error("SMTP Error Stack:", smtpError.stack);
       
+      // Return more detailed error for debugging
       return new Response(
         JSON.stringify({ 
           error: "Failed to send email via SMTP", 
           details: smtpError.message,
-          code: smtpError.code
+          code: smtpError.code,
+          host: smtpHost,
+          port: smtpPort,
+          user: smtpUser
         }),
         {
           status: 500,
@@ -204,10 +191,13 @@ const handler = async (req: Request): Promise<Response> => {
     }
   } catch (error: any) {
     console.error("General error in send-email function:", error);
+    console.error("Error stack:", error.stack);
+    
     return new Response(
       JSON.stringify({ 
         error: "Failed to process email request", 
-        details: error.message 
+        details: error.message,
+        stack: error.stack 
       }),
       {
         status: 500,
