@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { AppSidebar } from '@/components/layout/AppSidebar';
+import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -76,6 +79,7 @@ interface MarketData {
 
 export function Dashboard() {
   const { user, profile } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [wallets, setWallets] = useState<WalletData[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -262,101 +266,105 @@ export function Dashboard() {
   };
 
   const pieChartData = [
-    { name: 'Balance', value: totalBalance, color: 'hsl(var(--primary))' },
-    { name: 'ROI Income', value: totalROI, color: 'hsl(var(--secondary))' },
-    { name: 'Referral Income', value: totalReferral, color: 'hsl(var(--accent))' },
+    { name: 'Balance', value: totalBalance, color: '#a78bfa' },
+    { name: 'ROI Income', value: totalROI, color: '#10b981' },
+    { name: 'Referral Income', value: totalReferral, color: '#f59e0b' },
   ];
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <span className="text-white font-bold text-sm">IX</span>
+          </div>
+          <p>Loading dashboard...</p>
         </div>
-        <Skeleton className="h-96" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, {profile?.name || 'User'}</p>
-        </div>
-        <Badge variant={profile?.kyc_status === 'verified' ? 'default' : 'secondary'}>
-          KYC: {profile?.kyc_status || 'Pending'}
-        </Badge>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalBalance.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">
-              {totalBalance > 0 ? (
-                <span className="text-green-500 flex items-center">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  Active
-                </span>
-              ) : (
-                <span>Start investing</span>
-              )}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">ROI Income</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalROI.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">
-              {activeInvestments} active investments
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Referral Income</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalReferral.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">
-              {referralCount} referrals
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Win Rate</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analytics?.win_rate ? `${analytics.win_rate.toFixed(1)}%` : '0%'}
+    <div className="min-h-screen bg-slate-900">
+      <AppHeader onMenuClick={() => setSidebarOpen(true)} />
+      <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="p-4 pt-20 pb-20">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+              <p className="text-purple-300">Welcome back, {profile?.name || 'User'}</p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {analytics?.total_trades || 0} total trades
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+            <Badge className={profile?.kyc_status === 'verified' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'}>
+              KYC: {profile?.kyc_status || 'Pending'}
+            </Badge>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="bg-white/5 border-white/10">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-purple-300">Total Balance</CardTitle>
+                <Wallet className="h-4 w-4 text-purple-300" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">${totalBalance.toFixed(2)}</div>
+                <p className="text-xs text-purple-300">
+                  {totalBalance > 0 ? (
+                    <span className="text-green-400 flex items-center">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      Active
+                    </span>
+                  ) : (
+                    <span>Start investing</span>
+                  )}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5 border-white/10">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-purple-300">ROI Income</CardTitle>
+                <DollarSign className="h-4 w-4 text-purple-300" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">${totalROI.toFixed(2)}</div>
+                <p className="text-xs text-purple-300">
+                  {activeInvestments} active investments
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5 border-white/10">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-purple-300">Referral Income</CardTitle>
+                <Users className="h-4 w-4 text-purple-300" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">${totalReferral.toFixed(2)}</div>
+                <p className="text-xs text-purple-300">
+                  {referralCount} referrals
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5 border-white/10">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-purple-300">Win Rate</CardTitle>
+                <Activity className="h-4 w-4 text-purple-300" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">
+                  {analytics?.win_rate ? `${analytics.win_rate.toFixed(1)}%` : '0%'}
+                </div>
+                <p className="text-xs text-purple-300">
+                  {analytics?.total_trades || 0} total trades
+                </p>
+              </CardContent>
+            </Card>
+          </div>
 
       {/* Charts and Data */}
       <Tabs defaultValue="overview" className="space-y-4">
@@ -370,30 +378,30 @@ export function Dashboard() {
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             {/* Income Chart */}
-            <Card>
+            <Card className="bg-white/5 border-white/10">
               <CardHeader>
-                <CardTitle>Income Overview</CardTitle>
-                <CardDescription>Your income over the last 7 days</CardDescription>
+                <CardTitle className="text-white">Income Overview</CardTitle>
+                <CardDescription className="text-purple-300">Your income over the last 7 days</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height="300">
                   <AreaChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="income" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />
-                    <Area type="monotone" dataKey="expense" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.3} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+                    <XAxis dataKey="date" stroke="#a78bfa" />
+                    <YAxis stroke="#a78bfa" />
+                    <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #ffffff20' }} />
+                    <Area type="monotone" dataKey="income" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
+                    <Area type="monotone" dataKey="expense" stroke="#ef4444" fill="#ef4444" fillOpacity={0.3} />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
             {/* Portfolio Distribution */}
-            <Card>
+            <Card className="bg-white/5 border-white/10">
               <CardHeader>
-                <CardTitle>Portfolio Distribution</CardTitle>
-                <CardDescription>Breakdown of your income sources</CardDescription>
+                <CardTitle className="text-white">Portfolio Distribution</CardTitle>
+                <CardDescription className="text-purple-300">Breakdown of your income sources</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height="300">
@@ -412,7 +420,7 @@ export function Dashboard() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #ffffff20' }} />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -420,26 +428,26 @@ export function Dashboard() {
           </div>
 
           {/* Wallet Balances */}
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardHeader>
-              <CardTitle>Wallet Balances</CardTitle>
-              <CardDescription>Your cryptocurrency holdings</CardDescription>
+              <CardTitle className="text-white">Wallet Balances</CardTitle>
+              <CardDescription className="text-purple-300">Your cryptocurrency holdings</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {wallets.map((wallet) => (
-                  <div key={wallet.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={wallet.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
                     <div className="flex items-center space-x-4">
-                      <Coins className="h-8 w-8 text-primary" />
+                      <Coins className="h-8 w-8 text-purple-400" />
                       <div>
-                        <p className="font-medium">{wallet.currency}</p>
-                        <p className="text-sm text-muted-foreground">Available Balance</p>
+                        <p className="font-medium text-white">{wallet.currency}</p>
+                        <p className="text-sm text-purple-300">Available Balance</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold">{wallet.balance.toFixed(4)}</p>
+                      <p className="text-2xl font-bold text-white">{wallet.balance.toFixed(4)}</p>
                       {wallet.locked_balance > 0 && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-purple-300">
                           Locked: {wallet.locked_balance.toFixed(4)}
                         </p>
                       )}
@@ -452,37 +460,37 @@ export function Dashboard() {
         </TabsContent>
 
         <TabsContent value="transactions" className="space-y-4">
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>Your latest financial activities</CardDescription>
+              <CardTitle className="text-white">Recent Transactions</CardTitle>
+              <CardDescription className="text-purple-300">Your latest financial activities</CardDescription>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[400px]">
                 <div className="space-y-4">
                   {transactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={transaction.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
                       <div className="flex items-center space-x-4">
                         {transaction.type === 'deposit' ? (
-                          <ArrowDownRight className="h-5 w-5 text-green-500" />
+                          <ArrowDownRight className="h-5 w-5 text-green-400" />
                         ) : (
-                          <ArrowUpRight className="h-5 w-5 text-red-500" />
+                          <ArrowUpRight className="h-5 w-5 text-red-400" />
                         )}
                         <div>
-                          <p className="font-medium capitalize">{transaction.type}</p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="font-medium capitalize text-white">{transaction.type}</p>
+                          <p className="text-sm text-purple-300">
                             {formatDistanceToNow(new Date(transaction.created_at), { addSuffix: true })}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">
+                        <p className="font-bold text-white">
                           {transaction.type === 'deposit' ? '+' : '-'}
                           {transaction.amount.toFixed(2)} {transaction.currency}
                         </p>
-                        <Badge variant={
-                          transaction.status === 'completed' ? 'default' : 
-                          transaction.status === 'pending' ? 'secondary' : 'destructive'
+                        <Badge className={
+                          transaction.status === 'completed' ? 'bg-green-500 text-white' : 
+                          transaction.status === 'pending' ? 'bg-yellow-500 text-white' : 'bg-red-500 text-white'
                         }>
                           {transaction.status}
                         </Badge>
@@ -496,54 +504,54 @@ export function Dashboard() {
         </TabsContent>
 
         <TabsContent value="investments" className="space-y-4">
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardHeader>
-              <CardTitle>Active ROI Investments</CardTitle>
-              <CardDescription>Your current investment portfolio</CardDescription>
+              <CardTitle className="text-white">Active ROI Investments</CardTitle>
+              <CardDescription className="text-purple-300">Your current investment portfolio</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {roiInvestments.filter(inv => inv.status === 'active').map((investment) => (
-                  <div key={investment.id} className="p-4 border rounded-lg">
+                  <div key={investment.id} className="p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h4 className="font-semibold">{investment.plan_name}</h4>
-                        <p className="text-sm text-muted-foreground">
+                        <h4 className="font-semibold text-white">{investment.plan_name}</h4>
+                        <p className="text-sm text-purple-300">
                           Started {formatDistanceToNow(new Date(investment.started_at), { addSuffix: true })}
                         </p>
                       </div>
-                      <Badge variant="default">Active</Badge>
+                      <Badge className="bg-green-500 text-white">Active</Badge>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                       <div>
-                        <p className="text-sm text-muted-foreground">Invested</p>
-                        <p className="font-bold">${investment.amount.toFixed(2)}</p>
+                        <p className="text-sm text-purple-300">Invested</p>
+                        <p className="font-bold text-white">${investment.amount.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Daily Return</p>
-                        <p className="font-bold">{investment.daily_return}%</p>
+                        <p className="text-sm text-purple-300">Daily Return</p>
+                        <p className="font-bold text-white">{investment.daily_return}%</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Total Paid Out</p>
-                        <p className="font-bold text-green-500">${investment.total_paid_out.toFixed(2)}</p>
+                        <p className="text-sm text-purple-300">Total Paid Out</p>
+                        <p className="font-bold text-green-400">${investment.total_paid_out.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Expires</p>
-                        <p className="font-bold">
+                        <p className="text-sm text-purple-300">Expires</p>
+                        <p className="font-bold text-white">
                           {formatDistanceToNow(new Date(investment.expires_at), { addSuffix: true })}
                         </p>
                       </div>
                     </div>
                     <div className="mt-4">
-                      <div className="w-full bg-secondary rounded-full h-2">
+                      <div className="w-full bg-slate-700 rounded-full h-2">
                         <div 
-                          className="bg-primary rounded-full h-2 transition-all"
+                          className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-full h-2 transition-all"
                           style={{ 
                             width: `${Math.min(100, (investment.total_paid_out / investment.total_return) * 100)}%` 
                           }}
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-purple-300 mt-1">
                         {((investment.total_paid_out / investment.total_return) * 100).toFixed(1)}% completed
                       </p>
                     </div>
@@ -555,26 +563,26 @@ export function Dashboard() {
         </TabsContent>
 
         <TabsContent value="market" className="space-y-4">
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardHeader>
-              <CardTitle>Live Market Data</CardTitle>
-              <CardDescription>Real-time cryptocurrency prices</CardDescription>
+              <CardTitle className="text-white">Live Market Data</CardTitle>
+              <CardDescription className="text-purple-300">Real-time cryptocurrency prices</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {marketData.map((market) => (
-                  <div key={market.symbol} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={market.symbol} className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
                     <div className="flex items-center space-x-4">
-                      <ChartBar className="h-8 w-8 text-primary" />
+                      <ChartBar className="h-8 w-8 text-purple-400" />
                       <div>
-                        <p className="font-medium">{market.symbol}</p>
-                        <p className="text-sm text-muted-foreground">Volume: {market.volume.toLocaleString()}</p>
+                        <p className="font-medium text-white">{market.symbol}</p>
+                        <p className="text-sm text-purple-300">Volume: {market.volume.toLocaleString()}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold">${market.price.toFixed(2)}</p>
+                      <p className="text-xl font-bold text-white">${market.price.toFixed(2)}</p>
                       <p className={`text-sm flex items-center justify-end ${
-                        market.change_percent >= 0 ? 'text-green-500' : 'text-red-500'
+                        market.change_percent >= 0 ? 'text-green-400' : 'text-red-400'
                       }`}>
                         {market.change_percent >= 0 ? (
                           <TrendingUp className="h-3 w-3 mr-1" />
@@ -592,5 +600,9 @@ export function Dashboard() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  </div>
+
+  <BottomNavigation />
+</div>
+);
 }
