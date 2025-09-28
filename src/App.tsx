@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +7,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import TradingPlatform from "./pages/TradingPlatform";
-import ForexTrading from "./pages/ForexTrading";
 import Invest from "./pages/Invest";
 import Wallet from "./pages/Wallet";
 import Referrals from "./pages/Referrals";
@@ -19,8 +17,6 @@ import Rewards from "./pages/Rewards";
 import InvestmentRecords from "./pages/InvestmentRecords";
 import IntradayTrading from "./pages/IntradayTrading";
 import MT5Trading from "./pages/MT5Trading";
-import AdvancedDashboard from "./pages/AdvancedDashboard";
-
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,7 +32,6 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/trading" element={<TradingPlatform />} />
-            <Route path="/forex-trading" element={<ForexTrading />} />
             <Route path="/invest" element={<Invest />} />
             <Route path="/wallet" element={<Wallet />} />
             <Route path="/referrals" element={<Referrals />} />
