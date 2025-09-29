@@ -16,8 +16,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, TrendingDown, Activity, DollarSign, AlertCircle, Clock, Target, Shield, BarChart3, ChevronUp, ChevronDown, Info } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, DollarSign, AlertCircle, Clock, Target, Shield, BarChart3, ChevronUp, ChevronDown, Info, Bot, Users, Newspaper } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Import new components
+import { TradingChart } from '@/components/forex/TradingChart';
+import { OrderBook } from '@/components/forex/OrderBook';
+import { MarketSession } from '@/components/forex/MarketSession';
+import { NewsIntegration } from '@/components/forex/NewsIntegration';
+import { CopyTrading } from '@/components/forex/CopyTrading';
+import { AutomatedBots } from '@/components/forex/AutomatedBots';
 
 interface ForexPair {
   id: string;
@@ -469,11 +477,14 @@ export default function ForexTrading() {
             </div>
 
             <Tabs defaultValue="market" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
                 <TabsTrigger value="market">Market</TabsTrigger>
+                <TabsTrigger value="chart">Charts</TabsTrigger>
                 <TabsTrigger value="signals">Signals</TabsTrigger>
                 <TabsTrigger value="positions">Positions</TabsTrigger>
-                <TabsTrigger value="history">History</TabsTrigger>
+                <TabsTrigger value="bots">Bots</TabsTrigger>
+                <TabsTrigger value="copy">Copy</TabsTrigger>
+                <TabsTrigger value="news">News</TabsTrigger>
               </TabsList>
 
               <TabsContent value="market" className="space-y-4">
@@ -779,6 +790,37 @@ export default function ForexTrading() {
                     </ScrollArea>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="chart" className="space-y-4">
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                  <div className="xl:col-span-2">
+                    <TradingChart 
+                      pairSymbol={selectedPair?.symbol || 'EUR/USD'}
+                      currentPrice={selectedPair?.current_price || 1.0850}
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <OrderBook 
+                      pairSymbol={selectedPair?.symbol || 'EUR/USD'}
+                      currentPrice={selectedPair?.current_price || 1.0850}
+                      spread={selectedPair?.spread || 0.0002}
+                    />
+                    <MarketSession />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="bots" className="space-y-4">
+                <AutomatedBots />
+              </TabsContent>
+
+              <TabsContent value="copy" className="space-y-4">
+                <CopyTrading />
+              </TabsContent>
+
+              <TabsContent value="news" className="space-y-4">
+                <NewsIntegration />
               </TabsContent>
 
               <TabsContent value="history" className="space-y-4">
