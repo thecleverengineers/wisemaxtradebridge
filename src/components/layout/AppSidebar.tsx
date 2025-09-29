@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award, Shield } from 'lucide-react';
+import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award, Shield, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
     { icon: Gift, label: 'Rewards', path: '/rewards' },
     { icon: Shield, label: 'Investment Records', path: '/investment-records' },
     { icon: TrendingUp, label: 'Intraday Trading', path: '/intraday-trading' },
+    { icon: BarChart3, label: 'Forex Trading', path: '/forex-trading' },
     ...(isAdmin ? [{ icon: Shield, label: 'Admin Panel', path: '/admin' }] : []),
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];

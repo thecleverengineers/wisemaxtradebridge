@@ -17,6 +17,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Rewards from "./pages/Rewards";
 import InvestmentRecords from "./pages/InvestmentRecords";
 import IntradayTrading from "./pages/IntradayTrading";
+import ForexTrading from "./pages/ForexTrading";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/rewards" element={<Rewards />} />
             <Route path="/investment-records" element={<InvestmentRecords />} />
             <Route path="/intraday-trading" element={<IntradayTrading />} />
+            <Route path="/forex-trading" element={<ForexTrading />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
