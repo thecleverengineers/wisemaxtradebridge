@@ -19,6 +19,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/' },
+    { icon: BarChart3, label: 'Forex Trading', path: '/forex-trading' },
     { icon: TrendingUp, label: 'Investments', path: '/invest', badge: '4' },
     { icon: Wallet, label: 'Wallet', path: '/wallet', badge: `₹${profile?.total_investment?.toLocaleString() || '0'}` },
     { icon: Users, label: 'Referrals', path: '/referrals' },
@@ -27,7 +28,6 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
     { icon: Gift, label: 'Rewards', path: '/rewards' },
     { icon: Shield, label: 'Investment Records', path: '/investment-records' },
     { icon: TrendingUp, label: 'Intraday Trading', path: '/intraday-trading' },
-    { icon: BarChart3, label: 'Forex Trading', path: '/forex-trading' },
     ...(isAdmin ? [{ icon: Shield, label: 'Admin Panel', path: '/admin' }] : []),
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
