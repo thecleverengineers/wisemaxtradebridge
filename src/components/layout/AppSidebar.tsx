@@ -55,63 +55,63 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
       
       {/* Sidebar */}
       <div className={cn(
-        "fixed top-0 left-0 h-full w-80 bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 border-r border-white/10 transform transition-transform duration-300 ease-in-out z-50",
+        "fixed top-0 left-0 h-full w-80 bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 border-r border-white/10 transform transition-transform duration-300 ease-in-out z-50 flex flex-col",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold">LT</span>
-              </div>
-              <div>
-                <h2 className="text-white font-bold text-lg">LakToken</h2>
-                <p className="text-purple-300 text-sm">Premium Trading</p>
-              </div>
+        {/* Header - Fixed */}
+        <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">LT</span>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="text-white hover:bg-white/10"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+            <div>
+              <h2 className="text-white font-bold text-base">LakToken</h2>
+              <p className="text-purple-300 text-xs">Premium Trading</p>
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="text-white hover:bg-white/10 h-8 w-8"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
 
-          {/* User Profile */}
-          <div className="p-6 border-b border-white/10">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold">
-                  {profile?.name?.substring(0, 2).toUpperCase() || 'U'}
+        {/* User Profile - Fixed */}
+        <div className="p-4 border-b border-white/10 flex-shrink-0">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-semibold text-sm">
+                {profile?.name?.substring(0, 2).toUpperCase() || 'U'}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-white font-semibold text-sm truncate">{profile?.name || 'User'}</h3>
+              <div className="flex items-center space-x-2">
+                <p className="text-purple-300 text-xs">
+                  {isAdmin ? 'Admin' : 'Gold Member'}
+                </p>
+                {isAdmin && (
+                  <Badge className="bg-yellow-500 text-black text-xs px-1 py-0">
+                    Admin
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center space-x-1 mt-1">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                <span className="text-green-400 text-xs">
+                  {profile?.is_active ? 'Active' : 'Inactive'}
                 </span>
               </div>
-              <div>
-                <h3 className="text-white font-semibold">{profile?.name || 'User'}</h3>
-                <div className="flex items-center space-x-2">
-                  <p className="text-purple-300 text-sm">
-                    {isAdmin ? 'Admin' : 'Gold Member'}
-                  </p>
-                  {isAdmin && (
-                    <Badge className="bg-yellow-500 text-black text-xs">
-                      Admin
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center space-x-1 mt-1">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-green-400 text-xs">
-                    {profile?.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
+        </div>
 
-          {/* Menu Items */}
-          <nav className="flex-1 p-4 space-y-2">
+        {/* Menu Items - Scrollable */}
+        <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-transparent">
+          <div className="p-3 space-y-1">
             {menuItems.map((item, index) => {
               const isActive = location.pathname === item.path;
               return (
@@ -119,36 +119,36 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
                   key={index}
                   onClick={() => handleNavigation(item.path)}
                   className={cn(
-                    "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200",
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200",
                     isActive 
                       ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/25" 
                       : "text-purple-200 hover:bg-white/5 hover:text-white"
                   )}
                 >
-                  <div className="flex items-center space-x-3">
-                    <item.icon className="h-5 w-5" />
-                    <span className="font-medium">{item.label}</span>
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="font-medium text-sm truncate">{item.label}</span>
                   </div>
                   {item.badge && (
-                    <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs px-2 py-1 rounded-full font-semibold">
+                    <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2">
                       {item.badge}
                     </span>
                   )}
                 </button>
               );
             })}
-          </nav>
-
-          {/* Logout */}
-          <div className="p-4 border-t border-white/10">
-            <button 
-              onClick={handleSignOut}
-              className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200"
-            >
-              <LogOut className="h-5 w-5" />
-              <span className="font-medium">Logout</span>
-            </button>
           </div>
+        </nav>
+
+        {/* Logout - Fixed */}
+        <div className="p-3 border-t border-white/10 flex-shrink-0">
+          <button 
+            onClick={handleSignOut}
+            className="w-full flex items-center space-x-3 px-3 py-2.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="font-medium text-sm">Logout</span>
+          </button>
         </div>
       </div>
     </>
