@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, TrendingUp, Wallet, Users, Settings } from 'lucide-react';
+import { Home, TrendingUp, Wallet, Users, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -9,7 +9,7 @@ const navItems = [
   { icon: TrendingUp, label: 'Invest', path: '/invest' },
   { icon: Wallet, label: 'Wallet', path: '/wallet', badge: true },
   { icon: Users, label: 'Referrals', path: '/referrals' },
-  { icon: Settings, label: 'Settings', path: '/settings' },
+  { icon: BarChart3, label: 'Forex', path: '/forex-trading' },
 ];
 
 export const BottomNavigation = () => {
