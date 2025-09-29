@@ -34,6 +34,13 @@ interface ReferralBonus {
   };
 }
 
+interface LevelStats {
+  level: number;
+  count: number;
+  totalEarnings: number;
+  totalDeposits: number;
+}
+
 const Referrals = () => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
@@ -48,6 +55,7 @@ const Referrals = () => {
     totalEarnings: 0,
     thisMonthEarnings: 0
   });
+  const [levelStats, setLevelStats] = useState<LevelStats[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -57,15 +65,43 @@ const Referrals = () => {
 
   const fetchReferralData = async () => {
     try {
-      // Fetch referred users
-      const { data: usersData, error: usersError } = await supabase
-        .from('users')
-        .select('id, name, created_at, is_active, total_investment')
-        .eq('parent_id', user?.id)
+      // Fetch all referrals with referred user info
+      const { data: referralsData, error: referralsError } = await supabase
+        .from('referrals')
+        .select('*')
+        .eq('referrer_id', user?.id)
+        .order('level', { ascending: true })
         .order('created_at', { ascending: false });
 
-      if (usersError) throw usersError;
-      setReferralUsers(usersData || []);
+      if (referralsError) throw referralsError;
+
+      // Fetch referred users separately
+      const referredIds = [...new Set(referralsData?.map(r => r.referred_id) || [])];
+      const { data: referredUsersData, error: referredUsersError } = await supabase
+        .from('users')
+        .select('id, name, email, created_at, is_active, total_investment')
+        .in('id', referredIds);
+
+      if (referredUsersError) throw referredUsersError;
+
+      // Create a map of user data
+      const userMap = new Map(referredUsersData?.map(u => [u.id, u]) || []);
+
+      // Get level 1 referrals for display
+      const level1Referrals = referralsData?.filter(r => r.level === 1)
+        .map(r => {
+          const user = userMap.get(r.referred_id);
+          return user ? {
+            id: user.id,
+            name: user.name,
+            created_at: user.created_at,
+            is_active: user.is_active,
+            total_investment: user.total_investment
+          } : null;
+        })
+        .filter(Boolean) || [];
+      
+      setReferralUsers(level1Referrals as ReferralUser[]);
 
       // Fetch referral bonuses
       const { data: bonusesData, error: bonusesError } = await supabase
@@ -75,17 +111,42 @@ const Referrals = () => {
         .order('created_at', { ascending: false });
 
       if (bonusesError) throw bonusesError;
+
+      // Get user names for bonuses
+      const bonusUserIds = [...new Set(bonusesData?.map(b => b.referral_id).filter(Boolean) || [])];
+      const { data: bonusUsersData } = await supabase
+        .from('users')
+        .select('id, name')
+        .in('id', bonusUserIds);
+
+      const bonusUserMap = new Map(bonusUsersData?.map(u => [u.id, u]) || []);
       
-      // Map bonuses with proper fields
+      // Map bonuses with user info
       const mappedBonuses = (bonusesData || []).map((bonus: any) => ({
         ...bonus,
-        from_user_id: bonus.referral_id
+        from_user_id: bonus.referral_id,
+        users: bonusUserMap.get(bonus.referral_id) || { name: 'Unknown' }
       }));
       setReferralBonuses(mappedBonuses);
 
-      // Calculate stats
-      const totalReferrals = usersData?.length || 0;
-      const activeReferrals = usersData?.filter(u => u.is_active).length || 0;
+      // Calculate stats by level
+      const levelStats = Array.from({ length: 10 }, (_, i) => i + 1).map(level => {
+        const levelReferrals = referralsData?.filter(r => r.level === level) || [];
+        const levelBonuses = bonusesData?.filter(b => b.level === level) || [];
+        return {
+          level,
+          count: levelReferrals.length,
+          totalEarnings: levelBonuses.reduce((sum, b) => sum + (b.amount || 0), 0),
+          totalDeposits: levelReferrals.reduce((sum, r) => sum + (r.total_deposits || 0), 0)
+        };
+      });
+
+      // Calculate overall stats
+      const totalReferrals = referralsData?.length || 0;
+      const activeCount = referralsData?.filter(r => {
+        const user = userMap.get(r.referred_id);
+        return user?.is_active;
+      }).length || 0;
       const totalEarnings = bonusesData?.reduce((sum, bonus) => sum + (bonus.amount || 0), 0) || 0;
       
       const thisMonth = new Date();
@@ -96,10 +157,13 @@ const Referrals = () => {
 
       setStats({
         totalReferrals,
-        activeReferrals,
+        activeReferrals: activeCount,
         totalEarnings,
         thisMonthEarnings
       });
+
+      // Store level stats for display
+      setLevelStats(levelStats);
 
     } catch (error) {
       console.error('Error fetching referral data:', error);
@@ -303,6 +367,48 @@ const Referrals = () => {
                   you earn 10%. Their referrals earn you 5%, and it continues down to level 10 at 0.1%. Build your network and maximize your passive income!
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Level-wise Statistics */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white">Level-wise Performance</CardTitle>
+              <CardDescription className="text-purple-300">
+                Track your earnings and referrals at each level
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {levelStats.length > 0 ? (
+                <div className="space-y-3">
+                  {levelStats.map((stat) => (
+                    stat.count > 0 && (
+                      <div key={stat.level} className="p-4 bg-white/5 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                              <span className="text-white font-bold text-sm">L{stat.level}</span>
+                            </div>
+                            <div>
+                              <p className="text-white font-semibold">Level {stat.level}</p>
+                              <p className="text-purple-300 text-sm">{stat.count} referral{stat.count !== 1 ? 's' : ''}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-green-400 font-semibold">₹{stat.totalEarnings.toLocaleString()}</p>
+                            <p className="text-purple-300 text-xs">from ₹{stat.totalDeposits.toLocaleString()} deposits</p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  ))}
+                  {levelStats.every(stat => stat.count === 0) && (
+                    <p className="text-purple-300 text-center py-4">No referrals yet. Start building your network!</p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-purple-300 text-center py-4">Loading level statistics...</p>
+              )}
             </CardContent>
           </Card>
 
