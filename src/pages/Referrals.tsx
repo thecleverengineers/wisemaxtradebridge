@@ -251,31 +251,56 @@ const Referrals = () => {
             <CardHeader>
               <CardTitle className="text-white">Reward Structure</CardTitle>
               <CardDescription className="text-purple-300">
-                Earn commissions on multiple levels
+                Earn commissions on 10 levels of referrals
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl p-4 text-center text-black">
-                  <h3 className="font-bold text-lg">Level 1</h3>
-                  <p className="text-2xl font-bold">10%</p>
-                  <p className="text-sm">Direct Referrals</p>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div className="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl p-3 text-center text-black">
+                  <h3 className="font-bold">Level 1</h3>
+                  <p className="text-xl font-bold">10%</p>
                 </div>
-                <div className="bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl p-4 text-center text-white">
-                  <h3 className="font-bold text-lg">Level 2</h3>
-                  <p className="text-2xl font-bold">5%</p>
-                  <p className="text-sm">Indirect Referrals</p>
+                <div className="bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl p-3 text-center text-white">
+                  <h3 className="font-bold">Level 2</h3>
+                  <p className="text-xl font-bold">5%</p>
                 </div>
-                <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-4 text-center text-white">
-                  <h3 className="font-bold text-lg">Level 3</h3>
-                  <p className="text-2xl font-bold">2%</p>
-                  <p className="text-sm">3rd Level Referrals</p>
+                <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-3 text-center text-white">
+                  <h3 className="font-bold">Level 3</h3>
+                  <p className="text-xl font-bold">3%</p>
+                </div>
+                <div className="bg-gradient-to-br from-green-500 to-teal-500 rounded-xl p-3 text-center text-white">
+                  <h3 className="font-bold">Level 4</h3>
+                  <p className="text-xl font-bold">2%</p>
+                </div>
+                <div className="bg-gradient-to-br from-red-500 to-rose-500 rounded-xl p-3 text-center text-white">
+                  <h3 className="font-bold">Level 5</h3>
+                  <p className="text-xl font-bold">1.5%</p>
+                </div>
+                <div className="bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl p-3 text-center text-white">
+                  <h3 className="font-bold">Level 6</h3>
+                  <p className="text-xl font-bold">1%</p>
+                </div>
+                <div className="bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl p-3 text-center text-black">
+                  <h3 className="font-bold">Level 7</h3>
+                  <p className="text-xl font-bold">0.75%</p>
+                </div>
+                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-3 text-center text-white">
+                  <h3 className="font-bold">Level 8</h3>
+                  <p className="text-xl font-bold">0.5%</p>
+                </div>
+                <div className="bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl p-3 text-center text-white">
+                  <h3 className="font-bold">Level 9</h3>
+                  <p className="text-xl font-bold">0.25%</p>
+                </div>
+                <div className="bg-gradient-to-br from-gray-500 to-slate-600 rounded-xl p-3 text-center text-white">
+                  <h3 className="font-bold">Level 10</h3>
+                  <p className="text-xl font-bold">0.1%</p>
                 </div>
               </div>
               <div className="mt-4 p-4 bg-white/5 rounded-lg">
                 <p className="text-purple-300 text-sm">
-                  <strong className="text-white">How it works:</strong> When someone uses your referral code to join and makes an investment, 
-                  you earn a percentage of their investment as a bonus. The more people you refer, the more you earn!
+                  <strong className="text-white">How it works:</strong> Earn commissions up to 10 levels deep! When someone uses your referral code and makes an investment, 
+                  you earn 10%. Their referrals earn you 5%, and it continues down to level 10 at 0.1%. Build your network and maximize your passive income!
                 </p>
               </div>
             </CardContent>
