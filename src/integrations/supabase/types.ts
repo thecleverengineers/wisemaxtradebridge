@@ -128,6 +128,278 @@ export type Database = {
         }
         Relationships: []
       }
+      forex_orders: {
+        Row: {
+          created_at: string | null
+          executed_at: string | null
+          executed_price: number | null
+          filled_volume: number | null
+          id: string
+          order_type: string
+          pair_id: string | null
+          position_id: string | null
+          price: number
+          side: string
+          status: string | null
+          user_id: string
+          volume: number
+        }
+        Insert: {
+          created_at?: string | null
+          executed_at?: string | null
+          executed_price?: number | null
+          filled_volume?: number | null
+          id?: string
+          order_type: string
+          pair_id?: string | null
+          position_id?: string | null
+          price: number
+          side: string
+          status?: string | null
+          user_id: string
+          volume: number
+        }
+        Update: {
+          created_at?: string | null
+          executed_at?: string | null
+          executed_price?: number | null
+          filled_volume?: number | null
+          id?: string
+          order_type?: string
+          pair_id?: string | null
+          position_id?: string | null
+          price?: number
+          side?: string
+          status?: string | null
+          user_id?: string
+          volume?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forex_orders_pair_id_fkey"
+            columns: ["pair_id"]
+            isOneToOne: false
+            referencedRelation: "forex_pairs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forex_orders_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "forex_positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forex_pairs: {
+        Row: {
+          ask: number | null
+          base_currency: string
+          bid: number | null
+          change_amount: number | null
+          change_percent: number | null
+          created_at: string | null
+          current_price: number
+          daily_high: number | null
+          daily_low: number | null
+          daily_volume: number | null
+          id: string
+          last_updated: string | null
+          previous_close: number | null
+          quote_currency: string
+          spread: number | null
+          symbol: string
+        }
+        Insert: {
+          ask?: number | null
+          base_currency: string
+          bid?: number | null
+          change_amount?: number | null
+          change_percent?: number | null
+          created_at?: string | null
+          current_price: number
+          daily_high?: number | null
+          daily_low?: number | null
+          daily_volume?: number | null
+          id?: string
+          last_updated?: string | null
+          previous_close?: number | null
+          quote_currency: string
+          spread?: number | null
+          symbol: string
+        }
+        Update: {
+          ask?: number | null
+          base_currency?: string
+          bid?: number | null
+          change_amount?: number | null
+          change_percent?: number | null
+          created_at?: string | null
+          current_price?: number
+          daily_high?: number | null
+          daily_low?: number | null
+          daily_volume?: number | null
+          id?: string
+          last_updated?: string | null
+          previous_close?: number | null
+          quote_currency?: string
+          spread?: number | null
+          symbol?: string
+        }
+        Relationships: []
+      }
+      forex_positions: {
+        Row: {
+          closed_at: string | null
+          closed_price: number | null
+          commission: number | null
+          created_at: string | null
+          current_price: number | null
+          entry_price: number
+          id: string
+          leverage: number | null
+          margin_used: number
+          pair_id: string | null
+          position_type: string
+          profit_loss: number | null
+          profit_loss_percent: number | null
+          signal_id: string | null
+          status: string | null
+          stop_loss: number | null
+          swap_fee: number | null
+          take_profit: number | null
+          updated_at: string | null
+          user_id: string
+          volume: number
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_price?: number | null
+          commission?: number | null
+          created_at?: string | null
+          current_price?: number | null
+          entry_price: number
+          id?: string
+          leverage?: number | null
+          margin_used: number
+          pair_id?: string | null
+          position_type: string
+          profit_loss?: number | null
+          profit_loss_percent?: number | null
+          signal_id?: string | null
+          status?: string | null
+          stop_loss?: number | null
+          swap_fee?: number | null
+          take_profit?: number | null
+          updated_at?: string | null
+          user_id: string
+          volume: number
+        }
+        Update: {
+          closed_at?: string | null
+          closed_price?: number | null
+          commission?: number | null
+          created_at?: string | null
+          current_price?: number | null
+          entry_price?: number
+          id?: string
+          leverage?: number | null
+          margin_used?: number
+          pair_id?: string | null
+          position_type?: string
+          profit_loss?: number | null
+          profit_loss_percent?: number | null
+          signal_id?: string | null
+          status?: string | null
+          stop_loss?: number | null
+          swap_fee?: number | null
+          take_profit?: number | null
+          updated_at?: string | null
+          user_id?: string
+          volume?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forex_positions_pair_id_fkey"
+            columns: ["pair_id"]
+            isOneToOne: false
+            referencedRelation: "forex_pairs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forex_positions_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "forex_signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forex_signals: {
+        Row: {
+          accuracy_rate: number | null
+          analysis: string | null
+          created_at: string | null
+          entry_price: number
+          expired_at: string | null
+          id: string
+          is_active: boolean | null
+          pair_id: string | null
+          risk_level: string | null
+          signal_type: string
+          stop_loss: number | null
+          strength: string
+          take_profit_1: number | null
+          take_profit_2: number | null
+          take_profit_3: number | null
+          timeframe: string | null
+        }
+        Insert: {
+          accuracy_rate?: number | null
+          analysis?: string | null
+          created_at?: string | null
+          entry_price: number
+          expired_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          pair_id?: string | null
+          risk_level?: string | null
+          signal_type: string
+          stop_loss?: number | null
+          strength: string
+          take_profit_1?: number | null
+          take_profit_2?: number | null
+          take_profit_3?: number | null
+          timeframe?: string | null
+        }
+        Update: {
+          accuracy_rate?: number | null
+          analysis?: string | null
+          created_at?: string | null
+          entry_price?: number
+          expired_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          pair_id?: string | null
+          risk_level?: string | null
+          signal_type?: string
+          stop_loss?: number | null
+          strength?: string
+          take_profit_1?: number | null
+          take_profit_2?: number | null
+          take_profit_3?: number | null
+          timeframe?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forex_signals_pair_id_fkey"
+            columns: ["pair_id"]
+            isOneToOne: false
+            referencedRelation: "forex_pairs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_plans: {
         Row: {
           created_at: string | null
