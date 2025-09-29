@@ -386,8 +386,10 @@ export type Database = {
       referrals: {
         Row: {
           commission_earned: number | null
+          commission_rate: number | null
           created_at: string
           id: string
+          is_active: boolean | null
           last_activity_at: string | null
           level: number
           referred_id: string
@@ -397,8 +399,10 @@ export type Database = {
         }
         Insert: {
           commission_earned?: number | null
+          commission_rate?: number | null
           created_at?: string
           id?: string
+          is_active?: boolean | null
           last_activity_at?: string | null
           level?: number
           referred_id: string
@@ -408,8 +412,10 @@ export type Database = {
         }
         Update: {
           commission_earned?: number | null
+          commission_rate?: number | null
           created_at?: string
           id?: string
+          is_active?: boolean | null
           last_activity_at?: string | null
           level?: number
           referred_id?: string
@@ -830,6 +836,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_unique_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_profile: {
         Args: { _user_id: string }
         Returns: {
