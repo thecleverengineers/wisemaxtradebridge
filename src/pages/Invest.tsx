@@ -58,6 +58,7 @@ const Invest = () => {
   
   const [investing, setInvesting] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [loading, setLoading] = useState(true);
   
   // Get plan image based on plan name
   const getPlanImage = (planName: string) => {
@@ -162,13 +163,18 @@ const Invest = () => {
   }, [user]);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
+      console.log('Fetching investment data for user:', user?.id);
+      
       // Fetch investment plans
       const { data: plansData, error: plansError } = await supabase
         .from('investment_plans')
         .select('*')
         .eq('status', 'active')
         .order('min_amount');
+
+      console.log('Plans query result:', { plansData, plansError });
 
       if (plansError) throw plansError;
       setInvestmentPlans(plansData || []);
@@ -180,6 +186,8 @@ const Invest = () => {
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
+      console.log('Investments query result:', { investmentsData, investmentsError });
+
       if (investmentsError) throw investmentsError;
       
       setUserInvestments(investmentsData || []);
@@ -190,7 +198,9 @@ const Invest = () => {
         .select('balance')
         .eq('user_id', user?.id)
         .eq('currency', 'USDT')
-        .single();
+        .maybeSingle();
+
+      console.log('Wallet query result:', { walletData, walletError });
 
       if (walletError && walletError.code !== 'PGRST116') throw walletError;
       
@@ -203,6 +213,8 @@ const Invest = () => {
         description: "Failed to load investment data",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -326,7 +338,16 @@ const Invest = () => {
           </div>
 
           {/* Investment Plans */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="text-white">Loading investment plans...</div>
+            </div>
+          ) : investmentPlans.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-white">No investment plans available at the moment.</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {investmentPlans.map((plan, index) => {
               const Icon = getPlanIcon(plan.name);
               const gradientColors = getPlanColors(plan.name);
@@ -496,7 +517,8 @@ const Invest = () => {
                 </div>
               );
             })}
-          </div>
+            </div>
+          )}
 
           {/* User's Investments */}
           <Card className="bg-white/5 border-white/10">
