@@ -29,17 +29,18 @@ const Auth = () => {
     referralCode: ''
   });
 
-  const { signIn, signUp, user } = useAuth();
+  const authContext = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/dashboard';
+  
+  // Only access auth context if it exists
+  const { signIn, signUp, user } = authContext || { signIn: null, signUp: null, user: null };
 
   // Redirect if already logged in
   useEffect(() => {
-    console.log('Auth page - user state:', user?.email);
     if (user) {
-      console.log('Auth page - Redirecting to dashboard');
       navigate('/dashboard', { replace: true });
     }
   }, [user, navigate]);
@@ -114,11 +115,13 @@ const Auth = () => {
 
     try {
       if (isLogin) {
+        if (!signIn) return;
         const { error } = await signIn(formData.email, formData.password);
         if (!error) {
           // Navigation will happen automatically via useEffect when user state updates
         }
       } else {
+        if (!signUp) return;
         const { error } = await signUp(
           formData.email, 
           formData.password, 

@@ -23,6 +23,72 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const AppRoutes = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/dashboard" element={
+        <PrivateRoute>
+          <Dashboard />
+        </PrivateRoute>
+      } />
+      <Route path="/invest" element={
+        <PrivateRoute>
+          <Invest />
+        </PrivateRoute>
+      } />
+      <Route path="/wallet" element={
+        <PrivateRoute>
+          <Wallet />
+        </PrivateRoute>
+      } />
+      <Route path="/referrals" element={
+        <PrivateRoute>
+          <Referrals />
+        </PrivateRoute>
+      } />
+      <Route path="/settings" element={
+        <PrivateRoute>
+          <Settings />
+        </PrivateRoute>
+      } />
+      <Route path="/calculator" element={
+        <PrivateRoute>
+          <Calculator />
+        </PrivateRoute>
+      } />
+      <Route path="/leaderboard" element={
+        <PrivateRoute>
+          <Leaderboard />
+        </PrivateRoute>
+      } />
+      <Route path="/rewards" element={
+        <PrivateRoute>
+          <Rewards />
+        </PrivateRoute>
+      } />
+      <Route path="/investment-records" element={
+        <PrivateRoute>
+          <InvestmentRecords />
+        </PrivateRoute>
+      } />
+      <Route path="/intraday-trading" element={
+        <PrivateRoute>
+          <IntradayTrading />
+        </PrivateRoute>
+      } />
+      <Route path="/forex-trading" element={
+        <PrivateRoute>
+          <ForexTrading />
+        </PrivateRoute>
+      } />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -30,67 +96,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            } />
-            <Route path="/invest" element={
-              <PrivateRoute>
-                <Invest />
-              </PrivateRoute>
-            } />
-            <Route path="/wallet" element={
-              <PrivateRoute>
-                <Wallet />
-              </PrivateRoute>
-            } />
-            <Route path="/referrals" element={
-              <PrivateRoute>
-                <Referrals />
-              </PrivateRoute>
-            } />
-            <Route path="/settings" element={
-              <PrivateRoute>
-                <Settings />
-              </PrivateRoute>
-            } />
-            <Route path="/calculator" element={
-              <PrivateRoute>
-                <Calculator />
-              </PrivateRoute>
-            } />
-            <Route path="/leaderboard" element={
-              <PrivateRoute>
-                <Leaderboard />
-              </PrivateRoute>
-            } />
-            <Route path="/rewards" element={
-              <PrivateRoute>
-                <Rewards />
-              </PrivateRoute>
-            } />
-            <Route path="/investment-records" element={
-              <PrivateRoute>
-                <InvestmentRecords />
-              </PrivateRoute>
-            } />
-            <Route path="/intraday-trading" element={
-              <PrivateRoute>
-                <IntradayTrading />
-              </PrivateRoute>
-            } />
-            <Route path="/forex-trading" element={
-              <PrivateRoute>
-                <ForexTrading />
-              </PrivateRoute>
-            } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
