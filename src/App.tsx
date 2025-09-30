@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { Dashboard } from "./pages/Dashboard";
@@ -33,17 +32,17 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/invest" element={<ProtectedRoute><Invest /></ProtectedRoute>} />
-            <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
-            <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/calculator" element={<ProtectedRoute><Calculator /></ProtectedRoute>} />
-            <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-            <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
-            <Route path="/investment-records" element={<ProtectedRoute><InvestmentRecords /></ProtectedRoute>} />
-            <Route path="/intraday-trading" element={<ProtectedRoute><IntradayTrading /></ProtectedRoute>} />
-            <Route path="/forex-trading" element={<ProtectedRoute><ForexTrading /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/invest" element={<Invest />} />
+            <Route path="/wallet" element={<Wallet />} />
+            <Route path="/referrals" element={<Referrals />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/calculator" element={<Calculator />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/rewards" element={<Rewards />} />
+            <Route path="/investment-records" element={<InvestmentRecords />} />
+            <Route path="/intraday-trading" element={<IntradayTrading />} />
+            <Route path="/forex-trading" element={<ForexTrading />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

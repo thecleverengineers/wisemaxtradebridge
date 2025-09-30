@@ -38,13 +38,9 @@ const Auth = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      // Add a small delay to ensure the session is fully established
-      const timer = setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 100);
-      return () => clearTimeout(timer);
+      navigate(from, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, from]);
 
   // Calculate password strength
   useEffect(() => {
@@ -118,8 +114,11 @@ const Auth = () => {
       if (isLogin) {
         const { error } = await signIn(formData.email, formData.password);
         if (!error) {
-          // Navigation will happen automatically via useEffect when user state updates
-          // No need to manually navigate here
+          toast({
+            title: "Welcome back!",
+            description: "You have successfully signed in.",
+          });
+          navigate(from, { replace: true });
         }
       } else {
         const { error } = await signUp(
@@ -130,8 +129,11 @@ const Auth = () => {
           formData.referralCode
         );
         if (!error) {
-          // Navigation will happen automatically via useEffect when user state updates
-          // For new signups, we might need to wait for email verification
+          toast({
+            title: "Account created!",
+            description: "Welcome to LakToken. Your account has been created successfully.",
+          });
+          navigate('/dashboard', { replace: true });
         }
       }
     } catch (error: any) {

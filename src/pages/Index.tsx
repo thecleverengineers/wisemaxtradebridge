@@ -1,9 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { DashboardContent } from '@/components/dashboard/DashboardContent';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -12,12 +13,6 @@ const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && user) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -62,8 +57,16 @@ const Index = () => {
     );
   }
 
-  // User is authenticated, redirect to dashboard
-  return null;
+  return (
+    <ProtectedRoute>
+      <div className="min-h-screen bg-slate-900">
+        <AppHeader onMenuClick={() => setSidebarOpen(true)} />
+        <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <DashboardContent />
+        <BottomNavigation />
+      </div>
+    </ProtectedRoute>
+  );
 };
 
 export default Index;
