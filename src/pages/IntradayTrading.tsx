@@ -58,7 +58,7 @@ const IntradayTrading = () => {
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const [tradeAmount, setTradeAmount] = useState('');
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
-  const [loading, setLoading] = useState(false);
+  
 
   // Mock data for demonstration
   useEffect(() => {
@@ -160,7 +160,6 @@ const IntradayTrading = () => {
       return;
     }
 
-    setLoading(true);
     try {
       // Simulate trade execution
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -191,8 +190,6 @@ const IntradayTrading = () => {
         description: "Failed to execute trade. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -411,14 +408,14 @@ const IntradayTrading = () => {
 
                           <Button 
                             onClick={handleTrade}
-                            disabled={loading || !tradeAmount}
+                            disabled={!tradeAmount}
                             className={`w-full ${
                               tradeType === 'buy' 
                                 ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
                                 : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
                             }`}
                           >
-                            {loading ? 'Processing...' : `${tradeType.toUpperCase()} ${selectedStock.symbol}`}
+                            {`${tradeType.toUpperCase()} ${selectedStock.symbol}`}
                           </Button>
 
                           <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">

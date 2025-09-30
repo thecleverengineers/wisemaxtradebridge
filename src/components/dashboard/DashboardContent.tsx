@@ -44,7 +44,7 @@ export const DashboardContent = () => {
   const { profile, user, isAdmin } = useAuth();
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [investmentPlans, setInvestmentPlans] = useState<InvestmentPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  
 
   useEffect(() => {
     if (user) {
@@ -81,24 +81,9 @@ export const DashboardContent = () => {
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex-1 p-4 pt-20 pb-20 space-y-4">
-        <div className="animate-pulse space-y-4">
-          <div className="h-32 bg-white/10 rounded-xl"></div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="h-24 bg-white/10 rounded-xl"></div>
-            <div className="h-24 bg-white/10 rounded-xl"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex-1 p-4 pt-20 pb-20 space-y-6">

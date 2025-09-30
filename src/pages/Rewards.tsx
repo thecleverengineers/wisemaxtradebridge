@@ -32,7 +32,7 @@ const Rewards = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [rewards, setRewards] = useState<Reward[]>([]);
-  const [loading, setLoading] = useState(true);
+  
   const [activeTab, setActiveTab] = useState('available');
   const [totalRewards, setTotalRewards] = useState(0);
 
@@ -206,8 +206,6 @@ const Rewards = () => {
         description: "Failed to load rewards data",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -251,16 +249,6 @@ const Rewards = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white text-center">
-          <Gift className="h-12 w-12 text-yellow-400 mx-auto mb-4 animate-bounce" />
-          <p>Loading rewards...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-900">

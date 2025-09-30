@@ -89,7 +89,7 @@ interface ForexPosition {
 export default function ForexTrading() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
+  
   const [forexPairs, setForexPairs] = useState<ForexPair[]>([]);
   const [signals, setSignals] = useState<ForexSignal[]>([]);
   const [positions, setPositions] = useState<ForexPosition[]>([]);
@@ -158,8 +158,6 @@ export default function ForexTrading() {
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load trading data');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -396,13 +394,6 @@ export default function ForexTrading() {
     return positions.filter(p => p.status === 'open').length;
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">

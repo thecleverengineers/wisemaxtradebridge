@@ -48,7 +48,7 @@ const Invest = () => {
   const [userInvestments, setUserInvestments] = useState<UserInvestment[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<InvestmentPlan | null>(null);
   const [investAmount, setInvestAmount] = useState('');
-  const [loading, setLoading] = useState(true);
+  
   const [investing, setInvesting] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
 
@@ -99,8 +99,6 @@ const Invest = () => {
         description: "Failed to load investment data",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -197,18 +195,6 @@ const Invest = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-white font-bold text-sm">LT</span>
-          </div>
-          <p>Loading investments...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-900">

@@ -47,7 +47,7 @@ const InvestmentRecords = () => {
   
   const [investments, setInvestments] = useState<InvestmentRecord[]>([]);
   const [roiRecords, setROIRecords] = useState<ROIRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -146,8 +146,6 @@ const InvestmentRecords = () => {
         description: "Failed to load investment records",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -171,16 +169,6 @@ const InvestmentRecords = () => {
     return Math.min(progress, 100);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white text-center">
-          <TrendingUp className="h-12 w-12 text-purple-400 mx-auto mb-4 animate-bounce" />
-          <p>Loading investment records...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-900">

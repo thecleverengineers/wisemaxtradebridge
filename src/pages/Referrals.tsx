@@ -48,7 +48,7 @@ const Referrals = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [referralUsers, setReferralUsers] = useState<ReferralUser[]>([]);
   const [referralBonuses, setReferralBonuses] = useState<ReferralBonus[]>([]);
-  const [loading, setLoading] = useState(true);
+  
   const [stats, setStats] = useState({
     totalReferrals: 0,
     activeReferrals: 0,
@@ -172,8 +172,6 @@ const Referrals = () => {
         description: "Failed to load referral data",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -204,18 +202,6 @@ const Referrals = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-white font-bold text-sm">LT</span>
-          </div>
-          <p>Loading referrals...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -407,7 +393,7 @@ const Referrals = () => {
                   )}
                 </div>
               ) : (
-                <p className="text-purple-300 text-center py-4">Loading level statistics...</p>
+                <p className="text-purple-300 text-center py-4">Building level statistics...</p>
               )}
             </CardContent>
           </Card>

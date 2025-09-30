@@ -35,7 +35,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  const [loading, setLoading] = useState(false);
+  
   const [showPassword, setShowPassword] = useState(false);
   
   // Profile form
@@ -81,7 +81,6 @@ const Settings = () => {
   }, [profile, user]);
 
   const handleProfileUpdate = async () => {
-    setLoading(true);
     try {
       const { error } = await supabase
         .from('users')
@@ -104,8 +103,6 @@ const Settings = () => {
         description: "Failed to update profile. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -128,7 +125,6 @@ const Settings = () => {
       return;
     }
 
-    setLoading(true);
     try {
       const { error } = await supabase.auth.updateUser({
         password: securityData.newPassword
@@ -152,8 +148,6 @@ const Settings = () => {
         description: error.message || "Failed to update password. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -167,7 +161,6 @@ const Settings = () => {
       return;
     }
 
-    setLoading(true);
     try {
       const { error } = await supabase
         .from('users')
@@ -190,8 +183,6 @@ const Settings = () => {
         description: "Failed to submit KYC documents. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -316,11 +307,10 @@ const Settings = () => {
                   <div className="flex justify-end">
                     <Button 
                       onClick={handleProfileUpdate}
-                      disabled={loading}
                       className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                     >
                       <Save className="h-4 w-4 mr-2" />
-                      {loading ? 'Saving...' : 'Save Changes'}
+                      Save Changes
                     </Button>
                   </div>
                 </CardContent>
@@ -388,10 +378,10 @@ const Settings = () => {
 
                     <Button 
                       onClick={handlePasswordChange}
-                      disabled={loading || !securityData.currentPassword || !securityData.newPassword}
+                      disabled={!securityData.currentPassword || !securityData.newPassword}
                       className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
                     >
-                      {loading ? 'Updating...' : 'Update Password'}
+                      Update Password
                     </Button>
                   </div>
 
@@ -556,11 +546,10 @@ const Settings = () => {
                   <div className="flex justify-end">
                     <Button 
                       onClick={handleKYCSubmit}
-                      disabled={loading || !kycData.panNumber || !kycData.aadharNumber || profile?.kyc_status === 'approved'}
+                      disabled={!kycData.panNumber || !kycData.aadharNumber || profile?.kyc_status === 'approved'}
                       className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                     >
-                      {loading ? 'Submitting...' : 
-                       profile?.kyc_status === 'approved' ? 'Already Verified' :
+                      {profile?.kyc_status === 'approved' ? 'Already Verified' :
                        profile?.kyc_status === 'pending' ? 'Resubmit KYC' :
                        'Submit KYC'}
                     </Button>

@@ -57,7 +57,7 @@ const Wallet = () => {
   
   const [walletData, setWalletData] = useState<WalletData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  
   const [showBalance, setShowBalance] = useState(true);
   
   // Withdrawal form
@@ -130,8 +130,6 @@ const Wallet = () => {
         description: "Failed to load wallet data",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -313,16 +311,6 @@ const Wallet = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white text-center">
-          <WalletIcon className="h-12 w-12 text-purple-400 mx-auto mb-4 animate-pulse" />
-          <p>Loading wallet...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-900">

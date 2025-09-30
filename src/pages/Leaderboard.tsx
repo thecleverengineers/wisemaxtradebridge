@@ -30,7 +30,7 @@ const Leaderboard = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  
   const [activeTab, setActiveTab] = useState('investment');
   const [userRank, setUserRank] = useState<number | null>(null);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
@@ -100,7 +100,6 @@ const Leaderboard = () => {
 
   const fetchLeaderboardData = async () => {
     try {
-      setLoading(true);
       
       // Get all users with their stats
       const { data: usersData, error: usersError } = await supabase
@@ -179,8 +178,6 @@ const Leaderboard = () => {
         description: "Failed to load leaderboard data",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -241,16 +238,6 @@ const Leaderboard = () => {
     return `$${value.toLocaleString()}`;
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-foreground text-center">
-          <Trophy className="h-12 w-12 text-primary mx-auto mb-4 animate-bounce" />
-          <p>Loading leaderboard...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
