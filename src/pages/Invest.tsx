@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { TrendingUp, Clock, Target, DollarSign, ArrowLeft, Calendar, CheckCircle, Wallet } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { TrendingUp, Clock, Target, DollarSign, ArrowLeft, Calendar, CheckCircle, Wallet, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -55,6 +56,39 @@ const Invest = () => {
   useEffect(() => {
     if (user) {
       fetchData();
+      
+      // Set up realtime subscription for user's investments
+      const channel = supabase
+        .channel('user-investments')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'roi_investments',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            fetchData();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'wallets',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            fetchData();
+          }
+        )
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user]);
 
@@ -64,6 +98,7 @@ const Invest = () => {
       const { data: plansData, error: plansError } = await supabase
         .from('investment_plans')
         .select('*')
+        .eq('status', 'active')
         .order('min_amount');
 
       if (plansError) throw plansError;
@@ -85,12 +120,12 @@ const Invest = () => {
         .from('wallets')
         .select('balance')
         .eq('user_id', user?.id)
-        .eq('currency', 'USDT');
+        .eq('currency', 'USDT')
+        .single();
 
-      if (walletError) throw walletError;
+      if (walletError && walletError.code !== 'PGRST116') throw walletError;
       
-      const totalBalance = walletData?.reduce((sum, wallet) => sum + (wallet.balance || 0), 0) || 0;
-      setWalletBalance(totalBalance);
+      setWalletBalance(walletData?.balance || 0);
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -168,7 +203,7 @@ const Invest = () => {
           amount,
           currency: 'USDT',
           category: 'investment',
-          status: 'success',
+          status: 'completed',
           notes: `Investment in ${selectedPlan.name} plan`,
           processed_at: new Date().toISOString()
         });
@@ -344,32 +379,68 @@ const Invest = () => {
                 <div className="space-y-4">
                   {userInvestments.map((investment) => {
                     const dailyAmount = (investment.amount * investment.daily_return) / 100;
-                    const daysElapsed = Math.floor((new Date().getTime() - new Date(investment.started_at).getTime()) / (1000 * 60 * 60 * 24));
+                    const startDate = new Date(investment.started_at);
+                    const now = new Date();
+                    const daysElapsed = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+                    const progressPercent = Math.min((daysElapsed / investment.duration_days) * 100, 100);
+                    const totalEarned = investment.total_paid_out || 0;
+                    const expiresAt = new Date(investment.expires_at);
+                    const isExpired = now > expiresAt;
                     
                     return (
-                      <div key={investment.id} className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-4 border border-white/10">
+                      <div key={investment.id} className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-xl p-4 border border-white/10">
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="text-white font-semibold">{investment.plan_name}</h3>
-                          <Badge className={`${investment.status === 'active' ? 'bg-green-500' : 'bg-gray-500'} text-white`}>
-                            {investment.status}
+                          <Badge className={`${
+                            investment.status === 'active' 
+                              ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
+                              : investment.status === 'completed'
+                              ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                              : 'bg-gradient-to-r from-gray-500 to-gray-600'
+                          } text-white`}>
+                            {investment.status === 'active' && !isExpired ? 'Active' : investment.status === 'completed' ? 'Completed' : 'Expired'}
                           </Badge>
                         </div>
+                        
+                        <div className="mb-3">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-purple-300">Progress</span>
+                            <span className="text-white">{daysElapsed} / {investment.duration_days} days</span>
+                          </div>
+                          <Progress value={progressPercent} className="h-2" />
+                        </div>
+                        
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <p className="text-purple-300">Amount</p>
+                            <p className="text-purple-300">Invested</p>
                             <p className="text-white font-semibold">{investment.amount?.toLocaleString()} USDT</p>
                           </div>
                           <div>
                             <p className="text-purple-300">Daily ROI</p>
-                            <p className="text-white font-semibold">{dailyAmount.toFixed(2)} USDT</p>
+                            <p className="text-green-400 font-semibold">+{dailyAmount.toFixed(2)} USDT</p>
                           </div>
                           <div>
-                            <p className="text-purple-300">Progress</p>
-                            <p className="text-white font-semibold">{daysElapsed} / {investment.duration_days} days</p>
+                            <p className="text-purple-300">Total Earned</p>
+                            <p className="text-green-400 font-semibold">+{totalEarned.toFixed(2)} USDT</p>
                           </div>
                           <div>
-                            <p className="text-purple-300">Total Return</p>
+                            <p className="text-purple-300">Expected Return</p>
                             <p className="text-white font-semibold">{investment.total_return?.toFixed(2)} USDT</p>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-3 pt-3 border-t border-white/10">
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center text-purple-300">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              Started: {startDate.toLocaleDateString()}
+                            </div>
+                            {investment.last_payout_at && (
+                              <div className="flex items-center text-green-400">
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Last payout: {new Date(investment.last_payout_at).toLocaleDateString()}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
