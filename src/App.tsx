@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { PrivateRoute } from "@/components/PrivateRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { Dashboard } from "./pages/Dashboard";
@@ -33,17 +33,61 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/invest" element={<ProtectedRoute><Invest /></ProtectedRoute>} />
-            <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
-            <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/calculator" element={<ProtectedRoute><Calculator /></ProtectedRoute>} />
-            <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-            <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
-            <Route path="/investment-records" element={<ProtectedRoute><InvestmentRecords /></ProtectedRoute>} />
-            <Route path="/intraday-trading" element={<ProtectedRoute><IntradayTrading /></ProtectedRoute>} />
-            <Route path="/forex-trading" element={<ProtectedRoute><ForexTrading /></ProtectedRoute>} />
+            <Route path="/dashboard" element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            } />
+            <Route path="/invest" element={
+              <PrivateRoute>
+                <Invest />
+              </PrivateRoute>
+            } />
+            <Route path="/wallet" element={
+              <PrivateRoute>
+                <Wallet />
+              </PrivateRoute>
+            } />
+            <Route path="/referrals" element={
+              <PrivateRoute>
+                <Referrals />
+              </PrivateRoute>
+            } />
+            <Route path="/settings" element={
+              <PrivateRoute>
+                <Settings />
+              </PrivateRoute>
+            } />
+            <Route path="/calculator" element={
+              <PrivateRoute>
+                <Calculator />
+              </PrivateRoute>
+            } />
+            <Route path="/leaderboard" element={
+              <PrivateRoute>
+                <Leaderboard />
+              </PrivateRoute>
+            } />
+            <Route path="/rewards" element={
+              <PrivateRoute>
+                <Rewards />
+              </PrivateRoute>
+            } />
+            <Route path="/investment-records" element={
+              <PrivateRoute>
+                <InvestmentRecords />
+              </PrivateRoute>
+            } />
+            <Route path="/intraday-trading" element={
+              <PrivateRoute>
+                <IntradayTrading />
+              </PrivateRoute>
+            } />
+            <Route path="/forex-trading" element={
+              <PrivateRoute>
+                <ForexTrading />
+              </PrivateRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
