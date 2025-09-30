@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const fetchUserProfile = async (userId: string) => {
@@ -85,7 +85,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           });
           setIsAdmin(userRole?.role === 'admin' || userRole?.role === 'super_admin');
         }
-        setLoading(false);
         return;
       }
 
@@ -106,10 +105,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
         setIsAdmin(profile.role === 'admin' || profile.role === 'super_admin');
       }
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      setLoading(false);
     }
   };
 
@@ -130,8 +127,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (session?.user) {
         fetchUserProfile(session.user.id);
-      } else {
-        setLoading(false);
       }
     });
 
@@ -148,8 +143,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setProfile(null);
           setIsAdmin(false);
         }
-        
-        setLoading(false);
       }
     );
 
