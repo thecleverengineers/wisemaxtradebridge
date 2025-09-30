@@ -49,6 +49,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('AuthContext - Fetching profile for:', userId);
+      
       // Use the get_user_profile function for better performance and type safety
       const { data: profileData, error: profileError } = await supabase
         .rpc('get_user_profile', { _user_id: userId });
@@ -83,11 +85,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           });
           setIsAdmin(userRole?.role === 'admin' || userRole?.role === 'super_admin');
         }
+        setLoading(false);
         return;
       }
 
       if (profileData && profileData.length > 0) {
         const profile = profileData[0];
+        console.log('AuthContext - Profile fetched:', profile.name);
         setProfile({
           id: profile.id,
           name: profile.name,
@@ -102,8 +106,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
         setIsAdmin(profile.role === 'admin' || profile.role === 'super_admin');
       }
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching user profile:', error);
+      setLoading(false);
     }
   };
 
@@ -114,16 +120,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    console.log('AuthContext - Setting up auth listener');
+    
+    // Check for existing session first
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('AuthContext - Initial session check:', session?.user?.email);
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('AuthContext - Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          setTimeout(() => {
-            fetchUserProfile(session.user.id);
-          }, 0);
+          await fetchUserProfile(session.user.id);
         } else {
           setProfile(null);
           setIsAdmin(false);
@@ -132,18 +152,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
       }
     );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      }
-      
-      setLoading(false);
-    });
 
     return () => subscription.unsubscribe();
   }, []);

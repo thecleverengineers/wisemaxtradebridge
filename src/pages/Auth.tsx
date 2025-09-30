@@ -37,7 +37,9 @@ const Auth = () => {
 
   // Redirect if already logged in
   useEffect(() => {
+    console.log('Auth page - user state:', user?.email);
     if (user) {
+      console.log('Auth page - Redirecting to dashboard');
       navigate('/dashboard', { replace: true });
     }
   }, [user, navigate]);
