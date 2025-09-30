@@ -15,8 +15,11 @@ import { AppHeader } from '@/components/layout/AppHeader';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import investmentBasic from '@/assets/investment-basic.jpg';
+import investmentSilver from '@/assets/investment-silver.jpg';
+import investmentGold from '@/assets/investment-gold.jpg';
 import investmentPremium from '@/assets/investment-premium.jpg';
 import investmentElite from '@/assets/investment-elite.jpg';
+import investmentPlatinum from '@/assets/investment-platinum.jpg';
 
 interface InvestmentPlan {
   id: string;
@@ -59,34 +62,64 @@ const Invest = () => {
   // Get plan image based on plan name
   const getPlanImage = (planName: string) => {
     const name = planName.toLowerCase();
-    if (name.includes('elite') || name.includes('vip') || name.includes('platinum')) {
-      return investmentElite;
-    } else if (name.includes('premium') || name.includes('gold') || name.includes('silver')) {
-      return investmentPremium;
+    switch (name) {
+      case 'basic':
+        return investmentBasic;
+      case 'silver':
+        return investmentSilver;
+      case 'gold':
+        return investmentGold;
+      case 'premium':
+        return investmentPremium;
+      case 'elite':
+        return investmentElite;
+      case 'platinum':
+        return investmentPlatinum;
+      default:
+        return investmentBasic;
     }
-    return investmentBasic;
   };
   
   // Get plan icon based on plan name
   const getPlanIcon = (planName: string) => {
     const name = planName.toLowerCase();
-    if (name.includes('elite') || name.includes('vip') || name.includes('platinum')) {
-      return Crown;
-    } else if (name.includes('premium') || name.includes('gold') || name.includes('silver')) {
-      return Award;
+    switch (name) {
+      case 'basic':
+        return Shield;
+      case 'silver':
+        return Sparkles;
+      case 'gold':
+        return Award;
+      case 'premium':
+        return Zap;
+      case 'elite':
+        return Crown;
+      case 'platinum':
+        return Crown;
+      default:
+        return Shield;
     }
-    return Shield;
   };
   
   // Get plan color scheme
   const getPlanColors = (planName: string) => {
     const name = planName.toLowerCase();
-    if (name.includes('elite') || name.includes('vip') || name.includes('platinum')) {
-      return 'from-purple-600 via-pink-600 to-purple-600';
-    } else if (name.includes('premium') || name.includes('gold') || name.includes('silver')) {
-      return 'from-blue-600 via-cyan-600 to-blue-600';
+    switch (name) {
+      case 'basic':
+        return 'from-blue-500 via-blue-600 to-blue-700';
+      case 'silver':
+        return 'from-gray-400 via-gray-500 to-gray-600';
+      case 'gold':
+        return 'from-yellow-500 via-amber-500 to-yellow-600';
+      case 'premium':
+        return 'from-purple-500 via-purple-600 to-purple-700';
+      case 'elite':
+        return 'from-indigo-500 via-indigo-600 to-indigo-700';
+      case 'platinum':
+        return 'from-slate-600 via-slate-700 to-slate-900';
+      default:
+        return 'from-green-500 via-emerald-600 to-green-700';
     }
-    return 'from-green-600 via-emerald-600 to-green-600';
   };
 
   useEffect(() => {
