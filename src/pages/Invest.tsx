@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, Clock, Target, DollarSign, ArrowLeft, Calendar, CheckCircle, Wallet, AlertCircle } from 'lucide-react';
+import { TrendingUp, Clock, Target, DollarSign, ArrowLeft, Calendar, CheckCircle, Wallet, AlertCircle, Sparkles, Zap, Crown, Shield, Award, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +14,9 @@ import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { AppSidebar } from '@/components/layout/AppSidebar';
+import investmentBasic from '@/assets/investment-basic.jpg';
+import investmentPremium from '@/assets/investment-premium.jpg';
+import investmentElite from '@/assets/investment-elite.jpg';
 
 interface InvestmentPlan {
   id: string;
@@ -52,6 +55,39 @@ const Invest = () => {
   
   const [investing, setInvesting] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  
+  // Get plan image based on plan name
+  const getPlanImage = (planName: string) => {
+    const name = planName.toLowerCase();
+    if (name.includes('elite') || name.includes('vip') || name.includes('platinum')) {
+      return investmentElite;
+    } else if (name.includes('premium') || name.includes('gold') || name.includes('silver')) {
+      return investmentPremium;
+    }
+    return investmentBasic;
+  };
+  
+  // Get plan icon based on plan name
+  const getPlanIcon = (planName: string) => {
+    const name = planName.toLowerCase();
+    if (name.includes('elite') || name.includes('vip') || name.includes('platinum')) {
+      return Crown;
+    } else if (name.includes('premium') || name.includes('gold') || name.includes('silver')) {
+      return Award;
+    }
+    return Shield;
+  };
+  
+  // Get plan color scheme
+  const getPlanColors = (planName: string) => {
+    const name = planName.toLowerCase();
+    if (name.includes('elite') || name.includes('vip') || name.includes('platinum')) {
+      return 'from-purple-600 via-pink-600 to-purple-600';
+    } else if (name.includes('premium') || name.includes('gold') || name.includes('silver')) {
+      return 'from-blue-600 via-cyan-600 to-blue-600';
+    }
+    return 'from-green-600 via-emerald-600 to-green-600';
+  };
 
   useEffect(() => {
     if (user) {
@@ -257,108 +293,176 @@ const Invest = () => {
           </div>
 
           {/* Investment Plans */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {investmentPlans.map((plan) => (
-              <Card key={plan.id} className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center justify-between">
-                    {plan.name}
-                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
-                      {plan.daily_roi}% Daily
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription className="text-purple-300">
-                    {plan.description || 'Premium investment plan with guaranteed returns'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-purple-300">Min Amount</p>
-                      <p className="text-white font-semibold">{plan.min_amount?.toLocaleString()} USDT</p>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {investmentPlans.map((plan, index) => {
+              const Icon = getPlanIcon(plan.name);
+              const gradientColors = getPlanColors(plan.name);
+              const planImage = getPlanImage(plan.name);
+              
+              return (
+                <div key={plan.id} className="group relative animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+                  {/* Glow effect */}
+                  <div className={`absolute -inset-0.5 bg-gradient-to-r ${gradientColors} rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-1000`}></div>
+                  
+                  <Card className="relative bg-slate-900/90 border-white/10 overflow-hidden hover:border-white/20 transition-all duration-300 hover:scale-[1.02]">
+                    {/* Image Section */}
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={planImage} 
+                        alt={plan.name}
+                        className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
+                      
+                      {/* Plan Icon */}
+                      <div className={`absolute top-4 right-4 p-3 bg-gradient-to-r ${gradientColors} rounded-xl shadow-lg`}>
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      
+                      {/* Plan Name & Badge */}
+                      <div className="absolute bottom-4 left-4">
+                        <h3 className="text-2xl font-bold text-white mb-1">{plan.name}</h3>
+                        <Badge className={`bg-gradient-to-r ${gradientColors} text-white border-0 px-3 py-1`}>
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          {plan.daily_roi}% Daily ROI
+                        </Badge>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-purple-300">Duration</p>
-                      <p className="text-white font-semibold">{plan.duration_days} Days</p>
-                    </div>
-                    <div>
-                      <p className="text-purple-300">Max Amount</p>
-                      <p className="text-white font-semibold">{plan.max_amount?.toLocaleString() || 'No Limit'} USDT</p>
-                    </div>
-                    <div>
-                      <p className="text-purple-300">Total Return</p>
-                      <p className="text-white font-semibold">{plan.total_return_percent}%</p>
-                    </div>
-                  </div>
-
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                        onClick={() => setSelectedPlan(plan)}
-                      >
-                        <TrendingUp className="h-4 w-4 mr-2" />
-                        Invest Now
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-slate-800 border-white/10">
-                      <DialogHeader>
-                        <DialogTitle className="text-white">Invest in {selectedPlan?.name}</DialogTitle>
-                        <DialogDescription className="text-purple-300">
-                          Enter the amount you want to invest from your wallet
-                        </DialogDescription>
-                      </DialogHeader>
+                    
+                    <CardContent className="p-6 space-y-6">
+                      {/* Description */}
+                      <p className="text-purple-200 text-sm">
+                        {plan.description || 'Experience premium returns with our carefully designed investment strategy'}
+                      </p>
+                      
+                      {/* Investment Details */}
                       <div className="space-y-4">
-                        <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-lg p-3 border border-white/10">
-                          <div className="flex items-center justify-between">
-                            <span className="text-purple-300 flex items-center">
-                              <Wallet className="h-4 w-4 mr-2" />
-                              Wallet Balance:
-                            </span>
-                            <span className="text-white font-semibold">{walletBalance.toFixed(2)} USDT</span>
+                        <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <DollarSign className="h-4 w-4 text-green-400" />
+                            <span className="text-purple-300 text-sm">Min Investment</span>
                           </div>
+                          <span className="text-white font-bold">{plan.min_amount?.toLocaleString()} USDT</span>
                         </div>
-                        <div>
-                          <Label htmlFor="amount" className="text-white">Investment Amount (USDT)</Label>
-                          <Input
-                            id="amount"
-                            type="number"
-                            placeholder={`Min: ${selectedPlan?.min_amount?.toLocaleString()} USDT`}
-                            value={investAmount}
-                            onChange={(e) => setInvestAmount(e.target.value)}
-                            className="bg-white/5 border-white/10 text-white"
-                          />
+                        
+                        <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <Target className="h-4 w-4 text-blue-400" />
+                            <span className="text-purple-300 text-sm">Max Investment</span>
+                          </div>
+                          <span className="text-white font-bold">{plan.max_amount?.toLocaleString() || 'Unlimited'}</span>
                         </div>
-                        {selectedPlan && investAmount && (
-                          <div className="bg-white/5 rounded-lg p-4 space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-purple-300">Daily ROI:</span>
-                              <span className="text-white">{((parseFloat(investAmount) * selectedPlan.daily_roi) / 100).toFixed(2)} USDT</span>
+                        
+                        <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <Clock className="h-4 w-4 text-purple-400" />
+                            <span className="text-purple-300 text-sm">Duration</span>
+                          </div>
+                          <span className="text-white font-bold">{plan.duration_days} Days</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <TrendingUp className="h-4 w-4 text-yellow-400" />
+                            <span className="text-purple-300 text-sm">Total Return</span>
+                          </div>
+                          <span className="text-green-400 font-bold text-lg">+{plan.total_return_percent}%</span>
+                        </div>
+                      </div>
+                      
+                      {/* Investment Features */}
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm text-purple-200">
+                          <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+                          Daily automated payouts
+                        </div>
+                        <div className="flex items-center text-sm text-purple-200">
+                          <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+                          Secure & guaranteed returns
+                        </div>
+                        <div className="flex items-center text-sm text-purple-200">
+                          <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+                          24/7 investment monitoring
+                        </div>
+                      </div>
+                      
+                      {/* CTA Button */}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            className={`w-full bg-gradient-to-r ${gradientColors} hover:opacity-90 transition-all duration-300 group`}
+                            onClick={() => setSelectedPlan(plan)}
+                            size="lg"
+                          >
+                            <Zap className="h-5 w-5 mr-2 group-hover:animate-pulse" />
+                            Start Investing
+                            <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="bg-slate-900 border-white/10 max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="text-white flex items-center">
+                              <Icon className="h-5 w-5 mr-2" />
+                              Invest in {selectedPlan?.name}
+                            </DialogTitle>
+                            <DialogDescription className="text-purple-300">
+                              Enter the amount you want to invest from your wallet
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-lg p-3 border border-white/10">
+                              <div className="flex items-center justify-between">
+                                <span className="text-purple-300 flex items-center">
+                                  <Wallet className="h-4 w-4 mr-2" />
+                                  Wallet Balance:
+                                </span>
+                                <span className="text-white font-semibold">{walletBalance.toFixed(2)} USDT</span>
+                              </div>
                             </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-purple-300">Total Return:</span>
-                              <span className="text-white">{((parseFloat(investAmount) * selectedPlan.total_return_percent) / 100).toFixed(2)} USDT</span>
+                            <div>
+                              <Label htmlFor="amount" className="text-white">Investment Amount (USDT)</Label>
+                              <Input
+                                id="amount"
+                                type="number"
+                                placeholder={`Min: ${selectedPlan?.min_amount?.toLocaleString()} USDT`}
+                                value={investAmount}
+                                onChange={(e) => setInvestAmount(e.target.value)}
+                                className="bg-white/5 border-white/10 text-white"
+                              />
                             </div>
-                            {parseFloat(investAmount) > walletBalance && (
-                              <div className="text-red-400 text-sm mt-2">
-                                Insufficient wallet balance
+                            {selectedPlan && investAmount && (
+                              <div className="bg-white/5 rounded-lg p-4 space-y-2">
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-purple-300">Daily ROI:</span>
+                                  <span className="text-green-400 font-semibold">+{((parseFloat(investAmount) * selectedPlan.daily_roi) / 100).toFixed(2)} USDT</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-purple-300">Total Return:</span>
+                                  <span className="text-green-400 font-semibold">+{((parseFloat(investAmount) * selectedPlan.total_return_percent) / 100).toFixed(2)} USDT</span>
+                                </div>
+                                {parseFloat(investAmount) > walletBalance && (
+                                  <div className="flex items-center text-red-400 text-sm mt-2">
+                                    <AlertCircle className="h-4 w-4 mr-1" />
+                                    Insufficient wallet balance
+                                  </div>
+                                )}
                               </div>
                             )}
+                            <Button 
+                              onClick={handleInvest} 
+                              disabled={investing || !investAmount || parseFloat(investAmount) > walletBalance}
+                              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                            >
+                              {investing ? 'Processing...' : 'Confirm Investment'}
+                            </Button>
                           </div>
-                        )}
-                        <Button 
-                          onClick={handleInvest} 
-                          disabled={investing || !investAmount || parseFloat(investAmount) > walletBalance}
-                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                        >
-                          {investing ? 'Processing...' : 'Confirm Investment'}
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </CardContent>
-              </Card>
-            ))}
+                        </DialogContent>
+                      </Dialog>
+                    </CardContent>
+                  </Card>
+                </div>
+              );
+            })}
           </div>
 
           {/* User's Investments */}
