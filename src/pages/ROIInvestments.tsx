@@ -13,8 +13,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { 
   TrendingUp, Zap, Users, Leaf, Shield, Brain, 
   Clock, Trophy, Sparkles, DollarSign, Info,
-  Star, Rocket, Target, Gift, Lock, Package, Gamepad2
+  Star, Rocket, Target, Gift, Lock, Package, Gamepad2,
+  RefreshCw, Activity, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 interface ROIPlan {
   id: string;
@@ -35,6 +37,22 @@ interface ROIPlan {
   current_users?: number | null;
   activation_rules?: any;
   bonus_structure?: any;
+}
+
+interface UserInvestment {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  amount: number;
+  current_value: number;
+  maturity_date: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  last_calculation_date: string;
+  total_withdrawn: number;
+  auto_reinvest: boolean;
+  roi_plans?: ROIPlan;
 }
 
 const categoryIcons: Record<string, any> = {
@@ -67,16 +85,130 @@ const categoryColors: Record<string, string> = {
 
 export default function ROIInvestments() {
   const [plans, setPlans] = useState<ROIPlan[]>([]);
+  const [userInvestments, setUserInvestments] = useState<UserInvestment[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedPlan, setSelectedPlan] = useState<ROIPlan | null>(null);
   const [investmentAmount, setInvestmentAmount] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [totalInvested, setTotalInvested] = useState(0);
+  const [totalEarnings, setTotalEarnings] = useState(0);
   const { toast } = useToast();
   const { user } = useAuth();
 
   useEffect(() => {
+    if (!user) return;
+
     fetchPlans();
-  }, []);
+    fetchUserInvestments();
+
+    // Set up real-time subscriptions
+    const channel = setupRealtimeSubscriptions();
+
+    return () => {
+      channel?.unsubscribe();
+    };
+  }, [user]);
+
+  const fetchUserInvestments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roi_investments')
+        .select(`
+          *,
+          roi_plans (*)
+        `)
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      setUserInvestments(data || []);
+      
+      // Calculate totals
+      if (data) {
+        const invested = data.reduce((sum, inv) => sum + inv.amount, 0);
+        const earnings = data.reduce((sum, inv) => sum + (inv.current_value - inv.amount), 0);
+        setTotalInvested(invested);
+        setTotalEarnings(earnings);
+      }
+    } catch (error: any) {
+      console.error('Error fetching user investments:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch your investments',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const setupRealtimeSubscriptions = (): RealtimeChannel | null => {
+    if (!user) return null;
+
+    const channel = supabase.channel('roi-investments')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_roi_investments',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Investment update:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            fetchUserInvestments();
+          } else if (payload.eventType === 'UPDATE') {
+            setUserInvestments(prev => prev.map(inv => 
+              inv.id === payload.new.id ? { ...inv, ...payload.new } : inv
+            ));
+            
+            // Recalculate totals
+            const updated = userInvestments.map(inv => 
+              inv.id === payload.new.id ? { ...inv, ...payload.new } : inv
+            );
+            const invested = updated.reduce((sum, inv) => sum + inv.amount, 0);
+            const earnings = updated.reduce((sum, inv) => sum + (inv.current_value - inv.amount), 0);
+            setTotalInvested(invested);
+            setTotalEarnings(earnings);
+          } else if (payload.eventType === 'DELETE') {
+            setUserInvestments(prev => prev.filter(inv => inv.id !== payload.old.id));
+            fetchUserInvestments();
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'roi_plans'
+        },
+        (payload) => {
+          console.log('Plan update:', payload);
+          fetchPlans();
+        }
+      )
+      .subscribe();
+
+    return channel;
+  };
+
+  const refreshData = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([fetchPlans(), fetchUserInvestments()]);
+      toast({
+        title: 'Data Refreshed',
+        description: 'All investment data has been updated',
+      });
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const fetchPlans = async () => {
     try {
@@ -107,7 +239,7 @@ export default function ROIInvestments() {
       return;
     }
 
-    if (parseFloat(investmentAmount) > plan.max_investment) {
+    if (plan.max_investment && parseFloat(investmentAmount) > plan.max_investment) {
       toast({
         title: 'Invalid Amount',
         description: `Maximum investment is $${plan.max_investment}`,
@@ -162,7 +294,7 @@ export default function ROIInvestments() {
     ? plans 
     : plans.filter(plan => plan.plan_category === selectedCategory);
 
-  const categories = ['all', ...Array.from(new Set(plans.map(p => p.plan_category)))];
+  const categories = ['all', ...Array.from(new Set(plans.map(p => p.plan_category).filter(Boolean)))];
 
   const getPlanBadge = (plan: ROIPlan) => {
     if (plan.plan_type === 'flash') return <Badge className="bg-red-500">Flash Deal</Badge>;
@@ -182,13 +314,149 @@ export default function ROIInvestments() {
       
       <main className="container mx-auto px-4 py-6 space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            Revolutionary Investment Plans
-          </h1>
+          <div className="flex items-center justify-center gap-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              Revolutionary Investment Plans
+            </h1>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={refreshData}
+              disabled={isRefreshing}
+              className={isRefreshing ? 'animate-spin' : ''}
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
           <p className="text-muted-foreground">
             Discover innovative ways to grow your wealth
           </p>
         </div>
+
+        {/* Real-time Investment Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Total Invested
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">${totalInvested.toFixed(2)}</p>
+              <p className="text-xs opacity-80">Across {userInvestments.length} plans</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Total Earnings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">
+                {totalEarnings >= 0 ? '+' : ''}{`$${totalEarnings.toFixed(2)}`}
+              </p>
+              <p className="text-xs opacity-80 flex items-center gap-1">
+                {totalEarnings >= 0 ? 
+                  <ArrowUpRight className="h-3 w-3" /> : 
+                  <ArrowDownRight className="h-3 w-3" />
+                }
+                {totalInvested > 0 ? 
+                  `${((totalEarnings / totalInvested) * 100).toFixed(2)}% ROI` : 
+                  '0% ROI'
+                }
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Active Plans
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">
+                {userInvestments.filter(inv => inv.status === 'active').length}
+              </p>
+              <p className="text-xs opacity-80">Currently earning</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-orange-600 to-yellow-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Portfolio Value
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">
+                ${userInvestments.reduce((sum, inv) => sum + inv.current_value, 0).toFixed(2)}
+              </p>
+              <p className="text-xs opacity-80">Current total value</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Active Investments Section */}
+        {userInvestments.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Your Active Investments
+                <Badge variant="secondary">{userInvestments.length}</Badge>
+              </CardTitle>
+              <CardDescription>Real-time tracking of your investment portfolio</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                {userInvestments.map((investment) => (
+                  <div key={investment.id} className="p-4 border rounded-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold">{investment.roi_plans?.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Invested: ${investment.amount.toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-lg">
+                          ${investment.current_value.toFixed(2)}
+                        </p>
+                        <p className={`text-sm ${investment.current_value > investment.amount ? 'text-green-500' : 'text-red-500'}`}>
+                          {investment.current_value > investment.amount ? '+' : ''}
+                          ${(investment.current_value - investment.amount).toFixed(2)}
+                          ({((investment.current_value - investment.amount) / investment.amount * 100).toFixed(2)}%)
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <Badge variant={investment.status === 'active' ? 'default' : 'secondary'}>
+                        {investment.status}
+                      </Badge>
+                      <span className="text-muted-foreground">
+                        Matures: {new Date(investment.maturity_date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <Progress 
+                      value={
+                        ((new Date().getTime() - new Date(investment.created_at).getTime()) /
+                        (new Date(investment.maturity_date).getTime() - new Date(investment.created_at).getTime())) * 100
+                      } 
+                      className="h-2"
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
           <TabsList className="grid grid-cols-4 lg:grid-cols-6 gap-2 h-auto p-1">
@@ -272,7 +540,7 @@ export default function ROIInvestments() {
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Max</span>
-                          <span className="font-semibold">${plan.max_investment.toLocaleString()}</span>
+                          <span className="font-semibold">${plan.max_investment?.toLocaleString() || 'Unlimited'}</span>
                         </div>
                       </div>
 
