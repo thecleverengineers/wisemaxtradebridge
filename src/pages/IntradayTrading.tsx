@@ -97,21 +97,42 @@ const IntradayTrading = () => {
       return;
     }
 
+    // Set a timeout to prevent infinite loading
+    const loadingTimeout = setTimeout(() => {
+      if (loading) {
+        console.log('Loading timeout reached, forcing loading to false');
+        setLoading(false);
+        toast({
+          title: "Loading Timeout",
+          description: "Market data took too long to load. Please refresh the page.",
+          variant: "destructive",
+        });
+      }
+    }, 10000); // 10 second timeout
+
     fetchData();
     const channel = setupRealtimeSubscriptions();
 
-    // Simulate price updates every 5-10 seconds
+    return () => {
+      clearTimeout(loadingTimeout);
+      channel?.unsubscribe();
+    };
+  }, [user, navigate]);
+
+  // Start price updates once stocks are loaded
+  useEffect(() => {
+    if (stocks.length === 0) return;
+
     const priceUpdateInterval = setInterval(() => {
       updateStockPrices();
-    }, Math.random() * 5000 + 5000);
+    }, 8000); // Update every 8 seconds
 
-    return () => {
-      channel?.unsubscribe();
-      clearInterval(priceUpdateInterval);
-    };
-  }, [user]);
+    return () => clearInterval(priceUpdateInterval);
+  }, [stocks.length]);
 
   const fetchData = async () => {
+    console.log('Starting to fetch data...');
+    setLoading(true);
     try {
       await Promise.all([
         fetchStocks(),
@@ -119,28 +140,55 @@ const IntradayTrading = () => {
         fetchOrders(),
         fetchWalletBalance()
       ]);
+      console.log('Data fetched successfully');
     } catch (error) {
       console.error('Error fetching data:', error);
+      toast({
+        title: "Error Loading Data",
+        description: "Failed to load market data. Please refresh the page.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
+      console.log('Loading state set to false');
     }
   };
 
   const fetchStocks = async () => {
-    const { data, error } = await supabase
-      .from('stocks')
-      .select('*')
-      .order('symbol', { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from('stocks')
+        .select('*')
+        .order('symbol', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching stocks:', error);
+      if (error) {
+        console.error('Error fetching stocks:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch market data: " + error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        setStocks(data);
+      } else {
+        // If no stocks exist, the initial migration might have failed
+        console.log('No stocks found in database');
+        toast({
+          title: "No Market Data",
+          description: "Market data is being initialized. Please refresh the page.",
+          variant: "default",
+        });
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching stocks:', err);
       toast({
         title: "Error",
-        description: "Failed to fetch market data",
+        description: "An unexpected error occurred while fetching market data",
         variant: "destructive",
       });
-    } else {
-      setStocks(data || []);
     }
   };
 
@@ -264,6 +312,8 @@ const IntradayTrading = () => {
   };
 
   const updateStockPrices = async () => {
+    if (stocks.length === 0) return;
+    
     // Simulate price changes
     const updatedStocks = stocks.map(stock => ({
       ...stock,
