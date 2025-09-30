@@ -83,7 +83,8 @@ const IntradayTrading = () => {
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const [tradeAmount, setTradeAmount] = useState('');
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Changed from true to false to not block UI
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
   const [orderType, setOrderType] = useState<'market' | 'limit'>('market');
   const [limitPrice, setLimitPrice] = useState('');
@@ -132,7 +133,7 @@ const IntradayTrading = () => {
 
   const fetchData = async () => {
     console.log('Starting to fetch data...');
-    setLoading(true);
+    setIsRefreshing(true);
     try {
       await Promise.all([
         fetchStocks(),
@@ -149,9 +150,9 @@ const IntradayTrading = () => {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
-      console.log('Loading state set to false');
+      setIsRefreshing(false);
     }
+    console.log('Data fetch complete');
   };
 
   const fetchStocks = async () => {
@@ -510,13 +511,7 @@ const IntradayTrading = () => {
     return change >= 0 ? 'text-green-400' : 'text-red-400';
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white">Loading market data...</div>
-      </div>
-    );
-  }
+  // Remove the loading screen completely, show UI immediately
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -548,8 +543,9 @@ const IntradayTrading = () => {
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="border-white/10"
+                className={`border-white/10 ${isRefreshing ? 'animate-spin' : ''}`}
                 onClick={fetchData}
+                disabled={isRefreshing}
               >
                 <RefreshCw className="h-4 w-4" />
               </Button>
@@ -563,7 +559,9 @@ const IntradayTrading = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-green-100 text-sm">Total P&L</p>
-                    <p className="text-2xl font-bold">${getTotalPNL().toFixed(2)} USDT</p>
+                    <p className="text-2xl font-bold">
+                      {positions.length > 0 ? `$${getTotalPNL().toFixed(2)} USDT` : '--'}
+                    </p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-green-200" />
                 </div>
@@ -587,7 +585,9 @@ const IntradayTrading = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-purple-300 text-sm">Available Balance</p>
-                    <p className="text-white text-2xl font-bold">${walletBalance.toFixed(2)} USDT</p>
+                    <p className="text-white text-2xl font-bold">
+                      {walletBalance > 0 ? `$${walletBalance.toFixed(2)} USDT` : '--'}
+                    </p>
                   </div>
                   <DollarSign className="h-8 w-8 text-purple-400" />
                 </div>
@@ -627,49 +627,74 @@ const IntradayTrading = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                        {stocks.map((stock) => (
-                          <div
-                            key={stock.id}
-                            onClick={() => setSelectedStock(stock)}
-                            className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${
-                              selectedStock?.id === stock.id 
-                                ? 'bg-purple-600/20 border border-purple-500/30' 
-                                : 'bg-white/5 hover:bg-white/10'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h3 className="text-white font-semibold">{stock.symbol}</h3>
-                                <p className="text-purple-300 text-sm">{stock.name}</p>
-                                {stock.sector && (
-                                  <Badge className="mt-1 bg-purple-600/20 text-purple-300 border-purple-500/30">
-                                    {stock.sector}
-                                  </Badge>
-                                )}
+                        {stocks.length === 0 ? (
+                          // Show skeleton loaders while loading
+                          <>
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <div key={i} className="p-4 rounded-lg bg-white/5 animate-pulse">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <div className="h-5 w-24 bg-white/10 rounded mb-2"></div>
+                                    <div className="h-4 w-32 bg-white/10 rounded"></div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="h-5 w-20 bg-white/10 rounded mb-2"></div>
+                                    <div className="h-4 w-24 bg-white/10 rounded"></div>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4 mt-3">
+                                  <div className="h-8 bg-white/10 rounded"></div>
+                                  <div className="h-8 bg-white/10 rounded"></div>
+                                  <div className="h-8 bg-white/10 rounded"></div>
+                                </div>
                               </div>
-                              <div className="text-right">
-                                <p className="text-white font-semibold">${stock.price.toFixed(2)}</p>
-                                <p className={`text-sm ${getStockChangeColor(stock.change_amount)}`}>
-                                  {stock.change_amount >= 0 ? '+' : ''}{stock.change_amount.toFixed(2)} ({stock.change_percent.toFixed(2)}%)
-                                </p>
+                            ))}
+                          </>
+                        ) : (
+                          stocks.map((stock) => (
+                            <div
+                              key={stock.id}
+                              onClick={() => setSelectedStock(stock)}
+                              className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${
+                                selectedStock?.id === stock.id 
+                                  ? 'bg-purple-600/20 border border-purple-500/30' 
+                                  : 'bg-white/5 hover:bg-white/10'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h3 className="text-white font-semibold">{stock.symbol}</h3>
+                                  <p className="text-purple-300 text-sm">{stock.name}</p>
+                                  {stock.sector && (
+                                    <Badge className="mt-1 bg-purple-600/20 text-purple-300 border-purple-500/30">
+                                      {stock.sector}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-white font-semibold">${stock.price.toFixed(2)}</p>
+                                  <p className={`text-sm ${getStockChangeColor(stock.change_amount)}`}>
+                                    {stock.change_amount >= 0 ? '+' : ''}{stock.change_amount.toFixed(2)} ({stock.change_percent.toFixed(2)}%)
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-3 gap-4 mt-3 text-sm">
+                                <div>
+                                  <p className="text-purple-300">High</p>
+                                  <p className="text-white">${stock.day_high?.toFixed(2) || '--'}</p>
+                                </div>
+                                <div>
+                                  <p className="text-purple-300">Low</p>
+                                  <p className="text-white">${stock.day_low?.toFixed(2) || '--'}</p>
+                                </div>
+                                <div>
+                                  <p className="text-purple-300">Volume</p>
+                                  <p className="text-white">{(stock.volume / 1000).toFixed(0)}K</p>
+                                </div>
                               </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-4 mt-3 text-sm">
-                              <div>
-                                <p className="text-purple-300">High</p>
-                                <p className="text-white">${stock.day_high?.toFixed(2) || '--'}</p>
-                              </div>
-                              <div>
-                                <p className="text-purple-300">Low</p>
-                                <p className="text-white">${stock.day_low?.toFixed(2) || '--'}</p>
-                              </div>
-                              <div>
-                                <p className="text-purple-300">Volume</p>
-                                <p className="text-white">{(stock.volume / 1000).toFixed(0)}K</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                          ))
+                        )}
                       </div>
                     </CardContent>
                   </Card>
