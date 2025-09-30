@@ -193,6 +193,7 @@ const Invest = () => {
       } else {
         console.log('Setting investment plans:', plansData);
         setInvestmentPlans(plansData || []);
+        console.log('State after setting plans:', { investmentPlans: plansData || [] });
       }
 
       if (user?.id) {
@@ -207,10 +208,15 @@ const Invest = () => {
 
         if (investmentsError) {
           console.error('Investments error:', investmentsError);
-          throw investmentsError;
+          // Don't throw - just show error toast
+          toast({
+            title: "Error loading investments",
+            description: investmentsError.message,
+            variant: "destructive",
+          });
+        } else {
+          setUserInvestments(investmentsData || []);
         }
-        
-        setUserInvestments(investmentsData || []);
 
         // Fetch wallet balance
         const { data: walletData, error: walletError } = await supabase
@@ -224,10 +230,15 @@ const Invest = () => {
 
         if (walletError && walletError.code !== 'PGRST116') {
           console.error('Wallet error:', walletError);
-          throw walletError;
+          // Don't throw - just show error toast
+          toast({
+            title: "Error loading wallet",
+            description: walletError.message,
+            variant: "destructive",
+          });
+        } else {
+          setWalletBalance(walletData?.balance || 0);
         }
-        
-        setWalletBalance(walletData?.balance || 0);
       }
 
     } catch (error) {
@@ -335,6 +346,13 @@ const Invest = () => {
     }
   };
 
+
+  console.log('Rendering component with state:', { 
+    loading, 
+    investmentPlansLength: investmentPlans.length,
+    investmentPlans,
+    userInvestmentsLength: userInvestments.length 
+  });
 
   return (
     <div className="min-h-screen bg-slate-900">
