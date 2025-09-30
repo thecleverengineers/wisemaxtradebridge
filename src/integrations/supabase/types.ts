@@ -790,56 +790,144 @@ export type Database = {
           },
         ]
       }
+      staking_earnings: {
+        Row: {
+          amount: number
+          created_at: string | null
+          earned_date: string
+          id: string
+          position_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          earned_date: string
+          id?: string
+          position_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          earned_date?: string
+          id?: string
+          position_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staking_earnings_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "staking_positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staking_plans: {
+        Row: {
+          apy: number
+          bonus_text: string | null
+          created_at: string | null
+          description: string | null
+          duration_days: number
+          id: string
+          is_active: boolean | null
+          max_amount: number
+          min_amount: number
+          name: string
+          type: string
+        }
+        Insert: {
+          apy: number
+          bonus_text?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_days?: number
+          id?: string
+          is_active?: boolean | null
+          max_amount?: number
+          min_amount?: number
+          name: string
+          type: string
+        }
+        Update: {
+          apy?: number
+          bonus_text?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_days?: number
+          id?: string
+          is_active?: boolean | null
+          max_amount?: number
+          min_amount?: number
+          name?: string
+          type?: string
+        }
+        Relationships: []
+      }
       staking_positions: {
         Row: {
           amount: number
           apy: number
-          auto_compound: boolean | null
-          created_at: string
+          auto_renew: boolean | null
+          created_at: string | null
+          duration_days: number
+          end_date: string | null
           id: string
-          last_claim_date: string | null
-          locked_until: string | null
-          penalty_rate: number | null
-          rewards_earned: number | null
-          status: string
-          token: string
-          total_rewards_claimed: number | null
-          updated_at: string
+          last_payout_date: string | null
+          plan_id: string
+          start_date: string | null
+          status: string | null
+          total_earned: number | null
+          type: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
           amount: number
           apy: number
-          auto_compound?: boolean | null
-          created_at?: string
+          auto_renew?: boolean | null
+          created_at?: string | null
+          duration_days?: number
+          end_date?: string | null
           id?: string
-          last_claim_date?: string | null
-          locked_until?: string | null
-          penalty_rate?: number | null
-          rewards_earned?: number | null
-          status?: string
-          token: string
-          total_rewards_claimed?: number | null
-          updated_at?: string
+          last_payout_date?: string | null
+          plan_id: string
+          start_date?: string | null
+          status?: string | null
+          total_earned?: number | null
+          type: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
           amount?: number
           apy?: number
-          auto_compound?: boolean | null
-          created_at?: string
+          auto_renew?: boolean | null
+          created_at?: string | null
+          duration_days?: number
+          end_date?: string | null
           id?: string
-          last_claim_date?: string | null
-          locked_until?: string | null
-          penalty_rate?: number | null
-          rewards_earned?: number | null
-          status?: string
-          token?: string
-          total_rewards_claimed?: number | null
-          updated_at?: string
+          last_payout_date?: string | null
+          plan_id?: string
+          start_date?: string | null
+          status?: string | null
+          total_earned?: number | null
+          type?: string
+          updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "staking_positions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "staking_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trades: {
         Row: {

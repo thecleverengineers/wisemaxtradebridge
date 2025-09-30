@@ -27,47 +27,13 @@ import { useToast } from '@/hooks/use-toast';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { AppSidebar } from '@/components/layout/AppSidebar';
+import type { Database } from '@/integrations/supabase/types';
 
-interface StakingPlan {
-  id: string;
-  name: string;
-  type: 'flexible' | 'locked';
-  duration_days: number;
-  apy: number;
-  min_amount: number;
-  max_amount: number;
-  description: string;
-  bonus_text?: string;
-  is_active: boolean;
-}
-
-interface StakingPosition {
-  id: string;
-  user_id: string;
-  plan_id: string;
-  amount: number;
-  apy: number;
-  duration_days: number;
-  type: 'flexible' | 'locked';
-  start_date: string;
-  end_date?: string;
-  auto_renew: boolean;
-  total_earned: number;
-  last_payout_date?: string;
-  status: 'active' | 'completed' | 'withdrawn';
-  created_at: string;
-  updated_at: string;
-  plan?: StakingPlan;
-}
-
-interface StakingEarning {
-  id: string;
-  user_id: string;
-  position_id: string;
-  amount: number;
-  earned_date: string;
-  created_at: string;
-}
+type StakingPlan = Database['public']['Tables']['staking_plans']['Row'];
+type StakingPosition = Database['public']['Tables']['staking_positions']['Row'] & {
+  staking_plans?: StakingPlan;
+};
+type StakingEarning = Database['public']['Tables']['staking_earnings']['Row'];
 
 const USDTStaking = () => {
   const { user } = useAuth();
@@ -189,7 +155,7 @@ const USDTStaking = () => {
         .from('staking_positions')
         .select(`
           *,
-          plan:staking_plans(*)
+          staking_plans(*)
         `)
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
@@ -408,7 +374,7 @@ const USDTStaking = () => {
           currency: 'USDT',
           amount: returnAmount,
           status: 'completed',
-          notes: `Withdrawn from ${position.plan?.name || 'staking'}`
+          notes: `Withdrawn from ${position.staking_plans?.name || 'staking'}`
         });
 
       if (txError) throw txError;
@@ -745,7 +711,7 @@ const USDTStaking = () => {
                             </div>
                             <div>
                               <h3 className="text-white font-semibold">
-                                {position.plan?.name || (position.type === 'flexible' ? 'Flexible Staking' : `${position.duration_days} Days Locked`)}
+                                {position.staking_plans?.name || (position.type === 'flexible' ? 'Flexible Staking' : `${position.duration_days} Days Locked`)}
                               </h3>
                               <p className="text-purple-300 text-sm">
                                 Started: {new Date(position.start_date).toLocaleDateString()}
