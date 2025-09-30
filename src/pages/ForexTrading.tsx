@@ -198,7 +198,10 @@ const ForexTrading = () => {
         .limit(10);
 
       if (error) throw error;
-      setSignals(data || []);
+      setSignals((data || []).map(signal => ({
+        ...signal,
+        signal_type: signal.signal_type as 'buy' | 'sell'
+      })));
     } catch (error) {
       console.error('Error fetching signals:', error);
     }
@@ -641,7 +644,10 @@ const ForexTrading = () => {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <TradingChart pairId={selectedPair.id} />
+                        <TradingChart 
+                          pairSymbol={selectedPair.symbol}
+                          currentPrice={selectedPair.current_price}
+                        />
                         
                         {/* Market Info */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
@@ -675,7 +681,11 @@ const ForexTrading = () => {
                       <CardTitle className="text-white">Order Book</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <OrderBook pairId={selectedPair?.id || ''} />
+                      <OrderBook 
+                        pairSymbol={selectedPair?.symbol || 'EUR/USD'}
+                        currentPrice={selectedPair?.current_price || 0}
+                        spread={selectedPair?.spread || 0}
+                      />
                     </CardContent>
                   </Card>
 
