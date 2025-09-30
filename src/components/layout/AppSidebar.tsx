@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award, Shield, BarChart3 } from 'lucide-react';
+import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award, Shield, BarChart3, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -20,6 +20,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/' },
     { icon: BarChart3, label: 'Forex Trading', path: '/forex-trading' },
+    { icon: DollarSign, label: 'USDT Staking', path: '/usdt-staking', badge: 'New' },
     { icon: TrendingUp, label: 'Investments', path: '/invest', badge: '4' },
     { icon: Wallet, label: 'Wallet', path: '/wallet', badge: `₹${profile?.total_investment?.toLocaleString() || '0'}` },
     { icon: Users, label: 'Referrals', path: '/referrals' },
