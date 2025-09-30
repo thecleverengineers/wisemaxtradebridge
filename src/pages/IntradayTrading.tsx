@@ -86,6 +86,7 @@ const IntradayTrading = () => {
   const [loading, setLoading] = useState(false); // Changed from true to false to not block UI
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [selectedSector, setSelectedSector] = useState<string>('all');
   const [orderType, setOrderType] = useState<'market' | 'limit'>('market');
   const [limitPrice, setLimitPrice] = useState('');
   const [stopLoss, setStopLoss] = useState('');
@@ -506,6 +507,20 @@ const IntradayTrading = () => {
     return change >= 0 ? 'text-green-400' : 'text-red-400';
   };
 
+  const formatVolume = (volume: number): string => {
+    if (volume >= 1000000000) return `${(volume / 1000000000).toFixed(1)}B`;
+    if (volume >= 1000000) return `${(volume / 1000000).toFixed(1)}M`;
+    if (volume >= 1000) return `${(volume / 1000).toFixed(0)}K`;
+    return volume.toString();
+  };
+
+  const formatMarketCap = (marketCap: number): string => {
+    if (marketCap >= 1000000000000) return `${(marketCap / 1000000000000).toFixed(2)}T`;
+    if (marketCap >= 1000000000) return `${(marketCap / 1000000000).toFixed(0)}B`;
+    if (marketCap >= 1000000) return `${(marketCap / 1000000).toFixed(0)}M`;
+    return marketCap.toString();
+  };
+
   // Remove the loading screen completely, show UI immediately
 
   return (
@@ -615,7 +630,12 @@ const IntradayTrading = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-purple-300 text-sm">Total Stocks</p>
-                    <p className="text-white text-2xl font-bold">{stocks.length}</p>
+                    <p className="text-white text-2xl font-bold">
+                      {selectedSector === 'all' 
+                        ? stocks.length 
+                        : stocks.filter(s => s.sector === selectedSector).length} 
+                      {selectedSector !== 'all' && <span className="text-sm"> / {stocks.length}</span>}
+                    </p>
                   </div>
                   <BarChart3 className="h-8 w-8 text-purple-400" />
                 </div>
@@ -636,9 +656,32 @@ const IntradayTrading = () => {
                 <div className="lg:col-span-2">
                   <Card className="bg-white/5 border-white/10">
                     <CardHeader>
-                      <CardTitle className="text-white flex items-center">
-                        <Activity className="h-5 w-5 mr-2" />
-                        Live Market Data
+                      <CardTitle className="text-white flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Activity className="h-5 w-5 mr-2" />
+                          Live Market Data
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className={`border-white/10 ${selectedSector === 'all' ? 'bg-purple-600/20' : ''}`}
+                            onClick={() => setSelectedSector('all')}
+                          >
+                            All
+                          </Button>
+                          {['Technology', 'Finance', 'Energy', 'Healthcare', 'Retail', 'Automotive'].map(sector => (
+                            <Button
+                              key={sector}
+                              variant="outline"
+                              size="sm"
+                              className={`border-white/10 ${selectedSector === sector ? 'bg-purple-600/20' : ''}`}
+                              onClick={() => setSelectedSector(sector)}
+                            >
+                              {sector}
+                            </Button>
+                          ))}
+                        </div>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -667,7 +710,9 @@ const IntradayTrading = () => {
                             ))}
                           </>
                         ) : (
-                          stocks.map((stock) => (
+                          stocks
+                            .filter(stock => selectedSector === 'all' || stock.sector === selectedSector)
+                            .map((stock) => (
                             <div
                               key={stock.id}
                               onClick={() => setSelectedStock(stock)}
@@ -705,9 +750,14 @@ const IntradayTrading = () => {
                                 </div>
                                 <div>
                                   <p className="text-purple-300">Volume</p>
-                                  <p className="text-white">{(stock.volume / 1000).toFixed(0)}K</p>
+                                  <p className="text-white">{formatVolume(stock.volume)}</p>
                                 </div>
                               </div>
+                              {stock.market_cap && (
+                                <div className="mt-2 pt-2 border-t border-white/10">
+                                  <p className="text-purple-300 text-xs">Market Cap: ${formatMarketCap(stock.market_cap)}</p>
+                                </div>
+                              )}
                             </div>
                           ))
                         )}
