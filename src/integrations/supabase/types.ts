@@ -400,6 +400,134 @@ export type Database = {
           },
         ]
       }
+      intraday_orders: {
+        Row: {
+          created_at: string | null
+          executed_at: string | null
+          executed_price: number | null
+          executed_quantity: number | null
+          id: string
+          order_type: string
+          position_id: string | null
+          price: number
+          quantity: number
+          side: string
+          status: string | null
+          stock_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          executed_at?: string | null
+          executed_price?: number | null
+          executed_quantity?: number | null
+          id?: string
+          order_type: string
+          position_id?: string | null
+          price: number
+          quantity: number
+          side: string
+          status?: string | null
+          stock_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          executed_at?: string | null
+          executed_price?: number | null
+          executed_quantity?: number | null
+          id?: string
+          order_type?: string
+          position_id?: string | null
+          price?: number
+          quantity?: number
+          side?: string
+          status?: string | null
+          stock_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intraday_orders_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "intraday_positions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intraday_orders_stock_id_fkey"
+            columns: ["stock_id"]
+            isOneToOne: false
+            referencedRelation: "stocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intraday_positions: {
+        Row: {
+          closed_at: string | null
+          closed_price: number | null
+          created_at: string | null
+          current_price: number | null
+          entry_price: number
+          id: string
+          position_type: string
+          profit_loss: number | null
+          profit_loss_percent: number | null
+          quantity: number
+          status: string | null
+          stock_id: string | null
+          stop_loss: number | null
+          target_price: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_price?: number | null
+          created_at?: string | null
+          current_price?: number | null
+          entry_price: number
+          id?: string
+          position_type: string
+          profit_loss?: number | null
+          profit_loss_percent?: number | null
+          quantity: number
+          status?: string | null
+          stock_id?: string | null
+          stop_loss?: number | null
+          target_price?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          closed_price?: number | null
+          created_at?: string | null
+          current_price?: number | null
+          entry_price?: number
+          id?: string
+          position_type?: string
+          profit_loss?: number | null
+          profit_loss_percent?: number | null
+          quantity?: number
+          status?: string | null
+          stock_id?: string | null
+          stop_loss?: number | null
+          target_price?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intraday_positions_stock_id_fkey"
+            columns: ["stock_id"]
+            isOneToOne: false
+            referencedRelation: "stocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_milestones: {
         Row: {
           achieved_at: string | null
@@ -1168,6 +1296,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stocks: {
+        Row: {
+          change_amount: number | null
+          change_percent: number | null
+          created_at: string | null
+          day_high: number | null
+          day_low: number | null
+          id: string
+          last_updated: string | null
+          market_cap: number | null
+          name: string
+          previous_close: number | null
+          price: number
+          sector: string | null
+          symbol: string
+          volume: number | null
+        }
+        Insert: {
+          change_amount?: number | null
+          change_percent?: number | null
+          created_at?: string | null
+          day_high?: number | null
+          day_low?: number | null
+          id?: string
+          last_updated?: string | null
+          market_cap?: number | null
+          name: string
+          previous_close?: number | null
+          price: number
+          sector?: string | null
+          symbol: string
+          volume?: number | null
+        }
+        Update: {
+          change_amount?: number | null
+          change_percent?: number | null
+          created_at?: string | null
+          day_high?: number | null
+          day_low?: number | null
+          id?: string
+          last_updated?: string | null
+          market_cap?: number | null
+          name?: string
+          previous_close?: number | null
+          price?: number
+          sector?: string | null
+          symbol?: string
+          volume?: number | null
+        }
+        Relationships: []
       }
       trades: {
         Row: {
