@@ -9,7 +9,7 @@ import { PrivateRoute } from "@/components/PrivateRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { Dashboard } from "./pages/Dashboard";
-import Invest from "./pages/Invest";
+
 import Wallet from "./pages/Wallet";
 import Referrals from "./pages/Referrals";
 import Settings from "./pages/Settings";
@@ -32,11 +32,6 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={
         <PrivateRoute>
           <Dashboard />
-        </PrivateRoute>
-      } />
-      <Route path="/invest" element={
-        <PrivateRoute>
-          <Invest />
         </PrivateRoute>
       } />
       <Route path="/wallet" element={

@@ -21,7 +21,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
     { icon: Home, label: 'Dashboard', path: '/' },
     { icon: BarChart3, label: 'Forex Trading', path: '/forex-trading' },
     { icon: DollarSign, label: 'USDT Staking', path: '/usdt-staking', badge: 'New' },
-    { icon: TrendingUp, label: 'Investments', path: '/invest', badge: '4' },
+    
     { icon: Wallet, label: 'Wallet', path: '/wallet', badge: `₹${profile?.total_investment?.toLocaleString() || '0'}` },
     { icon: Users, label: 'Referrals', path: '/referrals' },
     { icon: Calculator, label: 'Calculator', path: '/calculator' },
