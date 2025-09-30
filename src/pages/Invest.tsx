@@ -124,9 +124,11 @@ const Invest = () => {
   };
 
   useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
     if (user) {
-      fetchData();
-      
       // Set up realtime subscription for user's investments
       const channel = supabase
         .channel('user-investments')
@@ -167,7 +169,7 @@ const Invest = () => {
     try {
       console.log('Fetching investment data for user:', user?.id);
       
-      // Fetch investment plans
+      // Fetch investment plans - these are public
       const { data: plansData, error: plansError } = await supabase
         .from('investment_plans')
         .select('*')
@@ -176,41 +178,52 @@ const Invest = () => {
 
       console.log('Plans query result:', { plansData, plansError });
 
-      if (plansError) throw plansError;
+      if (plansError) {
+        console.error('Plans error:', plansError);
+        throw plansError;
+      }
       setInvestmentPlans(plansData || []);
 
-      // Fetch user's investments from roi_investments table
-      const { data: investmentsData, error: investmentsError } = await supabase
-        .from('roi_investments')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
+      if (user?.id) {
+        // Fetch user's investments from roi_investments table
+        const { data: investmentsData, error: investmentsError } = await supabase
+          .from('roi_investments')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-      console.log('Investments query result:', { investmentsData, investmentsError });
+        console.log('Investments query result:', { investmentsData, investmentsError });
 
-      if (investmentsError) throw investmentsError;
-      
-      setUserInvestments(investmentsData || []);
+        if (investmentsError) {
+          console.error('Investments error:', investmentsError);
+          throw investmentsError;
+        }
+        
+        setUserInvestments(investmentsData || []);
 
-      // Fetch wallet balance
-      const { data: walletData, error: walletError } = await supabase
-        .from('wallets')
-        .select('balance')
-        .eq('user_id', user?.id)
-        .eq('currency', 'USDT')
-        .maybeSingle();
+        // Fetch wallet balance
+        const { data: walletData, error: walletError } = await supabase
+          .from('wallets')
+          .select('balance')
+          .eq('user_id', user.id)
+          .eq('currency', 'USDT')
+          .maybeSingle();
 
-      console.log('Wallet query result:', { walletData, walletError });
+        console.log('Wallet query result:', { walletData, walletError });
 
-      if (walletError && walletError.code !== 'PGRST116') throw walletError;
-      
-      setWalletBalance(walletData?.balance || 0);
+        if (walletError && walletError.code !== 'PGRST116') {
+          console.error('Wallet error:', walletError);
+          throw walletError;
+        }
+        
+        setWalletBalance(walletData?.balance || 0);
+      }
 
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
         title: "Error",
-        description: "Failed to load investment data",
+        description: "Failed to load investment data. Please refresh the page.",
         variant: "destructive",
       });
     } finally {
