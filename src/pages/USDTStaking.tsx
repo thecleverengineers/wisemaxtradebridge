@@ -30,28 +30,43 @@ import { AppSidebar } from '@/components/layout/AppSidebar';
 
 interface StakingPlan {
   id: string;
+  name: string;
   type: 'flexible' | 'locked';
-  duration: number; // in days, 0 for flexible
+  duration_days: number;
   apy: number;
-  minAmount: number;
-  maxAmount: number;
+  min_amount: number;
+  max_amount: number;
   description: string;
-  bonus?: string;
+  bonus_text?: string;
+  is_active: boolean;
 }
 
 interface StakingPosition {
   id: string;
+  user_id: string;
+  plan_id: string;
   amount: number;
-  planId: string;
-  startDate: string;
-  endDate?: string;
   apy: number;
-  duration: number;
+  duration_days: number;
   type: 'flexible' | 'locked';
-  autoRenew: boolean;
-  totalEarned: number;
-  dailyEarnings: number;
+  start_date: string;
+  end_date?: string;
+  auto_renew: boolean;
+  total_earned: number;
+  last_payout_date?: string;
   status: 'active' | 'completed' | 'withdrawn';
+  created_at: string;
+  updated_at: string;
+  plan?: StakingPlan;
+}
+
+interface StakingEarning {
+  id: string;
+  user_id: string;
+  position_id: string;
+  amount: number;
+  earned_date: string;
+  created_at: string;
 }
 
 const USDTStaking = () => {
@@ -65,27 +80,142 @@ const USDTStaking = () => {
   const [stakeAmount, setStakeAmount] = useState('');
   const [autoRenew, setAutoRenew] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  
+  const [plans, setPlans] = useState<StakingPlan[]>([]);
   const [positions, setPositions] = useState<StakingPosition[]>([]);
-
-  // Staking plans configuration
-  const stakingPlans: StakingPlan[] = [
-    { id: 'flex', type: 'flexible', duration: 0, apy: 3.5, minAmount: 1, maxAmount: 1000000, description: 'Withdraw anytime' },
-    { id: 'lock7', type: 'locked', duration: 7, apy: 5.0, minAmount: 10, maxAmount: 1000000, description: '7 days lock-up' },
-    { id: 'lock30', type: 'locked', duration: 30, apy: 7.5, minAmount: 10, maxAmount: 1000000, description: '30 days lock-up', bonus: '🎁 +0.5% Bonus APY' },
-    { id: 'lock60', type: 'locked', duration: 60, apy: 9.0, minAmount: 10, maxAmount: 1000000, description: '60 days lock-up' },
-    { id: 'lock90', type: 'locked', duration: 90, apy: 12.0, minAmount: 10, maxAmount: 1000000, description: '90 days lock-up', bonus: '🚀 +1% Bonus APY' },
-  ];
-
-  const currentPlan = stakingType === 'flexible' 
-    ? stakingPlans[0] 
-    : stakingPlans.find(p => p.duration === parseInt(selectedDuration)) || stakingPlans[1];
+  const [earnings, setEarnings] = useState<StakingEarning[]>([]);
+  const [totalStats, setTotalStats] = useState({
+    totalStaked: 0,
+    totalEarned: 0,
+    dailyEarnings: 0
+  });
 
   useEffect(() => {
     if (user) {
-      fetchWalletBalance();
-      fetchStakingPositions();
+      fetchData();
+      setupRealtimeSubscriptions();
     }
   }, [user]);
+
+  const setupRealtimeSubscriptions = () => {
+    // Subscribe to staking positions changes
+    const positionsChannel = supabase
+      .channel('staking-positions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'staking_positions',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          fetchPositions();
+          calculateStats();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to earnings changes
+    const earningsChannel = supabase
+      .channel('staking-earnings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'staking_earnings',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          fetchEarnings();
+          calculateStats();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to wallet changes
+    const walletChannel = supabase
+      .channel('wallet-balance-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'wallets',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          fetchWalletBalance();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(positionsChannel);
+      supabase.removeChannel(earningsChannel);
+      supabase.removeChannel(walletChannel);
+    };
+  };
+
+  const fetchData = async () => {
+    await Promise.all([
+      fetchPlans(),
+      fetchPositions(),
+      fetchEarnings(),
+      fetchWalletBalance()
+    ]);
+    calculateStats();
+  };
+
+  const fetchPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('staking_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('duration_days', { ascending: true });
+
+      if (error) throw error;
+      setPlans(data || []);
+    } catch (error) {
+      console.error('Error fetching staking plans:', error);
+    }
+  };
+
+  const fetchPositions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('staking_positions')
+        .select(`
+          *,
+          plan:staking_plans(*)
+        `)
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPositions(data || []);
+    } catch (error) {
+      console.error('Error fetching positions:', error);
+    }
+  };
+
+  const fetchEarnings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('staking_earnings')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('earned_date', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setEarnings(data || []);
+    } catch (error) {
+      console.error('Error fetching earnings:', error);
+    }
+  };
 
   const fetchWalletBalance = async () => {
     try {
@@ -96,45 +226,27 @@ const USDTStaking = () => {
         .eq('currency', 'USDT')
         .single();
 
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') throw error;
       setWalletBalance(data?.balance || 0);
     } catch (error) {
       console.error('Error fetching wallet:', error);
     }
   };
 
-  const fetchStakingPositions = async () => {
-    // Mock data for demonstration
-    const mockPositions: StakingPosition[] = [
-      {
-        id: '1',
-        amount: 1000,
-        planId: 'lock30',
-        startDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
-        apy: 7.5,
-        duration: 30,
-        type: 'locked',
-        autoRenew: true,
-        totalEarned: 6.16,
-        dailyEarnings: 0.205,
-        status: 'active'
-      },
-      {
-        id: '2',
-        amount: 500,
-        planId: 'flex',
-        startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        apy: 3.5,
-        duration: 0,
-        type: 'flexible',
-        autoRenew: false,
-        totalEarned: 1.44,
-        dailyEarnings: 0.048,
-        status: 'active'
-      }
-    ];
-    setPositions(mockPositions);
+  const calculateStats = () => {
+    const activePositions = positions.filter(p => p.status === 'active');
+    
+    const totalStaked = activePositions.reduce((sum, p) => sum + (p.amount || 0), 0);
+    const totalEarned = positions.reduce((sum, p) => sum + (p.total_earned || 0), 0);
+    const dailyEarnings = activePositions.reduce((sum, p) => {
+      return sum + calculateDailyEarnings(p.amount || 0, p.apy || 0);
+    }, 0);
+
+    setTotalStats({
+      totalStaked,
+      totalEarned,
+      dailyEarnings
+    });
   };
 
   const calculateDailyEarnings = (amount: number, apy: number) => {
@@ -146,12 +258,30 @@ const USDTStaking = () => {
     return amount * dailyRate * days;
   };
 
+  const getCurrentPlan = () => {
+    if (stakingType === 'flexible') {
+      return plans.find(p => p.type === 'flexible');
+    }
+    return plans.find(p => p.type === 'locked' && p.duration_days === parseInt(selectedDuration));
+  };
+
   const handleStake = async () => {
     const amount = parseFloat(stakeAmount);
-    if (!amount || amount < currentPlan.minAmount) {
+    const currentPlan = getCurrentPlan();
+    
+    if (!currentPlan) {
+      toast({
+        title: "Error",
+        description: "Please select a valid staking plan",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!amount || amount < currentPlan.min_amount) {
       toast({
         title: "Invalid Amount",
-        description: `Minimum stake amount is ${currentPlan.minAmount} USDT`,
+        description: `Minimum stake amount is ${currentPlan.min_amount} USDT`,
         variant: "destructive",
       });
       return;
@@ -166,29 +296,135 @@ const USDTStaking = () => {
       return;
     }
 
-    // Here you would implement the actual staking logic with Supabase
-    toast({
-      title: "Staking Successful",
-      description: `Successfully staked ${amount} USDT for ${currentPlan.duration || 'flexible'} days at ${currentPlan.apy}% APY`,
-    });
-    
-    setStakeAmount('');
-    fetchWalletBalance();
-    fetchStakingPositions();
-  };
+    try {
+      // Calculate end date for locked staking
+      const endDate = currentPlan.type === 'locked' 
+        ? new Date(Date.now() + currentPlan.duration_days * 24 * 60 * 60 * 1000).toISOString()
+        : null;
 
-  const handleWithdraw = (positionId: string) => {
-    const position = positions.find(p => p.id === positionId);
-    if (position?.type === 'locked' && new Date(position.endDate!) > new Date()) {
+      // Create staking position
+      const { error: positionError } = await supabase
+        .from('staking_positions')
+        .insert({
+          user_id: user?.id,
+          plan_id: currentPlan.id,
+          amount,
+          apy: currentPlan.apy,
+          duration_days: currentPlan.duration_days,
+          type: currentPlan.type,
+          end_date: endDate,
+          auto_renew: currentPlan.type === 'locked' ? autoRenew : false,
+          status: 'active'
+        });
+
+      if (positionError) throw positionError;
+
+      // Update wallet balance
+      const { error: walletError } = await supabase
+        .from('wallets')
+        .update({ 
+          balance: walletBalance - amount,
+          locked_balance: (walletBalance - amount) 
+        })
+        .eq('user_id', user?.id)
+        .eq('currency', 'USDT');
+
+      if (walletError) throw walletError;
+
+      // Create transaction record
+      const { error: txError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user?.id,
+          type: 'stake',
+          category: 'investment',
+          currency: 'USDT',
+          amount,
+          status: 'completed',
+          notes: `Staked in ${currentPlan.name}`
+        });
+
+      if (txError) throw txError;
+
       toast({
-        title: "Early Withdrawal",
-        description: "You will lose all earned interest if you withdraw early. Are you sure?",
+        title: "Staking Successful",
+        description: `Successfully staked ${amount} USDT in ${currentPlan.name}`,
+      });
+      
+      setStakeAmount('');
+      setAutoRenew(false);
+      fetchData();
+    } catch (error) {
+      console.error('Error staking:', error);
+      toast({
+        title: "Staking Failed",
+        description: "Failed to stake USDT. Please try again.",
         variant: "destructive",
       });
-    } else {
+    }
+  };
+
+  const handleWithdraw = async (position: StakingPosition) => {
+    if (position.type === 'locked' && position.end_date && new Date(position.end_date) > new Date()) {
+      const confirmed = window.confirm(
+        "Early withdrawal will forfeit all earned interest. Are you sure you want to proceed?"
+      );
+      if (!confirmed) return;
+    }
+
+    try {
+      // Update position status
+      const { error: positionError } = await supabase
+        .from('staking_positions')
+        .update({ status: 'withdrawn' })
+        .eq('id', position.id);
+
+      if (positionError) throw positionError;
+
+      // Return amount to wallet (without earnings if early withdrawal)
+      const returnAmount = position.type === 'flexible' || 
+        (position.end_date && new Date(position.end_date) <= new Date())
+        ? position.amount + position.total_earned
+        : position.amount;
+
+      const { error: walletError } = await supabase
+        .from('wallets')
+        .update({ 
+          balance: walletBalance + returnAmount,
+          locked_balance: Math.max(0, walletBalance - returnAmount)
+        })
+        .eq('user_id', user?.id)
+        .eq('currency', 'USDT');
+
+      if (walletError) throw walletError;
+
+      // Create transaction record
+      const { error: txError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user?.id,
+          type: 'withdraw',
+          category: 'investment',
+          currency: 'USDT',
+          amount: returnAmount,
+          status: 'completed',
+          notes: `Withdrawn from ${position.plan?.name || 'staking'}`
+        });
+
+      if (txError) throw txError;
+
       toast({
         title: "Withdrawal Successful",
-        description: "Your USDT has been returned to your wallet",
+        description: `Successfully withdrawn ${returnAmount.toFixed(2)} USDT`,
+      });
+      
+      fetchData();
+    } catch (error) {
+      console.error('Error withdrawing:', error);
+      toast({
+        title: "Withdrawal Failed",
+        description: "Failed to withdraw. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -197,6 +433,8 @@ const USDTStaking = () => {
     const remaining = Math.ceil((new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return Math.max(0, remaining);
   };
+
+  const currentPlan = getCurrentPlan();
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -231,7 +469,7 @@ const USDTStaking = () => {
                   <div>
                     <p className="text-blue-400 text-sm">Total Staked</p>
                     <p className="text-2xl font-bold text-white">
-                      ₹{positions.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                      ₹{totalStats.totalStaked.toLocaleString()}
                     </p>
                   </div>
                   <Lock className="h-8 w-8 text-blue-400" />
@@ -245,7 +483,7 @@ const USDTStaking = () => {
                   <div>
                     <p className="text-purple-400 text-sm">Total Earned</p>
                     <p className="text-2xl font-bold text-white">
-                      ₹{positions.reduce((sum, p) => sum + p.totalEarned, 0).toFixed(2)}
+                      ₹{totalStats.totalEarned.toFixed(2)}
                     </p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-purple-400" />
@@ -259,7 +497,7 @@ const USDTStaking = () => {
                   <div>
                     <p className="text-yellow-400 text-sm">Daily Earnings</p>
                     <p className="text-2xl font-bold text-white">
-                      ₹{positions.reduce((sum, p) => sum + p.dailyEarnings, 0).toFixed(2)}
+                      ₹{totalStats.dailyEarnings.toFixed(2)}
                     </p>
                   </div>
                   <Clock className="h-8 w-8 text-yellow-400" />
@@ -273,7 +511,7 @@ const USDTStaking = () => {
             <TabsList className="bg-white/5 border-white/10">
               <TabsTrigger value="stake">Stake USDT</TabsTrigger>
               <TabsTrigger value="positions">My Positions</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
+              <TabsTrigger value="history">Earnings History</TabsTrigger>
             </TabsList>
 
             <TabsContent value="stake" className="space-y-4">
@@ -316,10 +554,13 @@ const USDTStaking = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="7">7 Days</SelectItem>
-                            <SelectItem value="30">30 Days</SelectItem>
-                            <SelectItem value="60">60 Days</SelectItem>
-                            <SelectItem value="90">90 Days</SelectItem>
+                            {plans
+                              .filter(p => p.type === 'locked')
+                              .map(plan => (
+                                <SelectItem key={plan.id} value={plan.duration_days.toString()}>
+                                  {plan.duration_days} Days
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -331,7 +572,7 @@ const USDTStaking = () => {
                       <div className="relative">
                         <Input
                           type="number"
-                          placeholder={`Min: ${currentPlan.minAmount} USDT`}
+                          placeholder={`Min: ${currentPlan?.min_amount || 1} USDT`}
                           value={stakeAmount}
                           onChange={(e) => setStakeAmount(e.target.value)}
                           className="bg-white/5 border-white/10 text-white pr-20"
@@ -363,7 +604,7 @@ const USDTStaking = () => {
                     )}
 
                     {/* Estimated Earnings */}
-                    {stakeAmount && parseFloat(stakeAmount) >= currentPlan.minAmount && (
+                    {currentPlan && stakeAmount && parseFloat(stakeAmount) >= currentPlan.min_amount && (
                       <div className="p-4 bg-gradient-to-r from-purple-600/10 to-blue-600/10 rounded-lg border border-purple-500/20">
                         <p className="text-purple-300 text-sm mb-2">Estimated Earnings</p>
                         <div className="space-y-1">
@@ -375,9 +616,9 @@ const USDTStaking = () => {
                           </div>
                           {stakingType === 'locked' && (
                             <div className="flex justify-between">
-                              <span className="text-gray-400">Total ({currentPlan.duration} days):</span>
+                              <span className="text-gray-400">Total ({currentPlan.duration_days} days):</span>
                               <span className="text-white font-semibold">
-                                ₹{calculateEstimatedEarnings(parseFloat(stakeAmount), currentPlan.apy, currentPlan.duration).toFixed(2)}
+                                ₹{calculateEstimatedEarnings(parseFloat(stakeAmount), currentPlan.apy, currentPlan.duration_days).toFixed(2)}
                               </span>
                             </div>
                           )}
@@ -388,6 +629,7 @@ const USDTStaking = () => {
                     {/* Stake Button */}
                     <Button
                       onClick={handleStake}
+                      disabled={!currentPlan || !stakeAmount || parseFloat(stakeAmount) < (currentPlan?.min_amount || 1)}
                       className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                     >
                       Stake USDT
@@ -405,11 +647,11 @@ const USDTStaking = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      {stakingPlans.map((plan) => (
+                      {plans.map((plan) => (
                         <div
                           key={plan.id}
                           className={`p-3 rounded-lg border transition-colors ${
-                            currentPlan.id === plan.id 
+                            currentPlan?.id === plan.id 
                               ? 'bg-gradient-to-r from-purple-600/20 to-blue-600/20 border-purple-500/30' 
                               : 'bg-white/5 border-white/10'
                           }`}
@@ -417,11 +659,11 @@ const USDTStaking = () => {
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="text-white font-semibold">
-                                {plan.type === 'flexible' ? 'Flexible' : `${plan.duration} Days`}
+                                {plan.name}
                               </p>
                               <p className="text-gray-400 text-sm">{plan.description}</p>
-                              {plan.bonus && (
-                                <p className="text-yellow-400 text-sm mt-1">{plan.bonus}</p>
+                              {plan.bonus_text && (
+                                <p className="text-yellow-400 text-sm mt-1">{plan.bonus_text}</p>
                               )}
                             </div>
                             <div className="text-right">
@@ -478,7 +720,7 @@ const USDTStaking = () => {
             </TabsContent>
 
             <TabsContent value="positions" className="space-y-4">
-              {positions.length === 0 ? (
+              {positions.filter(p => p.status === 'active').length === 0 ? (
                 <Card className="bg-white/5 border-white/10">
                   <CardContent className="p-8 text-center">
                     <Lock className="h-12 w-12 text-purple-400 mx-auto mb-4" />
@@ -487,7 +729,9 @@ const USDTStaking = () => {
                 </Card>
               ) : (
                 <div className="grid gap-4">
-                  {positions.map((position) => (
+                  {positions
+                    .filter(p => p.status === 'active')
+                    .map((position) => (
                     <Card key={position.id} className="bg-white/5 border-white/10">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
@@ -501,10 +745,10 @@ const USDTStaking = () => {
                             </div>
                             <div>
                               <h3 className="text-white font-semibold">
-                                {position.type === 'flexible' ? 'Flexible Staking' : `${position.duration} Days Locked`}
+                                {position.plan?.name || (position.type === 'flexible' ? 'Flexible Staking' : `${position.duration_days} Days Locked`)}
                               </h3>
                               <p className="text-purple-300 text-sm">
-                                Started: {new Date(position.startDate).toLocaleDateString()}
+                                Started: {new Date(position.start_date).toLocaleDateString()}
                               </p>
                             </div>
                           </div>
@@ -518,7 +762,7 @@ const USDTStaking = () => {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                           <div>
                             <p className="text-purple-300 text-sm">Staked Amount</p>
-                            <p className="text-white font-semibold">₹{position.amount.toLocaleString()}</p>
+                            <p className="text-white font-semibold">₹{position.amount?.toLocaleString()}</p>
                           </div>
                           <div>
                             <p className="text-purple-300 text-sm">APY</p>
@@ -526,25 +770,25 @@ const USDTStaking = () => {
                           </div>
                           <div>
                             <p className="text-purple-300 text-sm">Total Earned</p>
-                            <p className="text-green-400 font-semibold">₹{position.totalEarned.toFixed(2)}</p>
+                            <p className="text-green-400 font-semibold">₹{position.total_earned?.toFixed(2)}</p>
                           </div>
                           <div>
                             <p className="text-purple-300 text-sm">Daily Earnings</p>
-                            <p className="text-white font-semibold">₹{position.dailyEarnings.toFixed(4)}</p>
+                            <p className="text-white font-semibold">₹{calculateDailyEarnings(position.amount, position.apy).toFixed(4)}</p>
                           </div>
                         </div>
 
-                        {position.type === 'locked' && position.endDate && (
+                        {position.type === 'locked' && position.end_date && (
                           <div className="mb-4">
                             <div className="flex justify-between text-sm mb-2">
                               <span className="text-purple-300">Time Remaining</span>
-                              <span className="text-white">{getRemainingDays(position.endDate)} days</span>
+                              <span className="text-white">{getRemainingDays(position.end_date)} days</span>
                             </div>
                             <div className="w-full bg-white/10 rounded-full h-2">
                               <div 
                                 className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-300"
                                 style={{ 
-                                  width: `${((position.duration - getRemainingDays(position.endDate)) / position.duration) * 100}%` 
+                                  width: `${((position.duration_days - getRemainingDays(position.end_date)) / position.duration_days) * 100}%` 
                                 }}
                               />
                             </div>
@@ -552,7 +796,7 @@ const USDTStaking = () => {
                         )}
 
                         <div className="flex items-center justify-between">
-                          {position.autoRenew && (
+                          {position.auto_renew && (
                             <div className="flex items-center space-x-1 text-blue-400">
                               <RefreshCw className="h-4 w-4" />
                               <span className="text-sm">Auto-Renew ON</span>
@@ -560,7 +804,7 @@ const USDTStaking = () => {
                           )}
                           <Button
                             variant="outline"
-                            onClick={() => handleWithdraw(position.id)}
+                            onClick={() => handleWithdraw(position)}
                             className="ml-auto border-white/10"
                           >
                             {position.type === 'flexible' ? 'Withdraw' : 'Redeem'}
@@ -576,16 +820,34 @@ const USDTStaking = () => {
             <TabsContent value="history" className="space-y-4">
               <Card className="bg-white/5 border-white/10">
                 <CardHeader>
-                  <CardTitle className="text-white">Staking History</CardTitle>
+                  <CardTitle className="text-white">Earnings History</CardTitle>
                   <CardDescription className="text-purple-300">
-                    View your completed and withdrawn stakes
+                    Your daily staking rewards
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                    <p className="text-purple-300">No staking history yet</p>
-                  </div>
+                  {earnings.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Calendar className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                      <p className="text-purple-300">No earnings history yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {earnings.map((earning) => (
+                        <div key={earning.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                          <div>
+                            <p className="text-white font-semibold">₹{earning.amount?.toFixed(4)}</p>
+                            <p className="text-purple-300 text-sm">
+                              {new Date(earning.earned_date).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <Badge className="bg-green-500/20 text-green-400">
+                            Daily Reward
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
