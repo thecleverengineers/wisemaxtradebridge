@@ -17,7 +17,7 @@ import Calculator from "./pages/Calculator";
 import Leaderboard from "./pages/Leaderboard";
 import Rewards from "./pages/Rewards";
 import InvestmentRecords from "./pages/InvestmentRecords";
-import IntradayTrading from "./pages/IntradayTrading";
+
 import ForexTrading from "./pages/ForexTrading";
 import USDTStaking from "./pages/USDTStaking";
 import ROIInvestments from "./pages/ROIInvestments";
@@ -68,11 +68,6 @@ const AppRoutes = () => {
       <Route path="/investment-records" element={
         <PrivateRoute>
           <InvestmentRecords />
-        </PrivateRoute>
-      } />
-      <Route path="/intraday-trading" element={
-        <PrivateRoute>
-          <IntradayTrading />
         </PrivateRoute>
       } />
       <Route path="/forex-trading" element={

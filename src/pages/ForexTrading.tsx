@@ -36,8 +36,6 @@ import {
   Users
 } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TradingChart } from '@/components/forex/TradingChart';
-import { OrderBook } from '@/components/forex/OrderBook';
 import { MarketSession } from '@/components/forex/MarketSession';
 import { NewsIntegration } from '@/components/forex/NewsIntegration';
 import { CopyTrading } from '@/components/forex/CopyTrading';
@@ -644,11 +642,6 @@ const ForexTrading = () => {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <TradingChart 
-                          pairSymbol={selectedPair.symbol}
-                          currentPrice={selectedPair.current_price}
-                        />
-                        
                         {/* Market Info */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                           <div className="p-3 bg-white/5 rounded-lg">
@@ -675,19 +668,6 @@ const ForexTrading = () => {
 
                 {/* Order Form */}
                 <div className="space-y-4">
-                  {/* Order Book */}
-                  <Card className="bg-white/5 border-white/10">
-                    <CardHeader>
-                      <CardTitle className="text-white">Order Book</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <OrderBook 
-                        pairSymbol={selectedPair?.symbol || 'EUR/USD'}
-                        currentPrice={selectedPair?.current_price || 0}
-                        spread={selectedPair?.spread || 0}
-                      />
-                    </CardContent>
-                  </Card>
 
                   {/* Place Order */}
                   <Card className="bg-white/5 border-white/10">
