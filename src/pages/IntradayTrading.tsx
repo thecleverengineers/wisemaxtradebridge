@@ -112,7 +112,24 @@ const IntradayTrading = () => {
       }
     }, 10000); // 10 second timeout
 
-    fetchData();
+    const initializeMarket = async () => {
+      await fetchData();
+      
+      // Update market prices immediately after fetching
+      try {
+        const response = await supabase.functions.invoke('market-data-manager', {
+          body: { action: 'update-prices' }
+        });
+        console.log('Market data updated:', response.data);
+        if (response.data?.success) {
+          await fetchStocks();
+        }
+      } catch (error) {
+        console.error('Error updating market data:', error);
+      }
+    };
+
+    initializeMarket();
     const channel = setupRealtimeSubscriptions();
 
     return () => {
@@ -127,18 +144,27 @@ const IntradayTrading = () => {
 
     const priceUpdateInterval = setInterval(async () => {
       try {
+        console.log('Updating market prices...');
         const response = await supabase.functions.invoke('market-data-manager', {
-          body: { action: 'simulate-trading-hours' }
+          body: { action: 'update-prices' }
         });
         
-        if (response.data?.isMarketOpen) {
-          // Refresh stock data after update
-          await fetchStocks();
+        if (response.data?.success) {
+          console.log('Market data updated successfully');
+          // Fetch updated stocks without showing loading state
+          const { data } = await supabase
+            .from('stocks')
+            .select('*')
+            .order('symbol', { ascending: true });
+          
+          if (data) {
+            setStocks(data);
+          }
         }
       } catch (error) {
         console.error('Error updating market data:', error);
       }
-    }, 10000); // Update every 10 seconds
+    }, 5000); // Update every 5 seconds for more dynamic market
 
     return () => clearInterval(priceUpdateInterval);
   }, [stocks.length]);
@@ -185,7 +211,9 @@ const IntradayTrading = () => {
       }
       
       if (data && data.length > 0) {
+        console.log(`Fetched ${data.length} stocks successfully`);
         setStocks(data);
+        setLoading(false);
       } else {
         // If no stocks exist, the initial migration might have failed
         console.log('No stocks found in database');
@@ -194,9 +222,11 @@ const IntradayTrading = () => {
           description: "Market data is being initialized. Please refresh the page.",
           variant: "default",
         });
+        setLoading(false);
       }
     } catch (err) {
       console.error('Unexpected error fetching stocks:', err);
+      setLoading(false);
       toast({
         title: "Error",
         description: "An unexpected error occurred while fetching market data",
