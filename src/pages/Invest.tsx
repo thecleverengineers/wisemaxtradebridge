@@ -124,11 +124,13 @@ const Invest = () => {
   };
 
   useEffect(() => {
+    console.log('Initial useEffect - calling fetchData');
     fetchData();
   }, []);
 
   useEffect(() => {
     if (user) {
+      console.log('Setting up realtime subscriptions for user:', user.id);
       // Set up realtime subscription for user's investments
       const channel = supabase
         .channel('user-investments')
@@ -141,6 +143,7 @@ const Invest = () => {
             filter: `user_id=eq.${user.id}`
           },
           () => {
+            console.log('ROI investment change detected');
             fetchData();
           }
         )
@@ -153,6 +156,7 @@ const Invest = () => {
             filter: `user_id=eq.${user.id}`
           },
           () => {
+            console.log('Wallet change detected');
             fetchData();
           }
         )
@@ -165,24 +169,31 @@ const Invest = () => {
   }, [user]);
 
   const fetchData = async () => {
+    console.log('fetchData called, user:', user?.id);
     setLoading(true);
     try {
-      console.log('Fetching investment data for user:', user?.id);
+      console.log('Fetching investment data...');
       
       // Fetch investment plans - these are public
       const { data: plansData, error: plansError } = await supabase
         .from('investment_plans')
         .select('*')
         .eq('status', 'active')
-        .order('min_amount');
+        .order('min_amount', { ascending: true });
 
       console.log('Plans query result:', { plansData, plansError });
 
       if (plansError) {
         console.error('Plans error:', plansError);
-        throw plansError;
+        toast({
+          title: "Error loading plans",
+          description: plansError.message,
+          variant: "destructive",
+        });
+      } else {
+        console.log('Setting investment plans:', plansData);
+        setInvestmentPlans(plansData || []);
       }
-      setInvestmentPlans(plansData || []);
 
       if (user?.id) {
         // Fetch user's investments from roi_investments table
