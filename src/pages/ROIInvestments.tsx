@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { 
   TrendingUp, Zap, Users, Leaf, Shield, Brain, 
   Clock, Trophy, Sparkles, DollarSign, Info,
-  Star, Rocket, Target, Gift, Lock
+  Star, Rocket, Target, Gift, Lock, Package, Gamepad2
 } from 'lucide-react';
 
 interface ROIPlan {
@@ -190,15 +190,18 @@ export default function ROIInvestments() {
           </p>
         </div>
 
-        <Tabs defaultValue="all" className="w-full">
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
           <TabsList className="grid grid-cols-4 lg:grid-cols-6 gap-2 h-auto p-1">
-            {categories.map(category => {
+            <TabsTrigger value="all" className="flex items-center gap-1">
+              <Package className="w-4 h-4" />
+              <span className="hidden sm:inline">All</span>
+            </TabsTrigger>
+            {categories.filter(c => c !== 'all').map(category => {
               const Icon = categoryIcons[category] || DollarSign;
               return (
                 <TabsTrigger
                   key={category}
                   value={category}
-                  onClick={() => setSelectedCategory(category)}
                   className="flex items-center gap-1 capitalize"
                 >
                   <Icon className="w-4 h-4" />
