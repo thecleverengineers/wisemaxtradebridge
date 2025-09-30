@@ -120,13 +120,24 @@ const IntradayTrading = () => {
     };
   }, [user, navigate]);
 
-  // Start price updates once stocks are loaded
+  // Start price updates using our market data manager
   useEffect(() => {
     if (stocks.length === 0) return;
 
-    const priceUpdateInterval = setInterval(() => {
-      updateStockPrices();
-    }, 8000); // Update every 8 seconds
+    const priceUpdateInterval = setInterval(async () => {
+      try {
+        const response = await supabase.functions.invoke('market-data-manager', {
+          body: { action: 'simulate-trading-hours' }
+        });
+        
+        if (response.data?.isMarketOpen) {
+          // Refresh stock data after update
+          await fetchStocks();
+        }
+      } catch (error) {
+        console.error('Error updating market data:', error);
+      }
+    }, 10000); // Update every 10 seconds
 
     return () => clearInterval(priceUpdateInterval);
   }, [stocks.length]);
@@ -312,23 +323,7 @@ const IntradayTrading = () => {
     return channel;
   };
 
-  const updateStockPrices = async () => {
-    if (stocks.length === 0) return;
-    
-    // Simulate price changes
-    const updatedStocks = stocks.map(stock => ({
-      ...stock,
-      price: stock.price * (1 + (Math.random() - 0.5) * 0.01) // ±0.5% change
-    }));
-
-    // Update each stock in the database
-    for (const stock of updatedStocks) {
-      await supabase
-        .from('stocks')
-        .update({ price: stock.price })
-        .eq('id', stock.id);
-    }
-  };
+  // Removed updateStockPrices - now handled by market-data-manager edge function
 
   const updatePositionPrices = async (stock: Stock) => {
     const positionsToUpdate = positions.filter(pos => pos.stock_id === stock.id);
@@ -540,6 +535,27 @@ const IntradayTrading = () => {
               <Badge className="bg-green-500 text-white">
                 Market Open
               </Badge>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-white/10"
+                onClick={async () => {
+                  try {
+                    await supabase.functions.invoke('market-data-manager', {
+                      body: { action: 'update-prices' }
+                    });
+                    await fetchStocks();
+                    toast({
+                      title: "Prices Updated",
+                      description: "Market prices have been refreshed",
+                    });
+                  } catch (error) {
+                    console.error('Error updating prices:', error);
+                  }
+                }}
+              >
+                Update Prices
+              </Button>
               <Button 
                 variant="outline" 
                 size="icon" 
