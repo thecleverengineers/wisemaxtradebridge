@@ -697,6 +697,44 @@ export type Database = {
         }
         Relationships: []
       }
+      roi_earnings: {
+        Row: {
+          amount: number
+          calculation_date: string | null
+          created_at: string | null
+          earning_type: string
+          id: string
+          investment_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          calculation_date?: string | null
+          created_at?: string | null
+          earning_type: string
+          id?: string
+          investment_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          calculation_date?: string | null
+          created_at?: string | null
+          earning_type?: string
+          id?: string
+          investment_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roi_earnings_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "user_roi_investments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       roi_investments: {
         Row: {
           amount: number
@@ -786,6 +824,104 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roi_plans: {
+        Row: {
+          allow_early_withdrawal: boolean | null
+          created_at: string | null
+          description: string | null
+          duration_type: string
+          duration_value: number
+          features: Json | null
+          id: string
+          interest_rate: number
+          is_active: boolean | null
+          is_compounding: boolean | null
+          max_investment: number | null
+          min_investment: number
+          name: string
+          updated_at: string | null
+          withdrawal_penalty: number | null
+        }
+        Insert: {
+          allow_early_withdrawal?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          duration_type: string
+          duration_value: number
+          features?: Json | null
+          id?: string
+          interest_rate: number
+          is_active?: boolean | null
+          is_compounding?: boolean | null
+          max_investment?: number | null
+          min_investment?: number
+          name: string
+          updated_at?: string | null
+          withdrawal_penalty?: number | null
+        }
+        Update: {
+          allow_early_withdrawal?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          duration_type?: string
+          duration_value?: number
+          features?: Json | null
+          id?: string
+          interest_rate?: number
+          is_active?: boolean | null
+          is_compounding?: boolean | null
+          max_investment?: number | null
+          min_investment?: number
+          name?: string
+          updated_at?: string | null
+          withdrawal_penalty?: number | null
+        }
+        Relationships: []
+      }
+      roi_withdrawals: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          investment_id: string
+          penalty_amount: number | null
+          processed_at: string | null
+          status: string | null
+          user_id: string
+          withdrawal_type: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          investment_id: string
+          penalty_amount?: number | null
+          processed_at?: string | null
+          status?: string | null
+          user_id: string
+          withdrawal_type?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          investment_id?: string
+          penalty_amount?: number | null
+          processed_at?: string | null
+          status?: string | null
+          user_id?: string
+          withdrawal_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roi_withdrawals_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "user_roi_investments"
             referencedColumns: ["id"]
           },
         ]
@@ -1048,6 +1184,65 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_roi_investments: {
+        Row: {
+          amount: number
+          auto_reinvest: boolean | null
+          created_at: string | null
+          current_value: number
+          custom_interest_rate: number | null
+          id: string
+          last_calculation_date: string | null
+          maturity_date: string
+          plan_id: string
+          start_date: string | null
+          status: string | null
+          total_withdrawn: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          auto_reinvest?: boolean | null
+          created_at?: string | null
+          current_value: number
+          custom_interest_rate?: number | null
+          id?: string
+          last_calculation_date?: string | null
+          maturity_date: string
+          plan_id: string
+          start_date?: string | null
+          status?: string | null
+          total_withdrawn?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          auto_reinvest?: boolean | null
+          created_at?: string | null
+          current_value?: number
+          custom_interest_rate?: number | null
+          id?: string
+          last_calculation_date?: string | null
+          maturity_date?: string
+          plan_id?: string
+          start_date?: string | null
+          status?: string | null
+          total_withdrawn?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roi_investments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "roi_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
