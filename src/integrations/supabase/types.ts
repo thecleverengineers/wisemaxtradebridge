@@ -400,6 +400,39 @@ export type Database = {
           },
         ]
       }
+      investment_milestones: {
+        Row: {
+          achieved_at: string | null
+          created_at: string | null
+          id: string
+          milestone_type: string
+          milestone_value: number
+          reward_type: string | null
+          reward_value: number | null
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string | null
+          created_at?: string | null
+          id?: string
+          milestone_type: string
+          milestone_value: number
+          reward_type?: string | null
+          reward_value?: number | null
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string | null
+          created_at?: string | null
+          id?: string
+          milestone_type?: string
+          milestone_value?: number
+          reward_type?: string | null
+          reward_value?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       investment_plans: {
         Row: {
           created_at: string | null
@@ -570,6 +603,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      plan_events: {
+        Row: {
+          bonus_multiplier: number | null
+          created_at: string | null
+          current_participants: number | null
+          end_date: string
+          event_name: string
+          event_type: string
+          id: string
+          max_participants: number | null
+          plan_id: string | null
+          start_date: string
+        }
+        Insert: {
+          bonus_multiplier?: number | null
+          created_at?: string | null
+          current_participants?: number | null
+          end_date: string
+          event_name: string
+          event_type: string
+          id?: string
+          max_participants?: number | null
+          plan_id?: string | null
+          start_date: string
+        }
+        Update: {
+          bonus_multiplier?: number | null
+          created_at?: string | null
+          current_participants?: number | null
+          end_date?: string
+          event_name?: string
+          event_type?: string
+          id?: string
+          max_participants?: number | null
+          plan_id?: string | null
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_events_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "roi_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -830,8 +910,11 @@ export type Database = {
       }
       roi_plans: {
         Row: {
+          activation_rules: Json | null
           allow_early_withdrawal: boolean | null
+          bonus_structure: Json | null
           created_at: string | null
+          current_users: number | null
           description: string | null
           duration_type: string
           duration_value: number
@@ -841,14 +924,22 @@ export type Database = {
           is_active: boolean | null
           is_compounding: boolean | null
           max_investment: number | null
+          max_users: number | null
           min_investment: number
           name: string
+          plan_category: string | null
+          plan_type: string | null
+          priority_order: number | null
+          special_conditions: Json | null
           updated_at: string | null
           withdrawal_penalty: number | null
         }
         Insert: {
+          activation_rules?: Json | null
           allow_early_withdrawal?: boolean | null
+          bonus_structure?: Json | null
           created_at?: string | null
+          current_users?: number | null
           description?: string | null
           duration_type: string
           duration_value: number
@@ -858,14 +949,22 @@ export type Database = {
           is_active?: boolean | null
           is_compounding?: boolean | null
           max_investment?: number | null
+          max_users?: number | null
           min_investment?: number
           name: string
+          plan_category?: string | null
+          plan_type?: string | null
+          priority_order?: number | null
+          special_conditions?: Json | null
           updated_at?: string | null
           withdrawal_penalty?: number | null
         }
         Update: {
+          activation_rules?: Json | null
           allow_early_withdrawal?: boolean | null
+          bonus_structure?: Json | null
           created_at?: string | null
+          current_users?: number | null
           description?: string | null
           duration_type?: string
           duration_value?: number
@@ -875,8 +974,13 @@ export type Database = {
           is_active?: boolean | null
           is_compounding?: boolean | null
           max_investment?: number | null
+          max_users?: number | null
           min_investment?: number
           name?: string
+          plan_category?: string | null
+          plan_type?: string | null
+          priority_order?: number | null
+          special_conditions?: Json | null
           updated_at?: string | null
           withdrawal_penalty?: number | null
         }

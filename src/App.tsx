@@ -20,6 +20,7 @@ import InvestmentRecords from "./pages/InvestmentRecords";
 import IntradayTrading from "./pages/IntradayTrading";
 import ForexTrading from "./pages/ForexTrading";
 import USDTStaking from "./pages/USDTStaking";
+import ROIInvestments from "./pages/ROIInvestments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -82,6 +83,11 @@ const AppRoutes = () => {
       <Route path="/usdt-staking" element={
         <PrivateRoute>
           <USDTStaking />
+        </PrivateRoute>
+      } />
+      <Route path="/roi-investments" element={
+        <PrivateRoute>
+          <ROIInvestments />
         </PrivateRoute>
       } />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
