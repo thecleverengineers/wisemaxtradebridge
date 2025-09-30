@@ -563,7 +563,7 @@ const IntradayTrading = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-green-100 text-sm">Total P&L</p>
-                    <p className="text-2xl font-bold">₹{getTotalPNL().toFixed(2)}</p>
+                    <p className="text-2xl font-bold">${getTotalPNL().toFixed(2)} USDT</p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-green-200" />
                 </div>
@@ -587,7 +587,7 @@ const IntradayTrading = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-purple-300 text-sm">Available Balance</p>
-                    <p className="text-white text-2xl font-bold">₹{walletBalance.toFixed(2)}</p>
+                    <p className="text-white text-2xl font-bold">${walletBalance.toFixed(2)} USDT</p>
                   </div>
                   <DollarSign className="h-8 w-8 text-purple-400" />
                 </div>
@@ -648,7 +648,7 @@ const IntradayTrading = () => {
                                 )}
                               </div>
                               <div className="text-right">
-                                <p className="text-white font-semibold">₹{stock.price.toFixed(2)}</p>
+                                <p className="text-white font-semibold">${stock.price.toFixed(2)}</p>
                                 <p className={`text-sm ${getStockChangeColor(stock.change_amount)}`}>
                                   {stock.change_amount >= 0 ? '+' : ''}{stock.change_amount.toFixed(2)} ({stock.change_percent.toFixed(2)}%)
                                 </p>
@@ -657,11 +657,11 @@ const IntradayTrading = () => {
                             <div className="grid grid-cols-3 gap-4 mt-3 text-sm">
                               <div>
                                 <p className="text-purple-300">High</p>
-                                <p className="text-white">₹{stock.day_high?.toFixed(2) || '--'}</p>
+                                <p className="text-white">${stock.day_high?.toFixed(2) || '--'}</p>
                               </div>
                               <div>
                                 <p className="text-purple-300">Low</p>
-                                <p className="text-white">₹{stock.day_low?.toFixed(2) || '--'}</p>
+                                <p className="text-white">${stock.day_low?.toFixed(2) || '--'}</p>
                               </div>
                               <div>
                                 <p className="text-purple-300">Volume</p>
@@ -690,7 +690,7 @@ const IntradayTrading = () => {
                           <div className="p-3 bg-white/5 rounded-lg">
                             <div className="flex justify-between items-center">
                               <span className="text-purple-300">Current Price</span>
-                              <span className="text-white font-semibold">₹{selectedStock.price.toFixed(2)}</span>
+                              <span className="text-white font-semibold">${selectedStock.price.toFixed(2)}</span>
                             </div>
                           </div>
 
@@ -718,7 +718,7 @@ const IntradayTrading = () => {
                           </div>
 
                           <div>
-                            <label className="text-white text-sm">Amount (₹)</label>
+                            <label className="text-white text-sm">Amount (USDT)</label>
                             <Input
                               type="number"
                               placeholder="Enter amount"
@@ -829,10 +829,10 @@ const IntradayTrading = () => {
                                 </Badge>
                               </td>
                               <td className="py-3 text-white">{position.quantity}</td>
-                              <td className="py-3 text-white">₹{position.entry_price.toFixed(2)}</td>
-                              <td className="py-3 text-white">₹{position.current_price.toFixed(2)}</td>
+                              <td className="py-3 text-white">${position.entry_price.toFixed(2)}</td>
+                              <td className="py-3 text-white">${position.current_price.toFixed(2)}</td>
                               <td className={`py-3 font-medium ${position.profit_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                ₹{position.profit_loss.toFixed(2)}
+                                ${position.profit_loss.toFixed(2)}
                                 <span className="text-sm ml-1">
                                   ({position.profit_loss_percent.toFixed(2)}%)
                                 </span>
@@ -899,7 +899,7 @@ const IntradayTrading = () => {
                                 </Badge>
                               </td>
                               <td className="py-3 text-white">{order.quantity}</td>
-                              <td className="py-3 text-white">₹{order.price.toFixed(2)}</td>
+                              <td className="py-3 text-white">${order.price.toFixed(2)}</td>
                               <td className="py-3">
                                 <Badge className={
                                   order.status === 'executed' ? 'bg-green-600' :
