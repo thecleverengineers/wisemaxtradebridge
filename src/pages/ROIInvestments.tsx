@@ -68,7 +68,6 @@ const categoryColors: Record<string, string> = {
 export default function ROIInvestments() {
   const [plans, setPlans] = useState<ROIPlan[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<ROIPlan | null>(null);
   const [investmentAmount, setInvestmentAmount] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -95,8 +94,6 @@ export default function ROIInvestments() {
         description: error.message,
         variant: 'destructive'
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -178,17 +175,6 @@ export default function ROIInvestments() {
     }
     return null;
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <AppHeader onMenuClick={() => setIsSidebarOpen(true)} />
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
