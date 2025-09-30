@@ -80,7 +80,6 @@ interface MarketData {
 export function Dashboard() {
   const { user, profile } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [wallets, setWallets] = useState<WalletData[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [roiInvestments, setRoiInvestments] = useState<ROIInvestment[]>([]);
@@ -104,7 +103,6 @@ export function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
 
       // Fetch wallets
       const { data: walletsData, error: walletsError } = await supabase
@@ -177,8 +175,6 @@ export function Dashboard() {
         description: "Failed to load dashboard data",
         variant: "destructive"
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -270,19 +266,6 @@ export function Dashboard() {
     { name: 'ROI Income', value: totalROI, color: '#10b981' },
     { name: 'Referral Income', value: totalReferral, color: '#f59e0b' },
   ];
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-white font-bold text-sm">LT</span>
-          </div>
-          <p>Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-900">
