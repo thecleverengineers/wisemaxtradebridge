@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const fetchUserProfile = async (userId: string) => {
@@ -126,22 +126,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserProfile(session.user.id);
+        fetchUserProfile(session.user.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
       }
     });
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('AuthContext - Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await fetchUserProfile(session.user.id);
+          // Use setTimeout to avoid deadlock
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
         } else {
           setProfile(null);
           setIsAdmin(false);
+        }
+        
+        // Set loading to false after auth state change
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+          setLoading(false);
         }
       }
     );
@@ -151,13 +161,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string, phone?: string, referralCode?: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
+      // Sign up without email confirmation
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: undefined, // No email redirect needed
           data: {
             name,
             phone,
@@ -175,9 +184,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error };
       }
 
+      // Automatically sign in after signup since email confirmation is disabled
+      if (data.user && !data.session) {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (signInError) {
+          toast({
+            title: "Auto sign-in failed",
+            description: "Account created but couldn't sign in automatically. Please sign in manually.",
+            variant: "destructive",
+          });
+          return { error: signInError };
+        }
+
+        if (signInData.session) {
+          setSession(signInData.session);
+          setUser(signInData.user);
+          await fetchUserProfile(signInData.user.id);
+        }
+      } else if (data.session) {
+        // If session is already returned (when email confirmation is disabled in Supabase)
+        setSession(data.session);
+        setUser(data.user);
+        await fetchUserProfile(data.user.id);
+      }
+
       toast({
-        title: "Account created successfully!",
-        description: "Please check your email to verify your account.",
+        title: "Welcome to LakToken!",
+        description: "Your account has been created successfully.",
       });
 
       return { error: null };

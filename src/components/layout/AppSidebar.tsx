@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award, Shield, BarChart3, DollarSign, PiggyBank } from 'lucide-react';
+import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award, Shield, BarChart3, DollarSign, PiggyBank, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 
 interface AppSidebarProps {
   isOpen: boolean;
@@ -108,6 +109,30 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
               </div>
             </div>
           </div>
+          
+          {/* Referral Code Display */}
+          {profile?.referral_code && (
+            <div className="mt-2 pt-2 border-t border-white/10">
+              <p className="text-xs text-purple-300 mb-1">Referral Code</p>
+              <div className="flex items-center gap-2">
+                <code className="text-sm font-mono text-white bg-white/10 px-2 py-1 rounded">
+                  {profile.referral_code}
+                </code>
+                <button
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(profile.referral_code || '');
+                    toast({
+                      title: "Copied!",
+                      description: "Referral code copied",
+                    });
+                  }}
+                  className="text-purple-300 hover:text-white transition-colors"
+                >
+                  <Copy className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Menu Items - Scrollable */}
