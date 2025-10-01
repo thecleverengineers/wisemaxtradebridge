@@ -25,15 +25,23 @@ export default function BinaryOptions() {
   const fetchBalance = async () => {
     if (!user) return;
     
-    const { data, error } = await supabase
-      .from('wallets')
-      .select('balance')
-      .eq('user_id', user.id)
-      .eq('currency', 'USDT')
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', user.id)
+        .eq('currency', 'USDT')
+        .maybeSingle();
 
-    if (!error && data) {
-      setBalance(data.balance);
+      if (data) {
+        setBalance(data.balance);
+      } else {
+        console.log('No wallet found for user, balance set to 0');
+        setBalance(0);
+      }
+    } catch (err) {
+      console.error('Error fetching balance:', err);
+      setBalance(0);
     }
   };
 
@@ -87,28 +95,47 @@ export default function BinaryOptions() {
 
   // Set up real-time subscriptions
   useEffect(() => {
-    if (!user) return;
-
     const loadAndGenerate = async () => {
-      // Initial fetch
-      await Promise.all([
-        fetchBalance(),
-        fetchSignals(),
-        fetchActiveTrades(),
-        fetchTradeHistory()
-      ]);
-      
-      setLoading(false);
-      
-      // Check if signals exist, if not generate immediately
-      const { data: existingSignals } = await supabase
-        .from('binary_signals')
-        .select('*')
-        .eq('is_active', true)
-        .gte('expires_at', new Date().toISOString());
-      
-      if (!existingSignals || existingSignals.length === 0) {
-        generateSignals();
+      try {
+        console.log('Starting to load data for user:', user?.id);
+        
+        if (!user) {
+          console.log('No user found, setting loading to false');
+          setLoading(false);
+          return;
+        }
+
+        // Initial fetch - with error handling
+        const promises = [
+          fetchBalance().catch(err => console.error('Balance fetch error:', err)),
+          fetchSignals().catch(err => console.error('Signals fetch error:', err)),
+          fetchActiveTrades().catch(err => console.error('Active trades fetch error:', err)),
+          fetchTradeHistory().catch(err => console.error('Trade history fetch error:', err))
+        ];
+        
+        await Promise.allSettled(promises);
+        
+        setLoading(false);
+        console.log('Data loaded successfully');
+        
+        // Check if signals exist, if not generate immediately
+        try {
+          const { data: existingSignals } = await supabase
+            .from('binary_signals')
+            .select('*')
+            .eq('is_active', true)
+            .gte('expires_at', new Date().toISOString());
+          
+          if (!existingSignals || existingSignals.length === 0) {
+            console.log('No active signals found, generating new ones');
+            generateSignals();
+          }
+        } catch (err) {
+          console.error('Error checking signals:', err);
+        }
+      } catch (err) {
+        console.error('Critical error in loadAndGenerate:', err);
+        setLoading(false);
       }
     };
 
