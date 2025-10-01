@@ -80,8 +80,7 @@ export const PriceChart: React.FC<PriceChartProps> = ({
 
     // Create series based on timeframe
     if (timeframe?.duration_seconds <= 60 || chartType === 'line') {
-      // Use the correct method name
-      const lineSeries = (chart as any).addLineSeries({
+      const lineSeries = chart.addLineSeries({
         color: isDark ? '#22c55e' : '#16a34a',
         lineWidth: 2,
         crosshairMarkerVisible: true,
@@ -94,8 +93,7 @@ export const PriceChart: React.FC<PriceChartProps> = ({
       });
       seriesRef.current = lineSeries;
     } else {
-      // Use the correct method name
-      const candlestickSeries = (chart as any).addCandlestickSeries({
+      const candlestickSeries = chart.addCandlestickSeries({
         upColor: '#22c55e',
         downColor: '#ef4444',
         borderUpColor: '#22c55e',
