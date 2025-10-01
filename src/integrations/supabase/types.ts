@@ -95,53 +95,358 @@ export type Database = {
         }
         Relationships: []
       }
+      binary_achievements: {
+        Row: {
+          achievement_name: string
+          achievement_type: string
+          description: string | null
+          id: string
+          reward_amount: number | null
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          achievement_name: string
+          achievement_type: string
+          description?: string | null
+          id?: string
+          reward_amount?: number | null
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          achievement_name?: string
+          achievement_type?: string
+          description?: string | null
+          id?: string
+          reward_amount?: number | null
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      binary_assets: {
+        Row: {
+          base_currency: string
+          category: string
+          created_at: string | null
+          current_price: number
+          day_high: number | null
+          day_low: number | null
+          id: string
+          is_active: boolean | null
+          max_trade_amount: number | null
+          min_trade_amount: number | null
+          name: string
+          payout_rate: number | null
+          previous_close: number | null
+          quote_currency: string
+          symbol: string
+          updated_at: string | null
+          volatility: number | null
+        }
+        Insert: {
+          base_currency: string
+          category: string
+          created_at?: string | null
+          current_price?: number
+          day_high?: number | null
+          day_low?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_trade_amount?: number | null
+          min_trade_amount?: number | null
+          name: string
+          payout_rate?: number | null
+          previous_close?: number | null
+          quote_currency: string
+          symbol: string
+          updated_at?: string | null
+          volatility?: number | null
+        }
+        Update: {
+          base_currency?: string
+          category?: string
+          created_at?: string | null
+          current_price?: number
+          day_high?: number | null
+          day_low?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_trade_amount?: number | null
+          min_trade_amount?: number | null
+          name?: string
+          payout_rate?: number | null
+          previous_close?: number | null
+          quote_currency?: string
+          symbol?: string
+          updated_at?: string | null
+          volatility?: number | null
+        }
+        Relationships: []
+      }
+      binary_leaderboard: {
+        Row: {
+          created_at: string | null
+          id: string
+          losses: number | null
+          period: string
+          period_end: string | null
+          period_start: string
+          rank: number | null
+          total_profit: number | null
+          total_trades: number | null
+          total_volume: number | null
+          updated_at: string | null
+          user_id: string
+          win_rate: number | null
+          wins: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          losses?: number | null
+          period: string
+          period_end?: string | null
+          period_start: string
+          rank?: number | null
+          total_profit?: number | null
+          total_trades?: number | null
+          total_volume?: number | null
+          updated_at?: string | null
+          user_id: string
+          win_rate?: number | null
+          wins?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          losses?: number | null
+          period?: string
+          period_end?: string | null
+          period_start?: string
+          rank?: number | null
+          total_profit?: number | null
+          total_trades?: number | null
+          total_volume?: number | null
+          updated_at?: string | null
+          user_id?: string
+          win_rate?: number | null
+          wins?: number | null
+        }
+        Relationships: []
+      }
+      binary_market_settings: {
+        Row: {
+          demo_starting_balance: number | null
+          global_payout_multiplier: number | null
+          id: string
+          is_trading_enabled: boolean | null
+          maintenance_mode: boolean | null
+          market_mode: string | null
+          max_daily_loss_per_user: number | null
+          max_daily_trades_per_user: number | null
+          max_trade_size: number | null
+          min_trade_size: number | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          demo_starting_balance?: number | null
+          global_payout_multiplier?: number | null
+          id?: string
+          is_trading_enabled?: boolean | null
+          maintenance_mode?: boolean | null
+          market_mode?: string | null
+          max_daily_loss_per_user?: number | null
+          max_daily_trades_per_user?: number | null
+          max_trade_size?: number | null
+          min_trade_size?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          demo_starting_balance?: number | null
+          global_payout_multiplier?: number | null
+          id?: string
+          is_trading_enabled?: boolean | null
+          maintenance_mode?: boolean | null
+          market_mode?: string | null
+          max_daily_loss_per_user?: number | null
+          max_daily_trades_per_user?: number | null
+          max_trade_size?: number | null
+          min_trade_size?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       binary_options_trades: {
         Row: {
           admin_forced_result: string | null
+          asset_id: string | null
           asset_pair: string
           created_at: string
           entry_price: number
           exit_price: number | null
           expiry_time: string
           id: string
+          is_demo: boolean | null
+          market_indicators: Json | null
+          outcome_type: string | null
           payout_rate: number
           profit_loss: number | null
           settled_at: string | null
+          signal_strength: string | null
           stake_amount: number
           status: string
+          timeframe_id: string | null
           trade_type: string
           user_id: string
         }
         Insert: {
           admin_forced_result?: string | null
+          asset_id?: string | null
           asset_pair?: string
           created_at?: string
           entry_price: number
           exit_price?: number | null
           expiry_time: string
           id?: string
+          is_demo?: boolean | null
+          market_indicators?: Json | null
+          outcome_type?: string | null
           payout_rate?: number
           profit_loss?: number | null
           settled_at?: string | null
+          signal_strength?: string | null
           stake_amount: number
           status?: string
+          timeframe_id?: string | null
           trade_type: string
           user_id: string
         }
         Update: {
           admin_forced_result?: string | null
+          asset_id?: string | null
           asset_pair?: string
           created_at?: string
           entry_price?: number
           exit_price?: number | null
           expiry_time?: string
           id?: string
+          is_demo?: boolean | null
+          market_indicators?: Json | null
+          outcome_type?: string | null
           payout_rate?: number
           profit_loss?: number | null
           settled_at?: string | null
+          signal_strength?: string | null
           stake_amount?: number
           status?: string
+          timeframe_id?: string | null
           trade_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "binary_options_trades_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "binary_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "binary_options_trades_timeframe_id_fkey"
+            columns: ["timeframe_id"]
+            isOneToOne: false
+            referencedRelation: "binary_timeframes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      binary_price_history: {
+        Row: {
+          asset_id: string
+          close: number
+          created_at: string | null
+          high: number
+          id: string
+          low: number
+          open: number
+          timestamp: string
+          volume: number | null
+        }
+        Insert: {
+          asset_id: string
+          close: number
+          created_at?: string | null
+          high: number
+          id?: string
+          low: number
+          open: number
+          timestamp?: string
+          volume?: number | null
+        }
+        Update: {
+          asset_id?: string
+          close?: number
+          created_at?: string | null
+          high?: number
+          id?: string
+          low?: number
+          open?: number
+          timestamp?: string
+          volume?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "binary_price_history_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "binary_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      binary_risk_settings: {
+        Row: {
+          cool_down_period_minutes: number | null
+          created_at: string | null
+          id: string
+          is_self_excluded: boolean | null
+          max_daily_loss: number | null
+          max_daily_trades: number | null
+          max_open_trades: number | null
+          max_trade_size: number | null
+          self_exclusion_until: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cool_down_period_minutes?: number | null
+          created_at?: string | null
+          id?: string
+          is_self_excluded?: boolean | null
+          max_daily_loss?: number | null
+          max_daily_trades?: number | null
+          max_open_trades?: number | null
+          max_trade_size?: number | null
+          self_exclusion_until?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cool_down_period_minutes?: number | null
+          created_at?: string | null
+          id?: string
+          is_self_excluded?: boolean | null
+          max_daily_loss?: number | null
+          max_daily_trades?: number | null
+          max_open_trades?: number | null
+          max_trade_size?: number | null
+          self_exclusion_until?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -181,6 +486,86 @@ export type Database = {
           strength?: string
         }
         Relationships: []
+      }
+      binary_timeframes: {
+        Row: {
+          created_at: string | null
+          duration_seconds: number
+          id: string
+          is_active: boolean | null
+          max_stake: number | null
+          min_stake: number | null
+          name: string
+          payout_multiplier: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_seconds: number
+          id?: string
+          is_active?: boolean | null
+          max_stake?: number | null
+          min_stake?: number | null
+          name: string
+          payout_multiplier?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_seconds?: number
+          id?: string
+          is_active?: boolean | null
+          max_stake?: number | null
+          min_stake?: number | null
+          name?: string
+          payout_multiplier?: number | null
+        }
+        Relationships: []
+      }
+      binary_trading_signals: {
+        Row: {
+          accuracy_rate: number | null
+          analysis: string | null
+          asset_id: string | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          indicator: string | null
+          is_active: boolean | null
+          signal_type: string
+          strength: string
+        }
+        Insert: {
+          accuracy_rate?: number | null
+          analysis?: string | null
+          asset_id?: string | null
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          indicator?: string | null
+          is_active?: boolean | null
+          signal_type: string
+          strength: string
+        }
+        Update: {
+          accuracy_rate?: number | null
+          analysis?: string | null
+          asset_id?: string | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          indicator?: string | null
+          is_active?: boolean | null
+          signal_type?: string
+          strength?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "binary_trading_signals_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "binary_assets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bot_strategies: {
         Row: {
@@ -1729,7 +2114,11 @@ export type Database = {
           bonus_income: number | null
           created_at: string
           currency: string
+          demo_balance: number | null
+          demo_reset_count: number | null
           id: string
+          is_demo_active: boolean | null
+          last_demo_reset: string | null
           last_transaction_at: string | null
           level_income: number | null
           locked_balance: number
@@ -1747,7 +2136,11 @@ export type Database = {
           bonus_income?: number | null
           created_at?: string
           currency: string
+          demo_balance?: number | null
+          demo_reset_count?: number | null
           id?: string
+          is_demo_active?: boolean | null
+          last_demo_reset?: string | null
           last_transaction_at?: string | null
           level_income?: number | null
           locked_balance?: number
@@ -1765,7 +2158,11 @@ export type Database = {
           bonus_income?: number | null
           created_at?: string
           currency?: string
+          demo_balance?: number | null
+          demo_reset_count?: number | null
           id?: string
+          is_demo_active?: boolean | null
+          last_demo_reset?: string | null
           last_transaction_at?: string | null
           level_income?: number | null
           locked_balance?: number
@@ -1832,6 +2229,18 @@ export type Database = {
       }
       settle_binary_trade: {
         Args: { p_trade_id: string }
+        Returns: undefined
+      }
+      simulate_price_movement: {
+        Args: {
+          p_asset_id: string
+          p_current_price: number
+          p_volatility: number
+        }
+        Returns: number
+      }
+      update_binary_leaderboard: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
     }
