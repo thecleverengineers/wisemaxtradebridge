@@ -98,12 +98,7 @@ export function Dashboard() {
   useEffect(() => {
     if (!user) return;
     fetchDashboardData();
-    const cleanup = setupRealtimeSubscriptions();
-    
-    // Cleanup subscriptions on unmount or user change
-    return () => {
-      if (cleanup) cleanup();
-    };
+    setupRealtimeSubscriptions();
   }, [user]);
 
   const fetchDashboardData = async () => {
