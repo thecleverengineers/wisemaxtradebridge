@@ -89,15 +89,30 @@ export default function BinaryOptions() {
   useEffect(() => {
     if (!user) return;
 
-    // Initial fetch
-    fetchBalance();
-    fetchSignals();
-    fetchActiveTrades();
-    fetchTradeHistory();
-    setLoading(false);
+    const loadAndGenerate = async () => {
+      // Initial fetch
+      await Promise.all([
+        fetchBalance(),
+        fetchSignals(),
+        fetchActiveTrades(),
+        fetchTradeHistory()
+      ]);
+      
+      setLoading(false);
+      
+      // Check if signals exist, if not generate immediately
+      const { data: existingSignals } = await supabase
+        .from('binary_signals')
+        .select('*')
+        .eq('is_active', true)
+        .gte('expires_at', new Date().toISOString());
+      
+      if (!existingSignals || existingSignals.length === 0) {
+        generateSignals();
+      }
+    };
 
-    // Generate initial signals
-    generateSignals();
+    loadAndGenerate();
 
     // Subscribe to wallet changes
     const walletChannel = supabase
@@ -138,10 +153,19 @@ export default function BinaryOptions() {
       })
       .subscribe();
 
-    // Auto-generate new signals every 15 seconds
-    const signalInterval = setInterval(() => {
-      generateSignals();
-    }, 15000);
+    // Auto-generate new signals every 10 seconds and when signals expire
+    const signalInterval = setInterval(async () => {
+      // Check if we have less than 3 active signals
+      const { data: activeSignals } = await supabase
+        .from('binary_signals')
+        .select('*')
+        .eq('is_active', true)
+        .gte('expires_at', new Date().toISOString());
+      
+      if (!activeSignals || activeSignals.length < 3) {
+        generateSignals();
+      }
+    }, 10000);
 
     return () => {
       walletChannel.unsubscribe();
