@@ -30,7 +30,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
     { icon: Gift, label: 'Rewards', path: '/rewards' },
     { icon: TrendingUp, label: 'Investment Records', path: '/investment-records' },
     
-    ...(isAdmin ? [{ icon: Shield, label: 'Admin Panel', path: '/admin', badge: 'ADMIN' }] : []),
+    ...(isAdmin ? [{ icon: Shield, label: 'Admin Panel', path: '/admin', badge: 'ADMIN', badgeColor: 'red' }] : []),
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
@@ -156,7 +156,12 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
                     <span className="font-medium text-sm truncate">{item.label}</span>
                   </div>
                   {item.badge && (
-                    <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2">
+                    <span className={cn(
+                      "text-xs px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2",
+                      item.badgeColor === 'red' 
+                        ? "bg-red-500 text-white" 
+                        : "bg-gradient-to-r from-yellow-400 to-orange-500 text-black"
+                    )}>
                       {item.badge}
                     </span>
                   )}
