@@ -501,12 +501,12 @@ const ForexTrading = () => {
           </div>
 
           {/* Main Trading Interface */}
-          <Tabs defaultValue="overview" className="space-y-4">
+          <Tabs defaultValue="signals" className="space-y-4">
             <TabsList>
+              <TabsTrigger value="signals">Signals</TabsTrigger>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="trading">Trading</TabsTrigger>
               <TabsTrigger value="positions">Positions</TabsTrigger>
-              <TabsTrigger value="signals">Signals</TabsTrigger>
               <TabsTrigger value="copy">Copy Trading</TabsTrigger>
               <TabsTrigger value="bots">Auto Bots</TabsTrigger>
             </TabsList>
