@@ -117,13 +117,16 @@ export default function ROIInvestments() {
   });
 
   useEffect(() => {
-    if (!user) return;
-
-    fetchData();
-    setupRealtimeSubscriptions();
-  }, [user]);
+    // Immediately check if user is available and fetch data
+    if (user?.id) {
+      console.log('User authenticated, fetching ROI data for:', user.id);
+      fetchData();
+      setupRealtimeSubscriptions();
+    }
+  }, [user?.id]); // Changed dependency to user?.id
 
   const fetchData = async () => {
+    console.log('Starting fetchData...');
     await Promise.all([
       fetchPlans(),
       fetchUserInvestments(),
@@ -133,27 +136,35 @@ export default function ROIInvestments() {
 
   const fetchPlans = async () => {
     try {
-      setIsLoading(true);
+      console.log('Fetching investment plans...');
       const { data, error } = await supabase
         .from('investment_plans')
         .select('*')
         .order('min_amount', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching plans:', error);
+        throw error;
+      }
       
-      console.log('Fetched investment plans:', data);
+      console.log('Raw fetched plans:', data);
       
       // Filter only active plans in the frontend
-      const activePlans = (data || []).filter(plan => plan.status === 'active');
+      const activePlans = (data || []).filter(plan => {
+        console.log(`Plan ${plan.name}: status = ${plan.status}`);
+        return plan.status === 'active';
+      });
+      
+      console.log('Active plans after filtering:', activePlans);
       setPlans(activePlans);
+      setIsLoading(false);
     } catch (error: any) {
-      console.error('Error fetching plans:', error);
+      console.error('Error in fetchPlans:', error);
       toast({
         title: 'Error',
         description: `Failed to load investment plans: ${error.message}`,
         variant: 'destructive'
       });
-    } finally {
       setIsLoading(false);
     }
   };
