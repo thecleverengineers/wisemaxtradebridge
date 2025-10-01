@@ -1,34 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  ChartOptions
-} from 'chart.js';
-import annotationPlugin from 'chartjs-plugin-annotation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  annotationPlugin
-);
 
 interface Signal {
   id: string;
@@ -45,8 +19,8 @@ interface RealtimeSignalChartProps {
 }
 
 export function RealtimeSignalChart({ assetPair, onSignalGenerated }: RealtimeSignalChartProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [priceData, setPriceData] = useState<number[]>([]);
-  const [timeLabels, setTimeLabels] = useState<string[]>([]);
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [latestSignal, setLatestSignal] = useState<Signal | null>(null);
   const [trend, setTrend] = useState<'up' | 'down' | 'neutral'>('neutral');
@@ -134,6 +108,114 @@ export function RealtimeSignalChart({ assetPair, onSignalGenerated }: RealtimeSi
     };
   };
 
+  // Draw chart on canvas
+  const drawChart = () => {
+    const canvas = canvasRef.current;
+    if (!canvas || priceData.length === 0) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Set dimensions
+    const padding = 40;
+    const chartWidth = canvas.width - padding * 2;
+    const chartHeight = canvas.height - padding * 2;
+
+    // Find min and max prices
+    const minPrice = Math.min(...priceData);
+    const maxPrice = Math.max(...priceData);
+    const priceRange = maxPrice - minPrice || 0.0001;
+
+    // Draw grid lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 0.5;
+
+    // Horizontal grid lines
+    for (let i = 0; i <= 5; i++) {
+      const y = padding + (chartHeight / 5) * i;
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(canvas.width - padding, y);
+      ctx.stroke();
+    }
+
+    // Draw price line
+    ctx.strokeStyle = trend === 'up' ? '#22c55e' : trend === 'down' ? '#ef4444' : '#3b82f6';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    priceData.forEach((price, i) => {
+      const x = padding + (chartWidth / (priceData.length - 1)) * i;
+      const y = padding + chartHeight - ((price - minPrice) / priceRange) * chartHeight;
+
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+
+    ctx.stroke();
+
+    // Draw gradient fill
+    const gradient = ctx.createLinearGradient(0, padding, 0, canvas.height - padding);
+    gradient.addColorStop(0, trend === 'up' ? 'rgba(34, 197, 94, 0.3)' : trend === 'down' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)');
+    gradient.addColorStop(1, 'transparent');
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    
+    priceData.forEach((price, i) => {
+      const x = padding + (chartWidth / (priceData.length - 1)) * i;
+      const y = padding + chartHeight - ((price - minPrice) / priceRange) * chartHeight;
+
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+
+    ctx.lineTo(canvas.width - padding, canvas.height - padding);
+    ctx.lineTo(padding, canvas.height - padding);
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw signal indicator if present
+    if (latestSignal && Date.now() - latestSignal.time.getTime() < 5000) {
+      const signalIndex = priceData.length - 1;
+      const x = padding + (chartWidth / (priceData.length - 1)) * signalIndex;
+      const y = padding + chartHeight - ((latestSignal.price - minPrice) / priceRange) * chartHeight;
+
+      ctx.fillStyle = latestSignal.type === 'CALL' ? '#22c55e' : '#ef4444';
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw arrow
+      ctx.strokeStyle = latestSignal.type === 'CALL' ? '#22c55e' : '#ef4444';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      if (latestSignal.type === 'CALL') {
+        ctx.moveTo(x, y - 10);
+        ctx.lineTo(x, y - 20);
+        ctx.lineTo(x - 5, y - 15);
+        ctx.moveTo(x, y - 20);
+        ctx.lineTo(x + 5, y - 15);
+      } else {
+        ctx.moveTo(x, y + 10);
+        ctx.lineTo(x, y + 20);
+        ctx.lineTo(x - 5, y + 15);
+        ctx.moveTo(x, y + 20);
+        ctx.lineTo(x + 5, y + 15);
+      }
+      ctx.stroke();
+    }
+  };
+
   useEffect(() => {
     const initialPrice = getInitialPrice(assetPair);
     const initialData = Array(30).fill(0).map((_, i) => {
@@ -142,10 +224,6 @@ export function RealtimeSignalChart({ assetPair, onSignalGenerated }: RealtimeSi
     });
     
     setPriceData(initialData);
-    setTimeLabels(Array(30).fill(0).map((_, i) => {
-      const time = new Date(Date.now() - (29 - i) * 1000);
-      return time.toLocaleTimeString('en-US', { hour12: false });
-    }));
     setCurrentPrice(initialData[initialData.length - 1]);
 
     intervalRef.current = setInterval(() => {
@@ -168,11 +246,6 @@ export function RealtimeSignalChart({ assetPair, onSignalGenerated }: RealtimeSi
         setCurrentPrice(newPrice);
         return newData;
       });
-
-      setTimeLabels(prev => {
-        const now = new Date();
-        return [...prev.slice(1), now.toLocaleTimeString('en-US', { hour12: false })];
-      });
     }, 1000);
 
     return () => {
@@ -180,85 +253,9 @@ export function RealtimeSignalChart({ assetPair, onSignalGenerated }: RealtimeSi
     };
   }, [assetPair]);
 
-  const chartData = {
-    labels: timeLabels,
-    datasets: [
-      {
-        label: assetPair,
-        data: priceData,
-        borderColor: trend === 'up' ? 'rgb(34, 197, 94)' : trend === 'down' ? 'rgb(239, 68, 68)' : 'rgb(59, 130, 246)',
-        backgroundColor: trend === 'up' ? 'rgba(34, 197, 94, 0.1)' : trend === 'down' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 4
-      }
-    ]
-  };
-
-  const options: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: 'index' as const,
-      intersect: false,
-    },
-    plugins: {
-      legend: {
-        display: false
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => {
-            return `${context.dataset.label}: ${context.parsed.y.toFixed(5)}`;
-          }
-        }
-      },
-      annotation: latestSignal ? {
-        annotations: {
-          signalLine: {
-            type: 'line',
-            yMin: latestSignal.price,
-            yMax: latestSignal.price,
-            borderColor: latestSignal.type === 'CALL' ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
-            borderWidth: 2,
-            borderDash: [5, 5],
-            label: {
-              display: true,
-              content: `${latestSignal.type} Signal`,
-              position: 'start'
-            }
-          }
-        }
-      } : {}
-    },
-    scales: {
-      x: {
-        display: true,
-        grid: {
-          color: 'rgba(255, 255, 255, 0.05)'
-        },
-        ticks: {
-          maxTicksLimit: 6,
-          color: 'rgba(255, 255, 255, 0.5)'
-        }
-      },
-      y: {
-        display: true,
-        position: 'right' as const,
-        grid: {
-          color: 'rgba(255, 255, 255, 0.05)'
-        },
-        ticks: {
-          color: 'rgba(255, 255, 255, 0.5)',
-          callback: function(tickValue) {
-            return Number(tickValue).toFixed(5);
-          }
-        }
-      }
-    }
-  };
+  useEffect(() => {
+    drawChart();
+  }, [priceData, latestSignal, trend]);
 
   const priceChange = priceData.length > 1 ? currentPrice - priceData[priceData.length - 2] : 0;
   const priceChangePercent = priceData.length > 1 ? (priceChange / priceData[priceData.length - 2]) * 100 : 0;
@@ -269,7 +266,7 @@ export function RealtimeSignalChart({ assetPair, onSignalGenerated }: RealtimeSi
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold">{assetPair}</CardTitle>
           <div className="flex items-center gap-2">
-            {latestSignal && (
+            {latestSignal && Date.now() - latestSignal.time.getTime() < 5000 && (
               <Badge 
                 variant={latestSignal.strength === 'strong' ? 'default' : latestSignal.strength === 'medium' ? 'secondary' : 'outline'}
                 className={cn(
@@ -299,9 +296,13 @@ export function RealtimeSignalChart({ assetPair, onSignalGenerated }: RealtimeSi
         </div>
       </CardHeader>
       <CardContent className="pt-2">
-        <div style={{ height: '200px' }}>
-          <Line data={chartData} options={options} />
-        </div>
+        <canvas 
+          ref={canvasRef} 
+          width={400} 
+          height={200} 
+          className="w-full h-[200px]"
+          style={{ maxWidth: '100%', height: 'auto' }}
+        />
       </CardContent>
     </Card>
   );
