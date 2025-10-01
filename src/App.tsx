@@ -22,6 +22,7 @@ import ForexTrading from "./pages/ForexTrading";
 import USDTStaking from "./pages/USDTStaking";
 import ROIInvestments from "./pages/ROIInvestments";
 import BinaryOptions from "./pages/BinaryOptions";
+import BinaryTradingSystem from "./pages/BinaryTradingSystem";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -89,6 +90,11 @@ const AppRoutes = () => {
       <Route path="/binary-options" element={
         <PrivateRoute>
           <BinaryOptions />
+        </PrivateRoute>
+      } />
+      <Route path="/binary-trading" element={
+        <PrivateRoute>
+          <BinaryTradingSystem />
         </PrivateRoute>
       } />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
