@@ -141,27 +141,43 @@ export default function ROIInvestments() {
 
   const fetchPlans = async () => {
     try {
-      console.log('Fetching investment plans...');
+      console.log('Fetching ROI plans...');
       const { data, error } = await supabase
-        .from('investment_plans')
+        .from('roi_plans')
         .select('*')
-        .order('min_amount', { ascending: true });
+        .eq('is_active', true)
+        .order('priority_order', { ascending: true })
+        .order('name', { ascending: true });
 
       if (error) {
-        console.error('Error fetching plans:', error);
+        console.error('Error fetching ROI plans:', error);
         throw error;
       }
       
-      console.log('Raw fetched plans:', data);
+      console.log('Fetched ROI plans:', data);
       
-      // Filter only active plans in the frontend
-      const activePlans = (data || []).filter(plan => {
-        console.log(`Plan ${plan.name}: status = ${plan.status}`);
-        return plan.status === 'active';
-      });
+      // Map roi_plans to match the expected interface
+      const mappedPlans = (data || []).map(plan => ({
+        id: plan.id,
+        name: plan.name,
+        description: plan.description,
+        daily_roi: plan.interest_rate, // Using interest_rate as daily ROI
+        min_amount: plan.min_investment,
+        max_amount: plan.max_investment || 1000000,
+        duration_days: plan.duration_value,
+        total_return_percent: plan.interest_rate * plan.duration_value, // Calculate total return
+        status: plan.is_active ? 'active' : 'inactive',
+        created_at: plan.created_at,
+        // Additional properties from roi_plans
+        plan_type: plan.plan_type,
+        plan_category: plan.plan_category,
+        is_compounding: plan.is_compounding,
+        features: plan.features || [],
+        duration_type: plan.duration_type
+      }));
       
-      console.log('Active plans after filtering:', activePlans);
-      setPlans(activePlans);
+      console.log('Mapped plans:', mappedPlans);
+      setPlans(mappedPlans);
       setIsLoading(false);
     } catch (error: any) {
       console.error('Error in fetchPlans:', error);
