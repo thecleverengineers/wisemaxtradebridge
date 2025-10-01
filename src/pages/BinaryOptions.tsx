@@ -47,16 +47,20 @@ export default function BinaryOptions() {
 
   // Fetch active signals
   const fetchSignals = async () => {
-    const { data, error } = await supabase
-      .from('binary_signals')
-      .select('*')
-      .eq('is_active', true)
-      .gte('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(3);
+    try {
+      const { data, error } = await supabase
+        .from('binary_signals')
+        .select('*')
+        .eq('is_active', true)
+        .gte('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(3);
 
-    if (!error && data) {
-      setSignals(data);
+      if (data) {
+        setSignals(data);
+      }
+    } catch (err) {
+      console.error('Error fetching signals:', err);
     }
   };
 
@@ -64,15 +68,19 @@ export default function BinaryOptions() {
   const fetchActiveTrades = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from('binary_options_trades')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('binary_options_trades')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
 
-    if (!error && data) {
-      setActiveTrades(data);
+      if (data) {
+        setActiveTrades(data);
+      }
+    } catch (err) {
+      console.error('Error fetching active trades:', err);
     }
   };
 
@@ -80,66 +88,75 @@ export default function BinaryOptions() {
   const fetchTradeHistory = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from('binary_options_trades')
-      .select('*')
-      .eq('user_id', user.id)
-      .in('status', ['won', 'lost'])
-      .order('settled_at', { ascending: false })
-      .limit(10);
+    try {
+      const { data, error } = await supabase
+        .from('binary_options_trades')
+        .select('*')
+        .eq('user_id', user.id)
+        .in('status', ['won', 'lost'])
+        .order('settled_at', { ascending: false })
+        .limit(10);
 
-    if (!error && data) {
-      setTradeHistory(data);
+      if (data) {
+        setTradeHistory(data);
+      }
+    } catch (err) {
+      console.error('Error fetching trade history:', err);
     }
   };
 
   // Set up real-time subscriptions
   useEffect(() => {
-    const loadAndGenerate = async () => {
-      try {
-        console.log('Starting to load data for user:', user?.id);
-        
-        if (!user) {
-          console.log('No user found, setting loading to false');
-          setLoading(false);
-          return;
-        }
-
-        // Initial fetch - with error handling
-        const promises = [
-          fetchBalance().catch(err => console.error('Balance fetch error:', err)),
-          fetchSignals().catch(err => console.error('Signals fetch error:', err)),
-          fetchActiveTrades().catch(err => console.error('Active trades fetch error:', err)),
-          fetchTradeHistory().catch(err => console.error('Trade history fetch error:', err))
-        ];
-        
-        await Promise.allSettled(promises);
-        
+    const initializePage = async () => {
+      setLoading(true);
+      console.log('Initializing page for user:', user?.id);
+      
+      if (!user) {
+        console.log('No user, showing page without user data');
         setLoading(false);
-        console.log('Data loaded successfully');
+        // Generate signals even without user
+        await generateSignals();
+        return;
+      }
+
+      try {
+        // Run all fetches in parallel, don't wait for failures
+        await Promise.allSettled([
+          fetchBalance(),
+          fetchSignals(),
+          fetchActiveTrades(),
+          fetchTradeHistory()
+        ]);
         
-        // Check if signals exist, if not generate immediately
-        try {
-          const { data: existingSignals } = await supabase
-            .from('binary_signals')
-            .select('*')
-            .eq('is_active', true)
-            .gte('expires_at', new Date().toISOString());
-          
-          if (!existingSignals || existingSignals.length === 0) {
-            console.log('No active signals found, generating new ones');
-            generateSignals();
-          }
-        } catch (err) {
-          console.error('Error checking signals:', err);
+        console.log('All data fetched');
+      } catch (err) {
+        console.error('Error during initialization:', err);
+      } finally {
+        setLoading(false);
+        console.log('Loading set to false');
+      }
+      
+      // Generate signals if needed
+      try {
+        const { data: existingSignals } = await supabase
+          .from('binary_signals')
+          .select('*')
+          .eq('is_active', true)
+          .gte('expires_at', new Date().toISOString());
+        
+        if (!existingSignals || existingSignals.length === 0) {
+          await generateSignals();
         }
       } catch (err) {
-        console.error('Critical error in loadAndGenerate:', err);
-        setLoading(false);
+        console.error('Error checking/generating signals:', err);
       }
     };
 
-    loadAndGenerate();
+    // Start initialization immediately
+    initializePage();
+
+    // Only set up subscriptions if we have a user
+    if (!user) return;
 
     // Subscribe to wallet changes
     const walletChannel = supabase
