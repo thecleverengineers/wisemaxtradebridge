@@ -17,7 +17,8 @@ import {
   Globe,
   Gift,
   Award,
-  ChevronLeft
+  ChevronLeft,
+  Banknote
 } from 'lucide-react';
 import ForexManagement from '@/components/admin/ForexManagement';
 import USDTStakingManagement from '@/components/admin/USDTStakingManagement';
@@ -32,6 +33,7 @@ import WebsiteSettings from '@/components/admin/WebsiteSettings';
 import RewardsManagement from '@/components/admin/RewardsManagement';
 import LevelSystemManagement from '@/components/admin/LevelSystemManagement';
 import LeaderboardManagement from '@/components/admin/LeaderboardManagement';
+import WalletManagement from '@/components/admin/WalletManagement';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -60,6 +62,7 @@ const AdminPanel = () => {
 
   const managementSections = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'wallets', label: 'Manage Wallets', icon: Banknote },
     { id: 'forex', label: 'Manage Forex', icon: TrendingUp },
     { id: 'staking', label: 'USDT Staking', icon: Wallet },
     { id: 'binary', label: 'Binary Options', icon: Target },
@@ -93,8 +96,8 @@ const AdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 h-auto">
-            {managementSections.slice(0, 7).map((section) => (
+          <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 h-auto">
+            {managementSections.slice(0, 8).map((section) => (
               <TabsTrigger 
                 key={section.id} 
                 value={section.id}
@@ -106,8 +109,8 @@ const AdminPanel = () => {
             ))}
           </TabsList>
           
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 h-auto mt-2">
-            {managementSections.slice(7).map((section) => (
+          <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 h-auto mt-2">
+            {managementSections.slice(8).map((section) => (
               <TabsTrigger 
                 key={section.id} 
                 value={section.id}
@@ -121,6 +124,10 @@ const AdminPanel = () => {
 
           <TabsContent value="overview" className="mt-6">
             <AdminOverview />
+          </TabsContent>
+
+          <TabsContent value="wallets" className="mt-6">
+            <WalletManagement />
           </TabsContent>
 
           <TabsContent value="forex" className="mt-6">
