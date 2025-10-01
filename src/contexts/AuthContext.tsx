@@ -161,13 +161,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string, phone?: string, referralCode?: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
+      // Sign up without email confirmation
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: undefined, // No email redirect needed
           data: {
             name,
             phone,
@@ -185,9 +184,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error };
       }
 
+      // Automatically sign in after signup since email confirmation is disabled
+      if (data.user && !data.session) {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (signInError) {
+          toast({
+            title: "Auto sign-in failed",
+            description: "Account created but couldn't sign in automatically. Please sign in manually.",
+            variant: "destructive",
+          });
+          return { error: signInError };
+        }
+
+        if (signInData.session) {
+          setSession(signInData.session);
+          setUser(signInData.user);
+          await fetchUserProfile(signInData.user.id);
+        }
+      } else if (data.session) {
+        // If session is already returned (when email confirmation is disabled in Supabase)
+        setSession(data.session);
+        setUser(data.user);
+        await fetchUserProfile(data.user.id);
+      }
+
       toast({
-        title: "Account created successfully!",
-        description: "Please check your email to verify your account.",
+        title: "Welcome to LakToken!",
+        description: "Your account has been created successfully.",
       });
 
       return { error: null };

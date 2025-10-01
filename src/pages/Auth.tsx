@@ -432,6 +432,12 @@ const Auth = () => {
                     </span>
                   ) : 'Create Account'}
                 </Button>
+                <Alert className="mt-4 bg-green-500/10 border-green-500/30">
+                  <CheckCircle className="h-4 w-4 text-green-400" />
+                  <AlertDescription className="text-green-400 text-sm">
+                    No email verification required! You can start trading immediately after signup.
+                  </AlertDescription>
+                </Alert>
               </form>
             </TabsContent>
           </Tabs>
