@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_activity_logs: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          new_values: Json | null
+          old_values: Json | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       admin_settings: {
         Row: {
           id: string
@@ -621,6 +663,137 @@ export type Database = {
           updated_at?: string
           user_id?: string
           win_rate?: number | null
+        }
+        Relationships: []
+      }
+      deposit_transactions: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          confirmations: number | null
+          created_at: string | null
+          currency: string
+          from_address: string | null
+          id: string
+          network: string
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          required_confirmations: number | null
+          status: string | null
+          to_address: string | null
+          transaction_hash: string | null
+          updated_at: string | null
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          confirmations?: number | null
+          created_at?: string | null
+          currency: string
+          from_address?: string | null
+          id?: string
+          network: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          required_confirmations?: number | null
+          status?: string | null
+          to_address?: string | null
+          transaction_hash?: string | null
+          updated_at?: string | null
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          confirmations?: number | null
+          created_at?: string | null
+          currency?: string
+          from_address?: string | null
+          id?: string
+          network?: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          required_confirmations?: number | null
+          status?: string | null
+          to_address?: string | null
+          transaction_hash?: string | null
+          updated_at?: string | null
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deposit_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "deposit_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deposit_wallets: {
+        Row: {
+          auto_detect_transactions: boolean | null
+          created_at: string | null
+          currency: string
+          id: string
+          is_active: boolean | null
+          min_deposit_amount: number | null
+          network: string
+          network_fee_notice: string | null
+          qr_code_url: string | null
+          require_confirmation: boolean | null
+          show_qr_code: boolean | null
+          updated_at: string | null
+          updated_by: string | null
+          wallet_address: string
+          wallet_label: string | null
+        }
+        Insert: {
+          auto_detect_transactions?: boolean | null
+          created_at?: string | null
+          currency: string
+          id?: string
+          is_active?: boolean | null
+          min_deposit_amount?: number | null
+          network: string
+          network_fee_notice?: string | null
+          qr_code_url?: string | null
+          require_confirmation?: boolean | null
+          show_qr_code?: boolean | null
+          updated_at?: string | null
+          updated_by?: string | null
+          wallet_address: string
+          wallet_label?: string | null
+        }
+        Update: {
+          auto_detect_transactions?: boolean | null
+          created_at?: string | null
+          currency?: string
+          id?: string
+          is_active?: boolean | null
+          min_deposit_amount?: number | null
+          network?: string
+          network_fee_notice?: string | null
+          qr_code_url?: string | null
+          require_confirmation?: boolean | null
+          show_qr_code?: boolean | null
+          updated_at?: string | null
+          updated_by?: string | null
+          wallet_address?: string
+          wallet_label?: string | null
         }
         Relationships: []
       }
@@ -1401,6 +1574,57 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_programs: {
+        Row: {
+          conditions: Json | null
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          max_reward: number | null
+          min_requirement: number | null
+          program_name: string
+          program_type: string
+          reward_type: string
+          reward_value: number
+          start_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_reward?: number | null
+          min_requirement?: number | null
+          program_name: string
+          program_type: string
+          reward_type: string
+          reward_value: number
+          start_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_reward?: number | null
+          min_requirement?: number | null
+          program_name?: string
+          program_type?: string
+          reward_type?: string
+          reward_value?: number
+          start_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       roi_earnings: {
         Row: {
           amount: number
@@ -1844,6 +2068,51 @@ export type Database = {
         }
         Relationships: []
       }
+      system_announcements: {
+        Row: {
+          content: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          priority: number | null
+          show_from: string | null
+          show_until: string | null
+          target_audience: string | null
+          title: string
+          type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority?: number | null
+          show_from?: string | null
+          show_until?: string | null
+          target_audience?: string | null
+          title: string
+          type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority?: number | null
+          show_from?: string | null
+          show_until?: string | null
+          target_audience?: string | null
+          title?: string
+          type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       trades: {
         Row: {
           amount: number
@@ -1963,6 +2232,157 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_level_assignments: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_manual: boolean | null
+          level_id: string | null
+          notes: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_manual?: boolean | null
+          level_id?: string | null
+          notes?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_manual?: boolean | null
+          level_id?: string | null
+          notes?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_level_assignments_level_id_fkey"
+            columns: ["level_id"]
+            isOneToOne: false
+            referencedRelation: "user_levels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_levels: {
+        Row: {
+          badge_color: string | null
+          badge_icon: string | null
+          benefits: Json | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          level_name: string
+          level_number: number
+          max_investment: number | null
+          min_investment: number
+          referral_bonus_percent: number | null
+          roi_bonus_percent: number | null
+          updated_at: string | null
+          withdrawal_limit: number | null
+        }
+        Insert: {
+          badge_color?: string | null
+          badge_icon?: string | null
+          benefits?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          level_name: string
+          level_number: number
+          max_investment?: number | null
+          min_investment: number
+          referral_bonus_percent?: number | null
+          roi_bonus_percent?: number | null
+          updated_at?: string | null
+          withdrawal_limit?: number | null
+        }
+        Update: {
+          badge_color?: string | null
+          badge_icon?: string | null
+          benefits?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          level_name?: string
+          level_number?: number
+          max_investment?: number | null
+          min_investment?: number
+          referral_bonus_percent?: number | null
+          roi_bonus_percent?: number | null
+          updated_at?: string | null
+          withdrawal_limit?: number | null
+        }
+        Relationships: []
+      }
+      user_rewards: {
+        Row: {
+          claimed_at: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          metadata: Json | null
+          program_id: string | null
+          reward_amount: number
+          reward_type: string
+          status: string | null
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          program_id?: string | null
+          reward_amount: number
+          reward_type: string
+          status?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          program_id?: string | null
+          reward_amount?: number
+          reward_type?: string
+          status?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_rewards_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "reward_programs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roi_investments: {
         Row: {
@@ -2174,6 +2594,114 @@ export type Database = {
           updated_at?: string
           user_id?: string
           wallet_address?: string | null
+        }
+        Relationships: []
+      }
+      website_settings: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_name: string | null
+          id: string
+          is_public: boolean | null
+          setting_category: string
+          setting_key: string
+          setting_type: string | null
+          setting_value: Json
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_name?: string | null
+          id?: string
+          is_public?: boolean | null
+          setting_category: string
+          setting_key: string
+          setting_type?: string | null
+          setting_value: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_name?: string | null
+          id?: string
+          is_public?: boolean | null
+          setting_category?: string
+          setting_key?: string
+          setting_type?: string | null
+          setting_value?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      withdrawal_requests: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          completed_at: string | null
+          created_at: string | null
+          currency: string
+          id: string
+          net_amount: number | null
+          network: string
+          processing_fee: number | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          status: string | null
+          transaction_hash: string | null
+          updated_at: string | null
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency: string
+          id?: string
+          net_amount?: number | null
+          network: string
+          processing_fee?: number | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          status?: string | null
+          transaction_hash?: string | null
+          updated_at?: string | null
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string
+          id?: string
+          net_amount?: number | null
+          network?: string
+          processing_fee?: number | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          status?: string | null
+          transaction_hash?: string | null
+          updated_at?: string | null
+          user_id?: string
+          wallet_address?: string
         }
         Relationships: []
       }
