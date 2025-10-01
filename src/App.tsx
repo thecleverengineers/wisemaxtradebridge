@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,85 +26,89 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+const AppRoutes = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/dashboard" element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              } />
-              <Route path="/wallet" element={
-                <PrivateRoute>
-                  <Wallet />
-                </PrivateRoute>
-              } />
-              <Route path="/referrals" element={
-                <PrivateRoute>
-                  <Referrals />
-                </PrivateRoute>
-              } />
-              <Route path="/settings" element={
-                <PrivateRoute>
-                  <Settings />
-                </PrivateRoute>
-              } />
-              <Route path="/calculator" element={
-                <PrivateRoute>
-                  <Calculator />
-                </PrivateRoute>
-              } />
-              <Route path="/leaderboard" element={
-                <PrivateRoute>
-                  <Leaderboard />
-                </PrivateRoute>
-              } />
-              <Route path="/rewards" element={
-                <PrivateRoute>
-                  <Rewards />
-                </PrivateRoute>
-              } />
-              <Route path="/investment-records" element={
-                <PrivateRoute>
-                  <InvestmentRecords />
-                </PrivateRoute>
-              } />
-              <Route path="/forex-trading" element={
-                <PrivateRoute>
-                  <ForexTrading />
-                </PrivateRoute>
-              } />
-              <Route path="/usdt-staking" element={
-                <PrivateRoute>
-                  <USDTStaking />
-                </PrivateRoute>
-              } />
-              <Route path="/roi-investments" element={
-                <PrivateRoute>
-                  <ROIInvestments />
-                </PrivateRoute>
-              } />
-              <Route path="/binary-options" element={
-                <PrivateRoute>
-                  <BinaryOptions />
-                </PrivateRoute>
-              } />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-        <Toaster />
-        <Sonner />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/dashboard" element={
+        <PrivateRoute>
+          <Dashboard />
+        </PrivateRoute>
+      } />
+      <Route path="/wallet" element={
+        <PrivateRoute>
+          <Wallet />
+        </PrivateRoute>
+      } />
+      <Route path="/referrals" element={
+        <PrivateRoute>
+          <Referrals />
+        </PrivateRoute>
+      } />
+      <Route path="/settings" element={
+        <PrivateRoute>
+          <Settings />
+        </PrivateRoute>
+      } />
+      <Route path="/calculator" element={
+        <PrivateRoute>
+          <Calculator />
+        </PrivateRoute>
+      } />
+      <Route path="/leaderboard" element={
+        <PrivateRoute>
+          <Leaderboard />
+        </PrivateRoute>
+      } />
+      <Route path="/rewards" element={
+        <PrivateRoute>
+          <Rewards />
+        </PrivateRoute>
+      } />
+      <Route path="/investment-records" element={
+        <PrivateRoute>
+          <InvestmentRecords />
+        </PrivateRoute>
+      } />
+      <Route path="/forex-trading" element={
+        <PrivateRoute>
+          <ForexTrading />
+        </PrivateRoute>
+      } />
+      <Route path="/usdt-staking" element={
+        <PrivateRoute>
+          <USDTStaking />
+        </PrivateRoute>
+      } />
+      <Route path="/roi-investments" element={
+        <PrivateRoute>
+          <ROIInvestments />
+        </PrivateRoute>
+      } />
+      <Route path="/binary-options" element={
+        <PrivateRoute>
+          <BinaryOptions />
+        </PrivateRoute>
+      } />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
