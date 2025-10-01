@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { createChart, IChartApi, ColorType, LineStyle, CrosshairMode, ISeriesApi } from 'lightweight-charts';
+import { createChart, IChartApi, ColorType, LineStyle, CrosshairMode, ISeriesApi, LineData, CandlestickData, Time } from 'lightweight-charts';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useTheme } from 'next-themes';
@@ -80,7 +80,8 @@ export const PriceChart: React.FC<PriceChartProps> = ({
 
     // Create series based on timeframe
     if (timeframe?.duration_seconds <= 60 || chartType === 'line') {
-      const lineSeries = chart.addLineSeries({
+      // Use the correct method name
+      const lineSeries = (chart as any).addLineSeries({
         color: isDark ? '#22c55e' : '#16a34a',
         lineWidth: 2,
         crosshairMarkerVisible: true,
@@ -91,9 +92,10 @@ export const PriceChart: React.FC<PriceChartProps> = ({
           minMove: 0.0001,
         },
       });
-      seriesRef.current = lineSeries as any;
+      seriesRef.current = lineSeries;
     } else {
-      const candlestickSeries = chart.addCandlestickSeries({
+      // Use the correct method name
+      const candlestickSeries = (chart as any).addCandlestickSeries({
         upColor: '#22c55e',
         downColor: '#ef4444',
         borderUpColor: '#22c55e',
@@ -106,7 +108,7 @@ export const PriceChart: React.FC<PriceChartProps> = ({
           minMove: 0.0001,
         },
       });
-      seriesRef.current = candlestickSeries as any;
+      seriesRef.current = candlestickSeries;
     }
 
     // Handle resize
@@ -128,19 +130,19 @@ export const PriceChart: React.FC<PriceChartProps> = ({
     if (!seriesRef.current || !asset) return;
 
     const generateInitialData = () => {
-      const data = [];
+      const data: (LineData<Time> | CandlestickData<Time>)[] = [];
       const now = Math.floor(Date.now() / 1000);
       const basePrice = asset.current_price;
       
       for (let i = 100; i >= 0; i--) {
-        const time = now - i * (timeframe?.duration_seconds || 60);
+        const time = (now - i * (timeframe?.duration_seconds || 60)) as Time;
         const variation = (Math.random() - 0.5) * basePrice * 0.002;
         
         if (chartType === 'line' || timeframe?.duration_seconds <= 60) {
           data.push({
             time,
             value: basePrice + variation,
-          });
+          } as LineData<Time>);
         } else {
           const open = basePrice + (Math.random() - 0.5) * basePrice * 0.002;
           const close = open + (Math.random() - 0.5) * basePrice * 0.002;
@@ -153,7 +155,7 @@ export const PriceChart: React.FC<PriceChartProps> = ({
             high,
             low,
             close,
-          });
+          } as CandlestickData<Time>);
         }
       }
       
@@ -166,14 +168,14 @@ export const PriceChart: React.FC<PriceChartProps> = ({
     const interval = setInterval(() => {
       if (!seriesRef.current) return;
       
-      const now = Math.floor(Date.now() / 1000);
+      const now = Math.floor(Date.now() / 1000) as Time;
       const lastPrice = asset.current_price + (Math.random() - 0.5) * asset.current_price * 0.001;
       
       if (chartType === 'line' || timeframe?.duration_seconds <= 60) {
         seriesRef.current.update({
           time: now,
           value: lastPrice,
-        } as any);
+        } as LineData<Time>);
       } else {
         const open = lastPrice;
         const close = open + (Math.random() - 0.5) * asset.current_price * 0.001;
@@ -186,7 +188,7 @@ export const PriceChart: React.FC<PriceChartProps> = ({
           high,
           low,
           close,
-        } as any);
+        } as CandlestickData<Time>);
       }
     }, 1000);
 
@@ -195,6 +197,8 @@ export const PriceChart: React.FC<PriceChartProps> = ({
 
   // Subscribe to real-time signals
   useEffect(() => {
+    if (!asset) return;
+    
     const channel = supabase
       .channel('binary-signals-chart')
       .on('postgres_changes', {
