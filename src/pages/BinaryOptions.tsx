@@ -200,8 +200,10 @@ export default function BinaryOptions() {
           {/* Active Trades */}
           <ActiveTrades trades={activeTrades} />
 
-          {/* Trade History */}
-          <TradeHistory trades={tradeHistory} />
+          {/* Betting Records - Trade History */}
+          <div className="mt-8 mb-4">
+            <TradeHistory trades={tradeHistory} />
+          </div>
         </div>
       </div>
       
