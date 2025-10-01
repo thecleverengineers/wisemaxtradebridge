@@ -250,34 +250,34 @@ export function LiveTradingSignals() {
     if (active && payload && payload[0]) {
       const candle = payload[0].payload;
       return (
-        <div className="bg-slate-900/95 backdrop-blur border border-slate-700 rounded p-2 shadow-xl">
-          <p className="text-xs text-slate-400 mb-1">{label}</p>
+        <div className="bg-blue-950/95 backdrop-blur border border-blue-700 rounded p-2 shadow-xl">
+          <p className="text-xs text-blue-300 mb-1">{label}</p>
           <div className="space-y-1 text-xs">
             <div className="flex justify-between gap-4">
-              <span className="text-slate-400">O:</span>
-              <span className="text-slate-200">{candle.open?.toFixed(5)}</span>
+              <span className="text-blue-400">O:</span>
+              <span className="text-blue-100">{candle.open?.toFixed(5)}</span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-slate-400">H:</span>
-              <span className="text-slate-200">{candle.high?.toFixed(5)}</span>
+              <span className="text-blue-400">H:</span>
+              <span className="text-blue-100">{candle.high?.toFixed(5)}</span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-slate-400">L:</span>
-              <span className="text-slate-200">{candle.low?.toFixed(5)}</span>
+              <span className="text-blue-400">L:</span>
+              <span className="text-blue-100">{candle.low?.toFixed(5)}</span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-slate-400">C:</span>
+              <span className="text-blue-400">C:</span>
               <span className={candle.close > candle.open ? 'text-green-400' : 'text-red-400'}>
                 {candle.close?.toFixed(5)}
               </span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-slate-400">Vol:</span>
-              <span className="text-slate-200">{(candle.volume / 1000).toFixed(0)}K</span>
+              <span className="text-blue-400">Vol:</span>
+              <span className="text-blue-100">{(candle.volume / 1000).toFixed(0)}K</span>
             </div>
           </div>
           {candle.signal && (
-            <div className="mt-2 pt-2 border-t border-slate-700">
+            <div className="mt-2 pt-2 border-t border-blue-700">
               <Badge className={cn(
                 "text-xs",
                 candle.signal === 'CALL' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
@@ -321,12 +321,12 @@ export function LiveTradingSignals() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 rounded-xl p-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-4 border border-slate-700">
+      <div className="bg-gradient-to-r from-blue-900/50 via-blue-800/50 to-blue-900/50 rounded-lg p-4 border border-blue-700/30 backdrop-blur">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-4">
-            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+            <h2 className="text-lg font-bold text-blue-100 flex items-center gap-2">
               <Activity className="h-5 w-5 text-cyan-400 animate-pulse" />
               Live Trading Signals
             </h2>
@@ -335,7 +335,7 @@ export function LiveTradingSignals() {
               LIVE
             </Badge>
           </div>
-          <button className="text-slate-400 hover:text-slate-200 transition-colors">
+          <button className="text-blue-300 hover:text-blue-100 transition-colors">
             <Maximize2 className="h-4 w-4" />
           </button>
         </div>
@@ -345,7 +345,7 @@ export function LiveTradingSignals() {
             <select
               value={selectedPair}
               onChange={(e) => setSelectedPair(e.target.value)}
-              className="bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-400"
+              className="bg-blue-900/50 border border-blue-700/50 rounded px-3 py-1.5 text-sm text-blue-100 focus:outline-none focus:border-cyan-400"
             >
               <option value="EUR/USD">EUR/USD</option>
               <option value="GBP/USD">GBP/USD</option>
@@ -356,7 +356,7 @@ export function LiveTradingSignals() {
             </select>
             
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-slate-100">{currentPrice.toFixed(5)}</span>
+              <span className="text-2xl font-bold text-blue-100">{currentPrice.toFixed(5)}</span>
               <div className={cn(
                 "flex items-center gap-1 px-2 py-1 rounded",
                 priceChange >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
@@ -376,7 +376,7 @@ export function LiveTradingSignals() {
                   "px-3 py-1 rounded text-xs font-medium transition-all",
                   selectedTimeframe === tf
                     ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                    : 'text-blue-300 hover:text-blue-100 hover:bg-blue-800/50'
                 )}
               >
                 {tf}
@@ -387,7 +387,7 @@ export function LiveTradingSignals() {
       </div>
 
       {/* Main Chart */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-lg border border-slate-700 p-4">
+      <div className="bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 rounded-lg border border-blue-700/30 p-4">
         <ResponsiveContainer width="100%" height={400}>
           <ComposedChart data={candleData}>
             <defs>
@@ -396,17 +396,17 @@ export function LiveTradingSignals() {
                 <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.1}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#1e3a8a" opacity={0.2} />
             <XAxis 
               dataKey="time" 
-              stroke="#64748b"
+              stroke="#60a5fa"
               fontSize={10}
               interval="preserveStartEnd"
             />
             <YAxis 
               yAxisId="price"
               orientation="right"
-              stroke="#64748b"
+              stroke="#60a5fa"
               fontSize={10}
               domain={['dataMin - 0.002', 'dataMax + 0.002']}
               tickFormatter={(value) => value.toFixed(4)}
@@ -414,7 +414,7 @@ export function LiveTradingSignals() {
             <YAxis 
               yAxisId="volume"
               orientation="left"
-              stroke="#64748b"
+              stroke="#60a5fa"
               fontSize={10}
               domain={[0, 'dataMax']}
               hide
@@ -491,26 +491,26 @@ export function LiveTradingSignals() {
         <div className="flex items-center justify-center gap-6 mt-3">
           <div className="flex items-center gap-2">
             <div className="w-3 h-0.5 bg-yellow-500"></div>
-            <span className="text-xs text-slate-400">MA(20)</span>
+            <span className="text-xs text-blue-300">MA(20)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-0.5 bg-blue-500"></div>
-            <span className="text-xs text-slate-400">MA(50)</span>
+            <span className="text-xs text-blue-300">MA(50)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-0.5 bg-purple-500"></div>
-            <span className="text-xs text-slate-400">MA(200)</span>
+            <span className="text-xs text-blue-300">MA(200)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-2 bg-cyan-500/30"></div>
-            <span className="text-xs text-slate-400">Volume</span>
+            <span className="text-xs text-blue-300">Volume</span>
           </div>
         </div>
       </div>
 
       {/* Active Signals */}
       <div className="grid gap-3">
-        <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-blue-200 flex items-center gap-2">
           <Signal className="h-4 w-4 text-cyan-400" />
           Active Signals ({signals.length})
         </h3>
@@ -521,7 +521,7 @@ export function LiveTradingSignals() {
             const isProfit = signal.signal_type === 'CALL' ? pnl > 0 : pnl < 0;
             
             return (
-              <div key={signal.id} className="bg-slate-900/50 border border-slate-700 rounded-lg p-3 hover:border-slate-600 transition-colors">
+              <div key={signal.id} className="bg-blue-950/50 border border-blue-700/30 rounded-lg p-3 hover:border-blue-600 transition-colors backdrop-blur">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={cn(
@@ -536,8 +536,8 @@ export function LiveTradingSignals() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-200">{signal.asset_pair}</span>
-                        <Badge className="bg-slate-800 text-slate-400 text-xs h-5 border-slate-700">
+                        <span className="font-semibold text-blue-100">{signal.asset_pair}</span>
+                        <Badge className="bg-blue-800/50 text-blue-300 text-xs h-5 border-blue-700">
                           {signal.timeframe}
                         </Badge>
                         <Badge className={cn(
@@ -556,14 +556,14 @@ export function LiveTradingSignals() {
                                 "w-1 h-3 rounded-full",
                                 i < Math.ceil(signal.confidence / 20)
                                   ? signal.confidence >= 80 ? 'bg-green-400' : signal.confidence >= 60 ? 'bg-yellow-400' : 'bg-orange-400'
-                                  : 'bg-slate-700'
+                                  : 'bg-blue-800'
                               )}
                             />
                           ))}
-                          <span className="text-xs text-slate-400 ml-1">{signal.confidence.toFixed(0)}%</span>
+                          <span className="text-xs text-blue-300 ml-1">{signal.confidence.toFixed(0)}%</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 mt-1 text-xs text-slate-400">
+                      <div className="flex items-center gap-4 mt-1 text-xs text-blue-400">
                         <span>Entry: {signal.entry_price.toFixed(5)}</span>
                         <span>Current: {signal.current_price.toFixed(5)}</span>
                         <span className={cn(
@@ -578,11 +578,11 @@ export function LiveTradingSignals() {
                   <div className="text-right">
                     <div className={cn(
                       "text-lg font-bold",
-                      signal.expires_in < 10 ? 'text-red-400 animate-pulse' : 'text-slate-200'
+                      signal.expires_in < 10 ? 'text-red-400 animate-pulse' : 'text-blue-100'
                     )}>
                       {signal.expires_in}s
                     </div>
-                    <div className="text-xs text-slate-500">expires</div>
+                    <div className="text-xs text-blue-400">expires</div>
                   </div>
                 </div>
               </div>

@@ -16,7 +16,7 @@ interface BinaryTradingInterfaceProps {
 export function BinaryTradingInterface({ balance, onTradePlace }: BinaryTradingInterfaceProps) {
   const { user } = useAuth();
   const [assetPair, setAssetPair] = useState('EUR/USD');
-  const [stakeAmount, setStakeAmount] = useState('10');
+  const [stakeAmount, setStakeAmount] = useState('1');
   const [expiryTime, setExpiryTime] = useState('1');
   const [loading, setLoading] = useState(false);
 
