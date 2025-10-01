@@ -7,19 +7,28 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { BinaryTradingInterface } from '@/components/binary/BinaryTradingInterface';
-import { SignalCard } from '@/components/binary/SignalCard';
 import { ActiveTrades } from '@/components/binary/ActiveTrades';
 import { TradeHistory } from '@/components/binary/TradeHistory';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
+import { RealtimeSignalChart } from '@/components/binary/RealtimeSignalChart';
+
+interface LocalSignal {
+  id: string;
+  asset_pair: string;
+  signal_type: 'CALL' | 'PUT';
+  strength: 'strong' | 'medium' | 'weak';
+  price: number;
+  timestamp: Date;
+  expires_at: Date;
+}
 
 export default function BinaryOptions() {
   const { user } = useAuth();
   const [balance, setBalance] = useState(0);
-  const [signals, setSignals] = useState<any[]>([]);
+  const [localSignals, setLocalSignals] = useState<LocalSignal[]>([]);
   const [activeTrades, setActiveTrades] = useState<any[]>([]);
   const [tradeHistory, setTradeHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [generatingSignals, setGeneratingSignals] = useState(false);
 
   // Fetch wallet balance
   const fetchBalance = async () => {
@@ -37,20 +46,6 @@ export default function BinaryOptions() {
     }
   };
 
-  // Fetch active signals
-  const fetchSignals = async () => {
-    const { data, error } = await supabase
-      .from('binary_signals')
-      .select('*')
-      .eq('is_active', true)
-      .gte('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(3);
-
-    if (!error && data) {
-      setSignals(data);
-    }
-  };
 
   // Fetch active trades
   const fetchActiveTrades = async () => {
@@ -85,19 +80,48 @@ export default function BinaryOptions() {
     }
   };
 
+  // Handle signal generation from charts
+  const handleSignalGenerated = (signal: any) => {
+    const newSignal: LocalSignal = {
+      id: signal.id,
+      asset_pair: signal.asset,
+      signal_type: signal.type,
+      strength: signal.strength,
+      price: signal.price,
+      timestamp: signal.time,
+      expires_at: new Date(signal.time.getTime() + 60000) // Expires in 60 seconds
+    };
+
+    setLocalSignals(prev => {
+      // Keep only the last 6 signals, remove expired ones
+      const filtered = prev.filter(s => s.expires_at > new Date());
+      return [...filtered, newSignal].slice(-6);
+    });
+
+    toast.success(`New ${signal.type} signal for ${signal.asset}`);
+  };
+
+  // Clean up expired signals
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLocalSignals(prev => prev.filter(s => s.expires_at > new Date()));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Set up real-time subscriptions
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     // Initial fetch
     fetchBalance();
-    fetchSignals();
     fetchActiveTrades();
     fetchTradeHistory();
     setLoading(false);
-
-    // Generate initial signals
-    generateSignals();
 
     // Subscribe to wallet changes
     const walletChannel = supabase
@@ -126,102 +150,12 @@ export default function BinaryOptions() {
       })
       .subscribe();
 
-    // Subscribe to new signals
-    const signalsChannel = supabase
-      .channel('signal-updates')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'binary_signals'
-      }, () => {
-        fetchSignals();
-      })
-      .subscribe();
-
-    // Auto-generate new signals every 15 seconds
-    const signalInterval = setInterval(() => {
-      generateSignals();
-    }, 15000);
 
     return () => {
       walletChannel.unsubscribe();
       tradesChannel.unsubscribe();
-      signalsChannel.unsubscribe();
-      clearInterval(signalInterval);
     };
   }, [user]);
-
-  // Function to generate new signals
-  const generateSignals = async () => {
-    setGeneratingSignals(true);
-    try {
-      // Try edge function first
-      const { data: edgeData, error: edgeError } = await supabase.functions.invoke('signal-generator');
-      
-      if (edgeError) {
-        console.error('Edge function error, falling back to client-side generation:', edgeError);
-        
-        // Fallback: Generate signals client-side
-        const assetPairs = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD', 'USD/CAD', 'EUR/GBP'];
-        const signals = [];
-        const numSignals = Math.floor(Math.random() * 2) + 2; // Generate 2-3 signals
-        
-        for (let i = 0; i < numSignals; i++) {
-          const randomPair = assetPairs[Math.floor(Math.random() * assetPairs.length)];
-          const signalType = Math.random() > 0.5 ? 'CALL' : 'PUT';
-          const strengthRandom = Math.random();
-          const strength = strengthRandom < 0.33 ? 'weak' : strengthRandom < 0.66 ? 'medium' : 'strong';
-          
-          // Signal expires in 30-60 seconds
-          const expirySeconds = Math.floor(Math.random() * 30) + 30;
-          const expiresAt = new Date(Date.now() + expirySeconds * 1000);
-          
-          signals.push({
-            asset_pair: randomPair,
-            signal_type: signalType,
-            strength: strength,
-            expires_at: expiresAt.toISOString(),
-            is_active: true
-          });
-        }
-        
-        // Deactivate old signals for the same asset pairs
-        const pairsToUpdate = [...new Set(signals.map(s => s.asset_pair))];
-        
-        for (const pair of pairsToUpdate) {
-          await supabase
-            .from('binary_signals')
-            .update({ is_active: false })
-            .eq('asset_pair', pair)
-            .eq('is_active', true);
-        }
-        
-        // Insert new signals
-        const { data, error } = await supabase
-          .from('binary_signals')
-          .insert(signals)
-          .select();
-        
-        if (error) {
-          console.error('Error inserting signals:', error);
-          toast.error('Failed to generate signals');
-        } else {
-          console.log('Client-side signals generated:', data);
-          toast.success(`Generated ${data.length} new signals`);
-          fetchSignals(); // Refresh signals after generation
-        }
-      } else {
-        console.log('Edge function signals generated:', edgeData);
-        toast.success('New signals generated');
-        fetchSignals(); // Refresh signals after generation
-      }
-    } catch (err) {
-      console.error('Failed to generate signals:', err);
-      toast.error('Failed to generate signals');
-    } finally {
-      setGeneratingSignals(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -255,39 +189,70 @@ export default function BinaryOptions() {
           </CardContent>
         </Card>
 
-        {/* Live Signals */}
+        {/* Live Charts with Signals */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-foreground">Live Trading Signals</h2>
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => generateSignals()}
-              disabled={generatingSignals}
-            >
-              <RefreshCw className={cn("h-4 w-4 mr-1", generatingSignals && "animate-spin")} />
-              {generatingSignals ? 'Generating...' : 'Refresh'}
-            </Button>
+          <h2 className="text-xl font-semibold text-foreground mb-4">Live Market Charts</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <RealtimeSignalChart assetPair="EUR/USD" onSignalGenerated={handleSignalGenerated} />
+            <RealtimeSignalChart assetPair="GBP/USD" onSignalGenerated={handleSignalGenerated} />
+            <RealtimeSignalChart assetPair="USD/JPY" onSignalGenerated={handleSignalGenerated} />
+            <RealtimeSignalChart assetPair="AUD/USD" onSignalGenerated={handleSignalGenerated} />
           </div>
+        </div>
+
+        {/* Recent Signals */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-foreground mb-4">Recent Trading Signals</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {signals.map((signal) => (
-              <SignalCard key={signal.id} signal={signal} />
-            ))}
-            {signals.length === 0 && (
+            {localSignals.length > 0 ? (
+              localSignals.map((signal) => (
+                <Card key={signal.id} className={cn(
+                  "bg-card/50 backdrop-blur border transition-all hover:shadow-lg",
+                  signal.strength === 'strong' ? "border-green-500/50" :
+                  signal.strength === 'medium' ? "border-yellow-500/50" :
+                  "border-orange-500/50"
+                )}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold text-foreground">{signal.asset_pair}</span>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        <span>
+                          {Math.max(0, Math.floor((signal.expires_at.getTime() - Date.now()) / 1000))}s
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {signal.signal_type === 'CALL' ? (
+                          <TrendingUp className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <TrendingDown className="h-5 w-5 text-red-500" />
+                        )}
+                        <div>
+                          <span className="font-bold text-lg">{signal.signal_type}</span>
+                          <p className="text-xs text-muted-foreground">@ {signal.price.toFixed(5)}</p>
+                        </div>
+                      </div>
+                      <span className={cn(
+                        "px-2 py-1 rounded-full text-xs font-medium uppercase",
+                        signal.strength === 'strong' ? "bg-green-500/20 text-green-500" :
+                        signal.strength === 'medium' ? "bg-yellow-500/20 text-yellow-500" :
+                        "bg-orange-500/20 text-orange-500"
+                      )}>
+                        {signal.strength}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
               <Card className="col-span-full bg-card/50 backdrop-blur border-primary/20">
                 <CardContent className="p-6 text-center">
-                  <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">No active signals at the moment</p>
-                  <Button 
-                    className="mt-4"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => generateSignals()}
-                    disabled={generatingSignals}
-                  >
-                    <RefreshCw className={cn("h-4 w-4 mr-1", generatingSignals && "animate-spin")} />
-                    Generate Signals Now
-                  </Button>
+                  <Activity className="h-8 w-8 text-primary mx-auto mb-2 animate-pulse" />
+                  <p className="text-muted-foreground">Analyzing markets for signals...</p>
+                  <p className="text-xs text-muted-foreground mt-2">Signals will appear automatically when detected</p>
                 </CardContent>
               </Card>
             )}
