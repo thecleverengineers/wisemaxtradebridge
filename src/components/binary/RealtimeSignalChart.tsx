@@ -110,11 +110,12 @@ export function RealtimeSignalChart({ assetPair, onSignalGenerated }: RealtimeSi
 
   // Draw chart on canvas
   const drawChart = () => {
-    const canvas = canvasRef.current;
-    if (!canvas || priceData.length === 0) return;
+    try {
+      const canvas = canvasRef.current;
+      if (!canvas || priceData.length === 0) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -214,14 +215,23 @@ export function RealtimeSignalChart({ assetPair, onSignalGenerated }: RealtimeSi
       }
       ctx.stroke();
     }
+    } catch (error) {
+      console.error('Error drawing chart:', error);
+    }
   };
 
   useEffect(() => {
     const initialPrice = getInitialPrice(assetPair);
-    const initialData = Array(30).fill(0).map((_, i) => {
-      const price = i === 0 ? initialPrice : generatePriceMovement(initialData[i - 1] || initialPrice);
-      return price;
-    });
+    const initialData: number[] = [];
+    
+    // Build the initial data array properly
+    for (let i = 0; i < 30; i++) {
+      if (i === 0) {
+        initialData.push(initialPrice);
+      } else {
+        initialData.push(generatePriceMovement(initialData[i - 1]));
+      }
+    }
     
     setPriceData(initialData);
     setCurrentPrice(initialData[initialData.length - 1]);
