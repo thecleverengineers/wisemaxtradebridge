@@ -40,6 +40,7 @@ import { MarketSession } from '@/components/forex/MarketSession';
 import { NewsIntegration } from '@/components/forex/NewsIntegration';
 import { CopyTrading } from '@/components/forex/CopyTrading';
 import { AutomatedBots } from '@/components/forex/AutomatedBots';
+import LiveTradingSignals from '@/components/forex/LiveTradingSignals';
 
 interface ForexPair {
   id: string;
@@ -859,66 +860,7 @@ const ForexTrading = () => {
             </TabsContent>
 
             <TabsContent value="signals" className="space-y-4">
-              <Card className="bg-white/5 border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white">Trading Signals</CardTitle>
-                  <CardDescription className="text-purple-300">
-                    AI-powered trading recommendations
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {signals.length === 0 ? (
-                      <div className="text-center py-8">
-                        <AlertCircle className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                        <p className="text-purple-300">No active signals</p>
-                      </div>
-                    ) : (
-                      signals.map((signal) => (
-                        <div key={signal.id} className="p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center space-x-3">
-                              {signal.signal_type === 'buy' ? (
-                                <div className="p-2 bg-green-500/20 rounded-lg">
-                                  <TrendingUp className="h-5 w-5 text-green-400" />
-                                </div>
-                              ) : (
-                                <div className="p-2 bg-red-500/20 rounded-lg">
-                                  <TrendingDown className="h-5 w-5 text-red-400" />
-                                </div>
-                              )}
-                              <div>
-                                <p className="font-semibold text-white">
-                                  {signal.forex_pairs?.symbol || 'Unknown'} - {signal.signal_type.toUpperCase()}
-                                </p>
-                                <div className="flex items-center space-x-2">
-                                  <Badge className="bg-purple-500/20 text-purple-400">
-                                    {signal.strength}
-                                  </Badge>
-                                  <Badge className="bg-yellow-500/20 text-yellow-400">
-                                    {signal.risk_level} risk
-                                  </Badge>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm text-purple-300">Accuracy</p>
-                              <p className="text-xl font-bold text-white">{signal.accuracy_rate}%</p>
-                            </div>
-                          </div>
-                          <Button
-                            size="sm"
-                            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Apply Signal
-                          </Button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <LiveTradingSignals />
             </TabsContent>
 
             <TabsContent value="copy" className="space-y-4">
