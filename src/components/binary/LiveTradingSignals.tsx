@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Activity, AlertCircle, BarChart3, Zap, Clock } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, AlertCircle, BarChart3, Zap, Clock, ChevronUp, ChevronDown, Signal, Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, ComposedChart, Bar } from 'recharts';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ComposedChart, Bar, Cell } from 'recharts';
 
 interface TechnicalIndicator {
   name: string;
@@ -24,9 +24,17 @@ interface TradingSignal {
   expires_in: number;
 }
 
-interface PriceData {
+interface CandleData {
   time: string;
-  price: number;
+  timestamp: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  ma20: number;
+  ma50: number;
+  ma200: number;
   signal?: 'CALL' | 'PUT';
   confidence?: number;
 }
@@ -34,10 +42,69 @@ interface PriceData {
 export function LiveTradingSignals() {
   const [signals, setSignals] = useState<TradingSignal[]>([]);
   const [selectedPair, setSelectedPair] = useState('EUR/USD');
-  const [priceHistory, setPriceHistory] = useState<PriceData[]>([]);
+  const [candleData, setCandleData] = useState<CandleData[]>([]);
+  const [currentPrice, setCurrentPrice] = useState(1.2000);
+  const [priceChange, setPriceChange] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedTimeframe, setSelectedTimeframe] = useState('1m');
 
-  // Generate realistic trading signals
+  // Generate realistic candlestick data
+  const generateCandleData = (basePrice: number, count: number): CandleData[] => {
+    const data: CandleData[] = [];
+    let currentBasePrice = basePrice;
+    
+    for (let i = count; i >= 0; i--) {
+      const timestamp = Date.now() - i * 60000;
+      const open = currentBasePrice + (Math.random() - 0.5) * 0.002;
+      const close = open + (Math.random() - 0.5) * 0.003;
+      const high = Math.max(open, close) + Math.random() * 0.001;
+      const low = Math.min(open, close) - Math.random() * 0.001;
+      const volume = 100000 + Math.random() * 500000;
+      
+      // Calculate moving averages
+      const ma20 = currentBasePrice + (Math.random() - 0.5) * 0.001;
+      const ma50 = currentBasePrice + (Math.random() - 0.5) * 0.002;
+      const ma200 = currentBasePrice + (Math.random() - 0.5) * 0.003;
+      
+      // Occasionally add signals
+      const shouldAddSignal = Math.random() > 0.92;
+      if (shouldAddSignal) {
+        data.push({
+          time: new Date(timestamp).toLocaleTimeString('en-US', { hour12: false }),
+          timestamp,
+          open,
+          high,
+          low,
+          close,
+          volume,
+          ma20,
+          ma50,
+          ma200,
+          signal: Math.random() > 0.5 ? 'CALL' : 'PUT',
+          confidence: 60 + Math.random() * 40
+        });
+      } else {
+        data.push({
+          time: new Date(timestamp).toLocaleTimeString('en-US', { hour12: false }),
+          timestamp,
+          open,
+          high,
+          low,
+          close,
+          volume,
+          ma20,
+          ma50,
+          ma200
+        });
+      }
+      
+      currentBasePrice = close;
+    }
+    
+    return data;
+  };
+
+  // Generate realistic trading signal
   const generateSignal = (): TradingSignal => {
     const pairs = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD', 'USD/CAD', 'EUR/GBP'];
     const timeframes = ['1m', '5m', '15m', '30m', '1h'];
@@ -58,17 +125,17 @@ export function LiveTradingSignals() {
         signal: rsi > 70 ? 'SELL' : rsi < 30 ? 'BUY' : 'NEUTRAL'
       },
       {
-        name: 'MACD(12,26,9)',
+        name: 'MACD',
         value: macd,
-        signal: macd > 0 ? 'BUY' : macd < 0 ? 'SELL' : 'NEUTRAL'
+        signal: macd > 0 ? 'BUY' : 'SELL'
       },
       {
-        name: 'BB(20,2)',
+        name: 'BB(20)',
         value: bb,
         signal: bb > 1 ? 'SELL' : bb < -1 ? 'BUY' : 'NEUTRAL'
       },
       {
-        name: 'Stochastic(14,3,3)',
+        name: 'Stoch',
         value: stoch,
         signal: stoch > 80 ? 'SELL' : stoch < 20 ? 'BUY' : 'NEUTRAL'
       },
@@ -79,7 +146,6 @@ export function LiveTradingSignals() {
       }
     ];
     
-    // Calculate overall signal based on indicators
     const buySignals = indicators.filter(i => i.signal === 'BUY').length;
     const sellSignals = indicators.filter(i => i.signal === 'SELL').length;
     const signal_type = buySignals > sellSignals ? 'CALL' : 'PUT';
@@ -95,131 +161,130 @@ export function LiveTradingSignals() {
       timeframe: timeframes[Math.floor(Math.random() * timeframes.length)],
       indicators,
       timestamp: new Date(),
-      expires_in: 30 + Math.floor(Math.random() * 90) // 30-120 seconds
+      expires_in: 30 + Math.floor(Math.random() * 90)
     };
   };
 
-  // Initialize price history
+  // Initialize data
   useEffect(() => {
-    const initialData: PriceData[] = [];
-    let lastPrice = 1.2000;
+    const initialData = generateCandleData(1.2000, 50);
+    setCandleData(initialData);
+    const lastCandle = initialData[initialData.length - 1];
+    setCurrentPrice(lastCandle.close);
+    setPriceChange(((lastCandle.close - initialData[0].open) / initialData[0].open) * 100);
     
-    for (let i = 29; i >= 0; i--) {
-      const time = new Date(Date.now() - i * 2000);
-      lastPrice += (Math.random() - 0.5) * 0.002;
-      
-      // Add signal markers at certain points
-      const shouldAddSignal = Math.random() > 0.8;
-      if (shouldAddSignal && i % 5 === 0) {
-        initialData.push({
-          time: time.toLocaleTimeString(),
-          price: lastPrice,
-          signal: Math.random() > 0.5 ? 'CALL' : 'PUT',
-          confidence: 60 + Math.random() * 40
-        });
-      } else {
-        initialData.push({
-          time: time.toLocaleTimeString(),
-          price: lastPrice
-        });
-      }
-    }
-    
-    setPriceHistory(initialData);
-    const initialSignals = Array.from({ length: 2 }, generateSignal);
+    const initialSignals = Array.from({ length: 3 }, generateSignal);
     setSignals(initialSignals);
   }, []);
 
-  // Update timer and price data
+  // Update data in real-time
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
       
-      // Update price history
-      setPriceHistory(prev => {
+      // Update candle data
+      setCandleData(prev => {
+        if (prev.length === 0) return prev;
+        
         const newData = [...prev];
-        if (newData.length > 30) {
-          newData.shift();
-        }
+        const lastCandle = { ...newData[newData.length - 1] };
         
-        const lastPrice = newData[newData.length - 1]?.price || 1.2000;
-        const newPrice = lastPrice + (Math.random() - 0.5) * 0.002;
+        // Update last candle
+        lastCandle.close = lastCandle.close + (Math.random() - 0.5) * 0.0002;
+        lastCandle.high = Math.max(lastCandle.high, lastCandle.close);
+        lastCandle.low = Math.min(lastCandle.low, lastCandle.close);
+        lastCandle.volume = lastCandle.volume + Math.random() * 1000;
+        lastCandle.time = new Date().toLocaleTimeString('en-US', { hour12: false });
         
-        // Occasionally add a signal
-        const shouldAddSignal = Math.random() > 0.9;
-        if (shouldAddSignal) {
-          const signal = generateSignal();
-          newData.push({
-            time: new Date().toLocaleTimeString(),
-            price: newPrice,
-            signal: signal.signal_type,
-            confidence: signal.confidence
-          });
+        newData[newData.length - 1] = lastCandle;
+        
+        setCurrentPrice(lastCandle.close);
+        setPriceChange(((lastCandle.close - newData[0].open) / newData[0].open) * 100);
+        
+        // Add new candle every minute
+        if (Date.now() - lastCandle.timestamp > 60000) {
+          if (newData.length > 50) {
+            newData.shift();
+          }
           
-          // Add to signals list
-          setSignals(prevSignals => {
-            const updated = prevSignals.filter(s => s.expires_in > 1).map(s => ({
-              ...s,
-              expires_in: s.expires_in - 1,
-              current_price: s.current_price + (Math.random() - 0.5) * 0.0002
-            }));
-            if (updated.length < 4) {
-              updated.push(signal);
-            }
-            return updated;
-          });
-        } else {
-          newData.push({
-            time: new Date().toLocaleTimeString(),
-            price: newPrice
-          });
+          const newCandle: CandleData = {
+            time: new Date().toLocaleTimeString('en-US', { hour12: false }),
+            timestamp: Date.now(),
+            open: lastCandle.close,
+            high: lastCandle.close + Math.random() * 0.001,
+            low: lastCandle.close - Math.random() * 0.001,
+            close: lastCandle.close + (Math.random() - 0.5) * 0.002,
+            volume: 100000 + Math.random() * 500000,
+            ma20: lastCandle.close + (Math.random() - 0.5) * 0.001,
+            ma50: lastCandle.close + (Math.random() - 0.5) * 0.002,
+            ma200: lastCandle.close + (Math.random() - 0.5) * 0.003
+          };
+          
+          newData.push(newCandle);
         }
         
         return newData;
       });
       
-      // Update signal expiry
+      // Update signals
       setSignals(prev => {
-        return prev.map(signal => ({
+        const updated = prev.map(signal => ({
           ...signal,
           current_price: signal.current_price + (Math.random() - 0.5) * 0.0002,
           expires_in: signal.expires_in - 1
         })).filter(signal => signal.expires_in > 0);
+        
+        // Add new signal occasionally
+        if (Math.random() > 0.95 && updated.length < 5) {
+          updated.push(generateSignal());
+        }
+        
+        return updated;
       });
     }, 1000);
 
     return () => clearInterval(timer);
   }, []);
 
-  const getSignalStrength = (confidence: number) => {
-    if (confidence >= 80) return { label: 'STRONG', color: 'text-green-500' };
-    if (confidence >= 60) return { label: 'MEDIUM', color: 'text-yellow-500' };
-    return { label: 'WEAK', color: 'text-orange-500' };
-  };
-
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload[0]) {
-      const data = payload[0].payload;
+      const candle = payload[0].payload;
       return (
-        <div className="bg-background/95 backdrop-blur border border-border rounded-lg p-3 shadow-lg">
-          <p className="text-xs text-muted-foreground mb-1">{label}</p>
-          <p className="text-sm font-semibold">
-            Price: <span className="text-primary">{payload[0].value.toFixed(5)}</span>
-          </p>
-          {data.signal && (
-            <>
-              <div className="flex items-center gap-2 mt-2">
-                <Badge className={cn(
-                  "text-xs",
-                  data.signal === 'CALL' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
-                )}>
-                  {data.signal}
-                </Badge>
-                <span className={cn("text-xs font-semibold", getSignalStrength(data.confidence).color)}>
-                  {data.confidence?.toFixed(0)}%
-                </span>
-              </div>
-            </>
+        <div className="bg-slate-900/95 backdrop-blur border border-slate-700 rounded p-2 shadow-xl">
+          <p className="text-xs text-slate-400 mb-1">{label}</p>
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-400">O:</span>
+              <span className="text-slate-200">{candle.open?.toFixed(5)}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-400">H:</span>
+              <span className="text-slate-200">{candle.high?.toFixed(5)}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-400">L:</span>
+              <span className="text-slate-200">{candle.low?.toFixed(5)}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-400">C:</span>
+              <span className={candle.close > candle.open ? 'text-green-400' : 'text-red-400'}>
+                {candle.close?.toFixed(5)}
+              </span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-400">Vol:</span>
+              <span className="text-slate-200">{(candle.volume / 1000).toFixed(0)}K</span>
+            </div>
+          </div>
+          {candle.signal && (
+            <div className="mt-2 pt-2 border-t border-slate-700">
+              <Badge className={cn(
+                "text-xs",
+                candle.signal === 'CALL' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+              )}>
+                {candle.signal} {candle.confidence?.toFixed(0)}%
+              </Badge>
+            </div>
           )}
         </div>
       );
@@ -227,200 +292,303 @@ export function LiveTradingSignals() {
     return null;
   };
 
-  const SignalDot = (props: any) => {
-    const { cx, cy, payload } = props;
-    if (payload.signal) {
-      return (
-        <g>
-          <circle
-            cx={cx}
-            cy={cy}
-            r={8}
-            fill={payload.signal === 'CALL' ? '#10b981' : '#ef4444'}
-            fillOpacity={0.8}
-            stroke="#fff"
-            strokeWidth={2}
-          />
-          <text
-            x={cx}
-            y={cy - 12}
-            fill={payload.signal === 'CALL' ? '#10b981' : '#ef4444'}
-            textAnchor="middle"
-            fontSize="10"
-            fontWeight="bold"
-          >
-            {payload.signal}
-          </text>
-        </g>
-      );
-    }
-    return null;
+  const CustomizedCandle = (props: any) => {
+    const { x, y, width, height, payload } = props;
+    const isGreen = payload.close >= payload.open;
+    
+    return (
+      <g>
+        {/* Candle wick */}
+        <line
+          x1={x + width / 2}
+          y1={y}
+          x2={x + width / 2}
+          y2={y + height}
+          stroke={isGreen ? '#10b981' : '#ef4444'}
+          strokeWidth={1}
+        />
+        {/* Candle body */}
+        <rect
+          x={x}
+          y={y + (isGreen ? height * ((payload.high - payload.close) / (payload.high - payload.low)) : height * ((payload.high - payload.open) / (payload.high - payload.low)))}
+          width={width}
+          height={Math.abs(height * ((payload.close - payload.open) / (payload.high - payload.low)))}
+          fill={isGreen ? '#10b981' : '#ef4444'}
+          fillOpacity={0.8}
+        />
+      </g>
+    );
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-          <Activity className="h-5 w-5 text-primary animate-pulse" />
-          Live Trading Signals
-        </h2>
-        <div className="flex items-center gap-2">
-          <select
-            value={selectedPair}
-            onChange={(e) => setSelectedPair(e.target.value)}
-            className="bg-background border border-border rounded-lg px-3 py-1 text-sm"
-          >
-            <option value="EUR/USD">EUR/USD</option>
-            <option value="GBP/USD">GBP/USD</option>
-            <option value="USD/JPY">USD/JPY</option>
-            <option value="AUD/USD">AUD/USD</option>
-            <option value="USD/CAD">USD/CAD</option>
-            <option value="EUR/GBP">EUR/GBP</option>
-          </select>
-          <Badge variant="outline" className="bg-primary/10 border-primary/30">
-            <span className="animate-pulse mr-2">●</span>
-            Real-Time Analysis
-          </Badge>
+      {/* Header */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-4 border border-slate-700">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+              <Activity className="h-5 w-5 text-cyan-400 animate-pulse" />
+              Live Trading Signals
+            </h2>
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+              <span className="animate-pulse mr-1">●</span>
+              LIVE
+            </Badge>
+          </div>
+          <button className="text-slate-400 hover:text-slate-200 transition-colors">
+            <Maximize2 className="h-4 w-4" />
+          </button>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <select
+              value={selectedPair}
+              onChange={(e) => setSelectedPair(e.target.value)}
+              className="bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-400"
+            >
+              <option value="EUR/USD">EUR/USD</option>
+              <option value="GBP/USD">GBP/USD</option>
+              <option value="USD/JPY">USD/JPY</option>
+              <option value="AUD/USD">AUD/USD</option>
+              <option value="USD/CAD">USD/CAD</option>
+              <option value="EUR/GBP">EUR/GBP</option>
+            </select>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold text-slate-100">{currentPrice.toFixed(5)}</span>
+              <div className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded",
+                priceChange >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+              )}>
+                {priceChange >= 0 ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                <span className="text-sm font-semibold">{Math.abs(priceChange).toFixed(2)}%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {['1m', '5m', '15m', '30m', '1h'].map(tf => (
+              <button
+                key={tf}
+                onClick={() => setSelectedTimeframe(tf)}
+                className={cn(
+                  "px-3 py-1 rounded text-xs font-medium transition-all",
+                  selectedTimeframe === tf
+                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                )}
+              >
+                {tf}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Main Chart */}
-      <Card className="bg-card/50 backdrop-blur border-primary/20">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-primary" />
-              {selectedPair} Price Action
-            </span>
-            <span className="text-sm text-muted-foreground font-normal">
-              Last 30 signals
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={priceHistory}>
-              <defs>
-                <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-              <XAxis 
-                dataKey="time" 
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={10}
-                interval="preserveStartEnd"
-              />
-              <YAxis 
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={10}
-                domain={['dataMin - 0.002', 'dataMax + 0.002']}
-                tickFormatter={(value) => value.toFixed(4)}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Area
-                type="monotone"
-                dataKey="price"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-                fill="url(#colorPrice)"
-                dot={<SignalDot />}
-              />
-              {priceHistory.filter(d => d.signal).map((entry, index) => (
+      <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-lg border border-slate-700 p-4">
+        <ResponsiveContainer width="100%" height={400}>
+          <ComposedChart data={candleData}>
+            <defs>
+              <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4}/>
+                <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.1}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+            <XAxis 
+              dataKey="time" 
+              stroke="#64748b"
+              fontSize={10}
+              interval="preserveStartEnd"
+            />
+            <YAxis 
+              yAxisId="price"
+              orientation="right"
+              stroke="#64748b"
+              fontSize={10}
+              domain={['dataMin - 0.002', 'dataMax + 0.002']}
+              tickFormatter={(value) => value.toFixed(4)}
+            />
+            <YAxis 
+              yAxisId="volume"
+              orientation="left"
+              stroke="#64748b"
+              fontSize={10}
+              domain={[0, 'dataMax']}
+              hide
+            />
+            <Tooltip content={<CustomTooltip />} />
+            
+            {/* Volume bars */}
+            <Bar 
+              yAxisId="volume"
+              dataKey="volume" 
+              fill="url(#volumeGradient)"
+              opacity={0.3}
+            />
+            
+            {/* Moving averages */}
+            <Line 
+              yAxisId="price"
+              type="monotone" 
+              dataKey="ma20" 
+              stroke="#fbbf24" 
+              strokeWidth={1}
+              dot={false}
+              strokeDasharray="2 2"
+            />
+            <Line 
+              yAxisId="price"
+              type="monotone" 
+              dataKey="ma50" 
+              stroke="#3b82f6" 
+              strokeWidth={1}
+              dot={false}
+            />
+            <Line 
+              yAxisId="price"
+              type="monotone" 
+              dataKey="ma200" 
+              stroke="#8b5cf6" 
+              strokeWidth={1}
+              dot={false}
+            />
+            
+            {/* Candlesticks */}
+            {candleData.map((candle, index) => {
+              const isGreen = candle.close >= candle.open;
+              return (
                 <ReferenceLine
                   key={index}
-                  y={entry.price}
-                  stroke={entry.signal === 'CALL' ? '#10b981' : '#ef4444'}
-                  strokeDasharray="5 5"
-                  strokeOpacity={0.5}
+                  yAxisId="price"
+                  segment={[
+                    { x: candle.time, y: candle.low },
+                    { x: candle.time, y: candle.high }
+                  ]}
+                  stroke={isGreen ? '#10b981' : '#ef4444'}
+                  strokeWidth={1}
                 />
-              ))}
-            </AreaChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Active Signals List */}
-      <div className="grid gap-3">
-        <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-          <Clock className="h-4 w-4" />
-          Active Signals ({signals.length})
-        </h3>
-        {signals.length === 0 ? (
-          <Card className="bg-card/50 backdrop-blur border-primary/20">
-            <CardContent className="p-4 text-center">
-              <AlertCircle className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Analyzing markets for signals...</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-2">
-            {signals.map((signal) => {
-              const strength = getSignalStrength(signal.confidence);
-              const pnl = ((signal.current_price - signal.entry_price) / signal.entry_price) * 100;
-              const isProfit = signal.signal_type === 'CALL' ? pnl > 0 : pnl < 0;
-              
-              return (
-                <Card key={signal.id} className="bg-card/50 backdrop-blur border-primary/20">
-                  <CardContent className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "p-1.5 rounded",
-                          signal.signal_type === 'CALL' ? 'bg-green-500/10' : 'bg-red-500/10'
-                        )}>
-                          {signal.signal_type === 'CALL' ? (
-                            <TrendingUp className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4 text-red-500" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-sm">{signal.asset_pair}</span>
-                            <Badge variant="outline" className="text-xs h-5">
-                              {signal.timeframe}
-                            </Badge>
-                            <Badge className={cn(
-                              "text-xs h-5",
-                              signal.signal_type === 'CALL' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
-                            )}>
-                              {signal.signal_type}
-                            </Badge>
-                            <span className={cn("text-xs font-semibold", strength.color)}>
-                              {strength.label} {signal.confidence.toFixed(0)}%
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                            <span>Entry: {signal.entry_price.toFixed(5)}</span>
-                            <span>Current: {signal.current_price.toFixed(5)}</span>
-                            <span className={cn(
-                              "font-semibold",
-                              isProfit ? 'text-green-500' : 'text-red-500'
-                            )}>
-                              {isProfit ? '+' : ''}{pnl.toFixed(3)}%
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={cn(
-                          "text-lg font-bold",
-                          signal.expires_in < 10 ? 'text-red-500 animate-pulse' : 'text-foreground'
-                        )}>
-                          {signal.expires_in}s
-                        </div>
-                        <div className="text-xs text-muted-foreground">expires</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
               );
             })}
+            
+            {/* Signal markers */}
+            {candleData.filter(d => d.signal).map((entry, index) => (
+              <ReferenceLine
+                key={`signal-${index}`}
+                yAxisId="price"
+                y={entry.close}
+                stroke={entry.signal === 'CALL' ? '#10b981' : '#ef4444'}
+                strokeDasharray="5 5"
+                strokeOpacity={0.5}
+              />
+            ))}
+          </ComposedChart>
+        </ResponsiveContainer>
+        
+        {/* Indicator legend */}
+        <div className="flex items-center justify-center gap-6 mt-3">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-0.5 bg-yellow-500"></div>
+            <span className="text-xs text-slate-400">MA(20)</span>
           </div>
-        )}
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-0.5 bg-blue-500"></div>
+            <span className="text-xs text-slate-400">MA(50)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-0.5 bg-purple-500"></div>
+            <span className="text-xs text-slate-400">MA(200)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-2 bg-cyan-500/30"></div>
+            <span className="text-xs text-slate-400">Volume</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Active Signals */}
+      <div className="grid gap-3">
+        <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+          <Signal className="h-4 w-4 text-cyan-400" />
+          Active Signals ({signals.length})
+        </h3>
+        
+        <div className="grid gap-2">
+          {signals.map((signal) => {
+            const pnl = ((signal.current_price - signal.entry_price) / signal.entry_price) * 100;
+            const isProfit = signal.signal_type === 'CALL' ? pnl > 0 : pnl < 0;
+            
+            return (
+              <div key={signal.id} className="bg-slate-900/50 border border-slate-700 rounded-lg p-3 hover:border-slate-600 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "p-2 rounded",
+                      signal.signal_type === 'CALL' ? 'bg-green-500/10' : 'bg-red-500/10'
+                    )}>
+                      {signal.signal_type === 'CALL' ? (
+                        <TrendingUp className="h-4 w-4 text-green-400" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4 text-red-400" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-200">{signal.asset_pair}</span>
+                        <Badge className="bg-slate-800 text-slate-400 text-xs h-5 border-slate-700">
+                          {signal.timeframe}
+                        </Badge>
+                        <Badge className={cn(
+                          "text-xs h-5",
+                          signal.signal_type === 'CALL' 
+                            ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                            : 'bg-red-500/20 text-red-400 border-red-500/30'
+                        )}>
+                          {signal.signal_type}
+                        </Badge>
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className={cn(
+                                "w-1 h-3 rounded-full",
+                                i < Math.ceil(signal.confidence / 20)
+                                  ? signal.confidence >= 80 ? 'bg-green-400' : signal.confidence >= 60 ? 'bg-yellow-400' : 'bg-orange-400'
+                                  : 'bg-slate-700'
+                              )}
+                            />
+                          ))}
+                          <span className="text-xs text-slate-400 ml-1">{signal.confidence.toFixed(0)}%</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 mt-1 text-xs text-slate-400">
+                        <span>Entry: {signal.entry_price.toFixed(5)}</span>
+                        <span>Current: {signal.current_price.toFixed(5)}</span>
+                        <span className={cn(
+                          "font-semibold",
+                          isProfit ? 'text-green-400' : 'text-red-400'
+                        )}>
+                          {isProfit ? '+' : ''}{pnl.toFixed(3)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className={cn(
+                      "text-lg font-bold",
+                      signal.expires_in < 10 ? 'text-red-400 animate-pulse' : 'text-slate-200'
+                    )}>
+                      {signal.expires_in}s
+                    </div>
+                    <div className="text-xs text-slate-500">expires</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
