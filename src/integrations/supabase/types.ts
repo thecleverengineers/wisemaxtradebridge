@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       analytics: {
         Row: {
           average_loss: number | null
@@ -68,6 +92,93 @@ export type Database = {
           user_id?: string
           win_rate?: number | null
           worst_trade?: number | null
+        }
+        Relationships: []
+      }
+      binary_options_trades: {
+        Row: {
+          admin_forced_result: string | null
+          asset_pair: string
+          created_at: string
+          entry_price: number
+          exit_price: number | null
+          expiry_time: string
+          id: string
+          payout_rate: number
+          profit_loss: number | null
+          settled_at: string | null
+          stake_amount: number
+          status: string
+          trade_type: string
+          user_id: string
+        }
+        Insert: {
+          admin_forced_result?: string | null
+          asset_pair?: string
+          created_at?: string
+          entry_price: number
+          exit_price?: number | null
+          expiry_time: string
+          id?: string
+          payout_rate?: number
+          profit_loss?: number | null
+          settled_at?: string | null
+          stake_amount: number
+          status?: string
+          trade_type: string
+          user_id: string
+        }
+        Update: {
+          admin_forced_result?: string | null
+          asset_pair?: string
+          created_at?: string
+          entry_price?: number
+          exit_price?: number | null
+          expiry_time?: string
+          id?: string
+          payout_rate?: number
+          profit_loss?: number | null
+          settled_at?: string | null
+          stake_amount?: number
+          status?: string
+          trade_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      binary_signals: {
+        Row: {
+          admin_forced: boolean | null
+          asset_pair: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          signal_type: string
+          strength: string
+        }
+        Insert: {
+          admin_forced?: boolean | null
+          asset_pair?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          signal_type: string
+          strength?: string
+        }
+        Update: {
+          admin_forced?: boolean | null
+          asset_pair?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          signal_type?: string
+          strength?: string
         }
         Relationships: []
       }
@@ -1674,6 +1785,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_trading_signal: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_unique_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1701,8 +1816,22 @@ export type Database = {
         Args: { _role: string; _user_id: string }
         Returns: boolean
       }
+      place_binary_trade: {
+        Args: {
+          p_asset_pair: string
+          p_expiry_minutes: number
+          p_stake_amount: number
+          p_trade_type: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       process_roi_payouts: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      settle_binary_trade: {
+        Args: { p_trade_id: string }
         Returns: undefined
       }
     }
