@@ -19,7 +19,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
   const location = useLocation();
 
   const menuItems = [
-    { icon: Home, label: 'Dashboard', path: '/' },
+    { icon: Home, label: 'Dashboard', path: '/dashboard' },
     { icon: BarChart3, label: 'Forex Trading', path: '/forex-trading' },
     { icon: DollarSign, label: 'USDT Staking', path: '/usdt-staking', badge: 'New' },
     { icon: PiggyBank, label: 'ROI Investments', path: '/roi-investments', badge: 'HOT' },
@@ -28,9 +28,9 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
     { icon: Calculator, label: 'Calculator', path: '/calculator' },
     { icon: Award, label: 'Leaderboard', path: '/leaderboard' },
     { icon: Gift, label: 'Rewards', path: '/rewards' },
-    { icon: Shield, label: 'Investment Records', path: '/investment-records' },
+    { icon: TrendingUp, label: 'Investment Records', path: '/investment-records' },
     
-    ...(isAdmin ? [{ icon: Shield, label: 'Admin Panel', path: '/admin' }] : []),
+    ...(isAdmin ? [{ icon: Shield, label: 'Admin Panel', path: '/admin', badge: 'ADMIN' }] : []),
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 

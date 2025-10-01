@@ -6,9 +6,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PrivateRoute } from "@/components/PrivateRoute";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { Dashboard } from "./pages/Dashboard";
+import AdminPanel from "./pages/admin/AdminPanel";
 
 import Wallet from "./pages/Wallet";
 import Referrals from "./pages/Referrals";
@@ -90,6 +92,11 @@ const AppRoutes = () => {
         <PrivateRoute>
           <BinaryOptions />
         </PrivateRoute>
+      } />
+      <Route path="/admin" element={
+        <ProtectedRoute requireAdmin>
+          <AdminPanel />
+        </ProtectedRoute>
       } />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
