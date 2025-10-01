@@ -4,6 +4,7 @@ import { Menu, Bell, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 
 interface AppHeaderProps {
   onMenuClick: () => void;
@@ -11,6 +12,12 @@ interface AppHeaderProps {
 
 export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
   const { user, profile, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleSignOut = async () => {
+    await signOut();
+    // Navigation is handled in the signOut function
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 backdrop-blur-md border-b border-white/10">
@@ -53,7 +60,7 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={signOut}
+              onClick={handleSignOut}
               className="text-white hover:bg-white/10"
               title="Sign Out"
             >
@@ -63,7 +70,9 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
             <Button
               variant="ghost"
               size="icon"
+              onClick={() => navigate('/auth')}
               className="text-white hover:bg-white/10"
+              title="Sign In"
             >
               <User className="h-5 w-5" />
             </Button>

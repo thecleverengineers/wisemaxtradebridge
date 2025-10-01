@@ -225,7 +225,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
+      
+      // Clear all state
       setUser(null);
       setSession(null);
       setProfile(null);
@@ -235,7 +240,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         title: "Signed out successfully",
         description: "You have been logged out of your account.",
       });
+      
+      // Navigate to auth page
+      window.location.href = '/auth';
     } catch (error: any) {
+      console.error('Sign out error:', error);
       toast({
         title: "Sign out failed",
         description: error.message || "An unexpected error occurred",

@@ -39,9 +39,9 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
     onClose();
-    navigate('/');
+    await signOut();
+    // Navigation is handled in the signOut function
   };
 
   return (
