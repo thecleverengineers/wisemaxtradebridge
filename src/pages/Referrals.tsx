@@ -271,72 +271,42 @@ const Referrals = () => {
             </div>
           </div>
 
-          {/* Referral Code Card - Main Focus */}
-          <Card className="bg-gradient-to-r from-primary to-accent border-0 text-primary-foreground shadow-2xl overflow-hidden relative">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-            <CardContent className="p-8 relative z-10">
-              <div className="text-center space-y-6">
-                <div>
-                  <h2 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
-                    <Network className="h-8 w-8" />
-                    Your Referral Code
-                  </h2>
-                  <p className="text-primary-foreground/90">Share this code to grow your network</p>
+          {/* Referral Code Card */}
+          <Card className="bg-gradient-to-r from-primary to-accent border-0 text-primary-foreground shadow-xl">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-2">Your Referral Code</h2>
+                <div className="bg-background/20 rounded-xl p-4 mb-4">
+                  <p className="text-3xl font-bold tracking-wider">{profile?.referral_code}</p>
                 </div>
-                
-                <div className="bg-background/30 backdrop-blur rounded-2xl p-6 border border-background/40">
-                  <p className="text-5xl font-bold tracking-wider mb-2">{profile?.referral_code}</p>
-                  <p className="text-sm text-primary-foreground/80">Your unique 8-digit code</p>
-                </div>
-                
-                <div className="bg-background/20 backdrop-blur rounded-xl p-4 border border-background/30">
-                  <p className="text-sm mb-2 font-semibold">Share Your Referral Link:</p>
-                  <div className="bg-background/20 rounded-lg p-3 mb-3">
-                    <p className="text-sm break-all font-mono text-primary-foreground/90">
-                      {window.location.origin}/auth?ref={profile?.referral_code}
-                    </p>
-                  </div>
-                  <p className="text-xs text-primary-foreground/70">
-                    New users can register directly using this link
+                <div className="mb-4 p-3 bg-background/10 rounded-lg">
+                  <p className="text-sm mb-1">Your Referral Link:</p>
+                  <p className="text-xs break-all font-mono">
+                    {window.location.origin}/auth?ref={profile?.referral_code}
                   </p>
                 </div>
-                
-                <div className="flex gap-3 justify-center flex-wrap">
+                <div className="flex gap-3 justify-center">
                   <Button 
                     onClick={copyReferralCode}
-                    size="lg"
-                    className="bg-background/30 hover:bg-background/40 text-primary-foreground border border-background/40 backdrop-blur"
+                    className="bg-background/20 hover:bg-background/30 text-primary-foreground border-background/30"
                   >
-                    <Copy className="h-5 w-5 mr-2" />
+                    <Copy className="h-4 w-4 mr-2" />
                     Copy Code
                   </Button>
                   <Button 
                     onClick={copyReferralLink}
-                    size="lg"
-                    className="bg-background/30 hover:bg-background/40 text-primary-foreground border border-background/40 backdrop-blur"
+                    className="bg-background/20 hover:bg-background/30 text-primary-foreground border-background/30"
                   >
-                    <Copy className="h-5 w-5 mr-2" />
+                    <Copy className="h-4 w-4 mr-2" />
                     Copy Link
                   </Button>
                   <Button 
                     onClick={shareReferralLink}
-                    size="lg"
-                    className="bg-background/30 hover:bg-background/40 text-primary-foreground border border-background/40 backdrop-blur"
+                    className="bg-background/20 hover:bg-background/30 text-primary-foreground border-background/30"
                   >
-                    <Share2 className="h-5 w-5 mr-2" />
-                    Share Now
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
                   </Button>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-background/30">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{stats.totalReferrals}</p>
-                    <p className="text-sm text-primary-foreground/80">Total Referrals</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">${stats.totalEarnings.toFixed(2)}</p>
-                    <p className="text-sm text-primary-foreground/80">Total Earned</p>
-                  </div>
                 </div>
               </div>
             </CardContent>
