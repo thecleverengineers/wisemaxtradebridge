@@ -21,9 +21,6 @@ import InvestmentRecords from "./pages/InvestmentRecords";
 import ForexTrading from "./pages/ForexTrading";
 import USDTStaking from "./pages/USDTStaking";
 import ROIInvestments from "./pages/ROIInvestments";
-import BinaryOptions from "./pages/BinaryOptions";
-import BinaryTradingSystem from "./pages/BinaryTradingSystem";
-import EnhancedBinaryTrading from "./pages/EnhancedBinaryTrading";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -86,21 +83,6 @@ const AppRoutes = () => {
       <Route path="/roi-investments" element={
         <PrivateRoute>
           <ROIInvestments />
-        </PrivateRoute>
-      } />
-      <Route path="/binary-options" element={
-        <PrivateRoute>
-          <BinaryOptions />
-        </PrivateRoute>
-      } />
-      <Route path="/binary-trading" element={
-        <PrivateRoute>
-          <BinaryTradingSystem />
-        </PrivateRoute>
-      } />
-      <Route path="/enhanced-binary" element={
-        <PrivateRoute>
-          <EnhancedBinaryTrading />
         </PrivateRoute>
       } />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
