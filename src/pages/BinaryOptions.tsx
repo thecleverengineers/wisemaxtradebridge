@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { BinaryTradingInterface } from '@/components/binary/BinaryTradingInterface';
-import { SignalCard } from '@/components/binary/SignalCard';
+import { LiveTradingSignals } from '@/components/binary/LiveTradingSignals';
 import { ActiveTrades } from '@/components/binary/ActiveTrades';
 import { TradeHistory } from '@/components/binary/TradeHistory';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
@@ -177,22 +177,9 @@ export default function BinaryOptions() {
           </CardContent>
         </Card>
 
-        {/* Live Signals */}
+        {/* Live Trading Signals */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-foreground">Live Trading Signals</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {signals.map((signal) => (
-              <SignalCard key={signal.id} signal={signal} />
-            ))}
-            {signals.length === 0 && (
-              <Card className="col-span-full bg-card/50 backdrop-blur border-primary/20">
-                <CardContent className="p-6 text-center">
-                  <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">No active signals at the moment</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+          <LiveTradingSignals />
         </div>
 
         {/* Trading Interface */}
