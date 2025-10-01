@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Clock, Zap } from 'lucide-react';
+import { Clock, Zap, AlertCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Timeframe {
   id: string;
@@ -25,6 +27,7 @@ export const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({
 }) => {
   const [timeframes, setTimeframes] = useState<Timeframe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTimeframes();
@@ -32,21 +35,30 @@ export const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({
 
   const fetchTimeframes = async () => {
     try {
+      setError(null);
+      console.log('Fetching binary timeframes...');
+      
       const { data, error } = await supabase
         .from('binary_timeframes')
         .select('*')
         .eq('is_active', true)
         .order('duration_seconds');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Timeframes fetched:', data?.length || 0, 'timeframes');
       setTimeframes(data || []);
       
       // Select first timeframe by default
       if (data && data.length > 0 && !selectedTimeframe) {
         onSelectTimeframe(data[0]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching timeframes:', error);
+      setError(error.message || 'Failed to load timeframes. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -73,8 +85,32 @@ export const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({
         </h3>
         
         {loading ? (
+          <div className="grid grid-cols-2 gap-2">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </div>
+        ) : error ? (
+          <div>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="ml-2">
+                {error}
+              </AlertDescription>
+            </Alert>
+            <Button 
+              onClick={fetchTimeframes}
+              variant="outline"
+              size="sm"
+              className="mt-3 w-full"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        ) : timeframes.length === 0 ? (
           <div className="text-center text-muted-foreground py-4">
-            Loading timeframes...
+            No timeframes available
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2">

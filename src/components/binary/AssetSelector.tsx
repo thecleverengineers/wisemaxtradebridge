@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, TrendingUp, TrendingDown, Star } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, Star, AlertCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Asset {
   id: string;
@@ -33,6 +35,7 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
@@ -58,16 +61,30 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
 
   const fetchAssets = async () => {
     try {
+      setError(null);
+      console.log('Fetching binary assets...');
+      
       const { data, error } = await supabase
         .from('binary_assets')
         .select('*')
         .eq('is_active', true)
         .order('symbol');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Assets fetched:', data?.length || 0, 'assets');
       setAssets(data || []);
-    } catch (error) {
+      
+      // Select first asset by default if none selected
+      if (data && data.length > 0 && !selectedAsset) {
+        onSelectAsset(data[0]);
+      }
+    } catch (error: any) {
       console.error('Error fetching assets:', error);
+      setError(error.message || 'Failed to load assets. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -143,8 +160,40 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
         <ScrollArea className="h-[400px]">
           <div className="space-y-2">
             {loading ? (
-              <div className="text-center text-muted-foreground py-8">
-                Loading assets...
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-3">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-4 w-4" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-32" />
+                      </div>
+                    </div>
+                    <div className="text-right space-y-2">
+                      <Skeleton className="h-4 w-16 ml-auto" />
+                      <Skeleton className="h-3 w-12 ml-auto" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : error ? (
+              <div className="py-4">
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    {error}
+                  </AlertDescription>
+                </Alert>
+                <Button 
+                  onClick={fetchAssets}
+                  variant="outline"
+                  size="sm"
+                  className="mt-3 w-full"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry
+                </Button>
               </div>
             ) : sortedAssets.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
