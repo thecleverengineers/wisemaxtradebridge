@@ -133,21 +133,28 @@ export default function ROIInvestments() {
 
   const fetchPlans = async () => {
     try {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from('investment_plans')
         .select('*')
-        .eq('status', 'active')
         .order('min_amount', { ascending: true });
 
       if (error) throw error;
-      setPlans(data || []);
+      
+      console.log('Fetched investment plans:', data);
+      
+      // Filter only active plans in the frontend
+      const activePlans = (data || []).filter(plan => plan.status === 'active');
+      setPlans(activePlans);
     } catch (error: any) {
       console.error('Error fetching plans:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load investment plans',
+        description: `Failed to load investment plans: ${error.message}`,
         variant: 'destructive'
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
