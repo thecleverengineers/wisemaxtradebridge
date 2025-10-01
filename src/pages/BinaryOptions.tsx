@@ -39,16 +39,19 @@ export default function BinaryOptions() {
 
   // Fetch active signals
   const fetchSignals = async () => {
+    console.log('Fetching signals...');
     const { data, error } = await supabase
       .from('binary_signals')
       .select('*')
       .eq('is_active', true)
       .gte('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(3);
+      .order('created_at', { ascending: false });
 
-    if (!error && data) {
-      setSignals(data);
+    if (error) {
+      console.error('Error fetching signals:', error);
+    } else {
+      console.log('Fetched signals:', data);
+      setSignals(data || []);
     }
   };
 
@@ -90,14 +93,24 @@ export default function BinaryOptions() {
     if (!user) return;
 
     // Initial fetch
-    fetchBalance();
-    fetchSignals();
-    fetchActiveTrades();
-    fetchTradeHistory();
-    setLoading(false);
-
-    // Generate initial signals
-    generateSignals();
+    const initializeData = async () => {
+      setLoading(true);
+      await fetchBalance();
+      await fetchActiveTrades();
+      await fetchTradeHistory();
+      
+      // Check if there are existing signals first
+      await fetchSignals();
+      
+      // Generate initial signals after a short delay
+      setTimeout(() => {
+        generateSignals();
+      }, 1000);
+      
+      setLoading(false);
+    };
+    
+    initializeData();
 
     // Subscribe to wallet changes
     const walletChannel = supabase
@@ -154,70 +167,63 @@ export default function BinaryOptions() {
   // Function to generate new signals
   const generateSignals = async () => {
     setGeneratingSignals(true);
+    console.log('Starting signal generation...');
+    
     try {
-      // Try edge function first
-      const { data: edgeData, error: edgeError } = await supabase.functions.invoke('signal-generator');
+      // Generate signals client-side directly for immediate feedback
+      const assetPairs = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD', 'USD/CAD', 'EUR/GBP'];
+      const signals = [];
+      const numSignals = 3; // Always generate 3 signals for consistency
       
-      if (edgeError) {
-        console.error('Edge function error, falling back to client-side generation:', edgeError);
+      for (let i = 0; i < numSignals; i++) {
+        const randomPair = assetPairs[Math.floor(Math.random() * assetPairs.length)];
+        const signalType = Math.random() > 0.5 ? 'CALL' : 'PUT';
+        const strengthRandom = Math.random();
+        const strength = strengthRandom < 0.33 ? 'weak' : strengthRandom < 0.66 ? 'medium' : 'strong';
         
-        // Fallback: Generate signals client-side
-        const assetPairs = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD', 'USD/CAD', 'EUR/GBP'];
-        const signals = [];
-        const numSignals = Math.floor(Math.random() * 2) + 2; // Generate 2-3 signals
+        // Signal expires in 45-90 seconds for better visibility
+        const expirySeconds = Math.floor(Math.random() * 45) + 45;
+        const expiresAt = new Date(Date.now() + expirySeconds * 1000);
         
-        for (let i = 0; i < numSignals; i++) {
-          const randomPair = assetPairs[Math.floor(Math.random() * assetPairs.length)];
-          const signalType = Math.random() > 0.5 ? 'CALL' : 'PUT';
-          const strengthRandom = Math.random();
-          const strength = strengthRandom < 0.33 ? 'weak' : strengthRandom < 0.66 ? 'medium' : 'strong';
-          
-          // Signal expires in 30-60 seconds
-          const expirySeconds = Math.floor(Math.random() * 30) + 30;
-          const expiresAt = new Date(Date.now() + expirySeconds * 1000);
-          
-          signals.push({
-            asset_pair: randomPair,
-            signal_type: signalType,
-            strength: strength,
-            expires_at: expiresAt.toISOString(),
-            is_active: true
-          });
-        }
-        
-        // Deactivate old signals for the same asset pairs
-        const pairsToUpdate = [...new Set(signals.map(s => s.asset_pair))];
-        
-        for (const pair of pairsToUpdate) {
-          await supabase
-            .from('binary_signals')
-            .update({ is_active: false })
-            .eq('asset_pair', pair)
-            .eq('is_active', true);
-        }
-        
-        // Insert new signals
-        const { data, error } = await supabase
-          .from('binary_signals')
-          .insert(signals)
-          .select();
-        
-        if (error) {
-          console.error('Error inserting signals:', error);
-          toast.error('Failed to generate signals');
-        } else {
-          console.log('Client-side signals generated:', data);
-          toast.success(`Generated ${data.length} new signals`);
-          fetchSignals(); // Refresh signals after generation
-        }
+        signals.push({
+          asset_pair: randomPair,
+          signal_type: signalType,
+          strength: strength,
+          expires_at: expiresAt.toISOString(),
+          is_active: true
+        });
+      }
+      
+      console.log('Generated signals:', signals);
+      
+      // First deactivate ALL old signals
+      const { error: deactivateError } = await supabase
+        .from('binary_signals')
+        .update({ is_active: false })
+        .eq('is_active', true);
+      
+      if (deactivateError) {
+        console.error('Error deactivating old signals:', deactivateError);
+      }
+      
+      // Insert new signals
+      const { data, error } = await supabase
+        .from('binary_signals')
+        .insert(signals)
+        .select();
+      
+      if (error) {
+        console.error('Error inserting signals:', error);
+        toast.error('Failed to generate signals: ' + error.message);
       } else {
-        console.log('Edge function signals generated:', edgeData);
-        toast.success('New signals generated');
-        fetchSignals(); // Refresh signals after generation
+        console.log('Signals inserted successfully:', data);
+        toast.success(`Generated ${data.length} new trading signals`);
+        // Immediately update state with new signals
+        setSignals(data);
       }
     } catch (err) {
       console.error('Failed to generate signals:', err);
-      toast.error('Failed to generate signals');
+      toast.error('Failed to generate signals: ' + (err as Error).message);
     } finally {
       setGeneratingSignals(false);
     }
