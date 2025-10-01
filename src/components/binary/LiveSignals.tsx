@@ -21,38 +21,56 @@ export const LiveSignals: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15);
 
+  // Generate fake signal locally
+  const generateFakeSignal = (): Signal => {
+    const assetPairs = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD', 'USD/CAD', 'EUR/GBP'];
+    const signalTypes: ('CALL' | 'PUT')[] = ['CALL', 'PUT'];
+    const strengths = ['weak', 'medium', 'strong'];
+    
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 15000); // 15 seconds from now
+    
+    return {
+      id: crypto.randomUUID(),
+      type: signalTypes[Math.floor(Math.random() * signalTypes.length)],
+      asset_pair: assetPairs[Math.floor(Math.random() * assetPairs.length)],
+      strength: strengths[Math.floor(Math.random() * strengths.length)],
+      timestamp: now.toISOString(),
+      expires_at: expiresAt.toISOString()
+    };
+  };
+
   const fetchSignal = async () => {
     try {
       setRefreshing(true);
-      const { data, error } = await supabase.functions.invoke('trading-signals');
       
-      if (error) throw error;
+      // Always use fake signals - no need for edge function
+      const fakeSignal = generateFakeSignal();
+      setSignal(fakeSignal);
+      setTimeLeft(15);
       
-      if (data?.signal) {
-        setSignal(data.signal);
-        setTimeLeft(15);
-      }
-    } catch (error) {
-      console.error('Error fetching signal:', error);
-      // Fallback to database
-      const { data } = await supabase
+      // Also store in database for consistency with trades
+      await supabase
         .from('binary_signals')
-        .select('*')
-        .eq('is_active', true)
-        .gte('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      if (data && data.length > 0) {
-        setSignal({
-          id: data[0].id,
-          type: data[0].signal_type as 'CALL' | 'PUT',
-          asset_pair: data[0].asset_pair,
-          strength: data[0].strength,
-          timestamp: data[0].created_at,
-          expires_at: data[0].expires_at
+        .insert({
+          asset_pair: fakeSignal.asset_pair,
+          signal_type: fakeSignal.type,
+          strength: fakeSignal.strength,
+          expires_at: fakeSignal.expires_at,
+          is_active: true
         });
-      }
+      
+      // Deactivate old signals
+      await supabase
+        .from('binary_signals')
+        .update({ is_active: false })
+        .lt('expires_at', new Date().toISOString());
+        
+    } catch (error) {
+      console.error('Error generating signal:', error);
+      // Even on error, show a fake signal
+      const fallbackSignal = generateFakeSignal();
+      setSignal(fallbackSignal);
     } finally {
       setLoading(false);
       setRefreshing(false);
