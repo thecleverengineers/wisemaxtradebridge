@@ -12,6 +12,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { signInSchema, signUpSchema } from '@/lib/validations';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -37,6 +38,22 @@ const Auth = () => {
   
   // Only access auth context if it exists
   const { signIn, signUp, user } = authContext || { signIn: null, signUp: null, user: null };
+
+  // Capture referral code from URL on component mount
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      setFormData(prev => ({ ...prev, referralCode: refCode }));
+      setIsLogin(false); // Switch to signup if there's a referral code
+      
+      // Show toast notification about referral
+      toast({
+        title: "Referral Code Applied!",
+        description: `You've been referred! Code: ${refCode}`,
+      });
+    }
+  }, [location.search, toast]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -370,15 +387,35 @@ const Auth = () => {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="referralCode" className="text-white">Referral Code (Optional)</Label>
-                  <Input
-                    id="referralCode"
-                    type="text"
-                    placeholder="Enter referral code if you have one"
-                    value={formData.referralCode}
-                    onChange={(e) => setFormData({...formData, referralCode: e.target.value})}
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50"
-                  />
+                  <Label htmlFor="referralCode" className="text-white">
+                    Referral Code {formData.referralCode ? '(Applied)' : '(Optional)'}
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                    <Input
+                      id="referralCode"
+                      type="text"
+                      placeholder="Enter referral code if you have one"
+                      value={formData.referralCode}
+                      onChange={(e) => setFormData({...formData, referralCode: e.target.value})}
+                      className={cn(
+                        "pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/50",
+                        formData.referralCode && "border-green-500/50 bg-green-500/10"
+                      )}
+                      readOnly={!!formData.referralCode && location.search.includes('ref=')}
+                    />
+                    {formData.referralCode && (
+                      <CheckCircle className="absolute right-3 top-3 h-4 w-4 text-green-400" />
+                    )}
+                  </div>
+                  {formData.referralCode && (
+                    <Alert className="mt-2 bg-green-500/10 border-green-500/30">
+                      <CheckCircle className="h-4 w-4 text-green-400" />
+                      <AlertDescription className="text-green-400 text-xs">
+                        Referral code applied! You'll be connected to your referrer.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                   {errors.referralCode && (
                     <p className="text-red-400 text-xs mt-1">{errors.referralCode}</p>
                   )}

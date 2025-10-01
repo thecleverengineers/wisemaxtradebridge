@@ -222,8 +222,17 @@ const Referrals = () => {
     }
   };
 
+  const copyReferralLink = () => {
+    const referralLink = `${window.location.origin}/auth?ref=${profile?.referral_code}`;
+    navigator.clipboard.writeText(referralLink);
+    toast({
+      title: "Link Copied!",
+      description: "Referral link copied to clipboard",
+    });
+  };
+
   const shareReferralLink = () => {
-    const referralLink = `https://laktoken.in/auth?ref=${profile?.referral_code}`;
+    const referralLink = `${window.location.origin}/auth?ref=${profile?.referral_code}`;
     if (navigator.share) {
       navigator.share({
         title: 'Join LakToken',
@@ -231,11 +240,7 @@ const Referrals = () => {
         url: referralLink,
       });
     } else {
-      navigator.clipboard.writeText(referralLink);
-      toast({
-        title: "Link Copied!",
-        description: "Referral link copied to clipboard",
-      });
+      copyReferralLink();
     }
   };
 
@@ -274,6 +279,12 @@ const Referrals = () => {
                 <div className="bg-background/20 rounded-xl p-4 mb-4">
                   <p className="text-3xl font-bold tracking-wider">{profile?.referral_code}</p>
                 </div>
+                <div className="mb-4 p-3 bg-background/10 rounded-lg">
+                  <p className="text-sm mb-1">Your Referral Link:</p>
+                  <p className="text-xs break-all font-mono">
+                    {window.location.origin}/auth?ref={profile?.referral_code}
+                  </p>
+                </div>
                 <div className="flex gap-3 justify-center">
                   <Button 
                     onClick={copyReferralCode}
@@ -283,11 +294,18 @@ const Referrals = () => {
                     Copy Code
                   </Button>
                   <Button 
+                    onClick={copyReferralLink}
+                    className="bg-background/20 hover:bg-background/30 text-primary-foreground border-background/30"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Link
+                  </Button>
+                  <Button 
                     onClick={shareReferralLink}
                     className="bg-background/20 hover:bg-background/30 text-primary-foreground border-background/30"
                   >
                     <Share2 className="h-4 w-4 mr-2" />
-                    Share Link
+                    Share
                   </Button>
                 </div>
               </div>
