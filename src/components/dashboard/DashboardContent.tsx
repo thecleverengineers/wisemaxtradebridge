@@ -3,10 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Users, Wallet, Eye, Copy, Check } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Users, Wallet, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
 
 interface WalletData {
   id: string;
@@ -45,7 +44,7 @@ export const DashboardContent = () => {
   const { profile, user, isAdmin } = useAuth();
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [investmentPlans, setInvestmentPlans] = useState<InvestmentPlan[]>([]);
-  const [copied, setCopied] = useState(false);
+  
 
   useEffect(() => {
     if (user) {
@@ -85,26 +84,6 @@ export const DashboardContent = () => {
     }
   };
 
-  const copyReferralCode = async () => {
-    if (profile?.referral_code) {
-      await navigator.clipboard.writeText(profile.referral_code);
-      setCopied(true);
-      toast({
-        title: "Copied!",
-        description: "Referral code copied to clipboard",
-      });
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const shareReferralLink = () => {
-    const referralLink = `${window.location.origin}/auth?ref=${profile?.referral_code}`;
-    navigator.clipboard.writeText(referralLink);
-    toast({
-      title: "Link Copied!",
-      description: "Share this link with your friends to earn rewards",
-    });
-  };
 
   return (
     <div className="flex-1 p-4 pt-20 pb-20 space-y-6">
@@ -241,44 +220,16 @@ export const DashboardContent = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4">
-            <p className="text-black font-medium mb-2 text-center">Your Referral Code</p>
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <p className="text-black text-3xl font-bold tracking-wider">{profile?.referral_code}</p>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 bg-white/20 hover:bg-white/30"
-                onClick={copyReferralCode}
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 text-black" />
-                ) : (
-                  <Copy className="h-4 w-4 text-black" />
-                )}
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 bg-white/20 border-white/30 text-black hover:bg-white/30"
-                onClick={shareReferralLink}
-              >
-                Share Link
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 bg-white/20 border-white/30 text-black hover:bg-white/30"
-                onClick={copyReferralCode}
-              >
-                Copy Code
-              </Button>
-            </div>
-            <p className="text-xs text-black/70 mt-3 text-center">
-              Earn rewards when friends sign up with your code!
-            </p>
+          <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4 text-center">
+            <p className="text-black font-medium mb-2">Your Referral Code</p>
+            <p className="text-black text-2xl font-bold tracking-wider">{profile?.referral_code}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-3 bg-white/20 border-white/30 text-black hover:bg-white/30"
+            >
+              Share Code
+            </Button>
           </div>
         </CardContent>
       </Card>
