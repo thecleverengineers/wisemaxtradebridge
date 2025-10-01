@@ -117,13 +117,18 @@ export default function ROIInvestments() {
   });
 
   useEffect(() => {
-    // Immediately check if user is available and fetch data
+    // Always fetch investment plans - no authentication required
+    console.log('Fetching investment plans (public access)...');
+    fetchPlans();
+    
+    // Only fetch user-specific data if authenticated
     if (user?.id) {
-      console.log('User authenticated, fetching ROI data for:', user.id);
-      fetchData();
+      console.log('User authenticated, fetching user data for:', user.id);
+      fetchUserInvestments();
+      fetchWalletData();
       setupRealtimeSubscriptions();
     }
-  }, [user?.id]); // Changed dependency to user?.id
+  }, [user?.id]);
 
   const fetchData = async () => {
     console.log('Starting fetchData...');
@@ -623,23 +628,33 @@ export default function ROIInvestments() {
                       </div>
                       
                       <div className="pt-3 border-t border-white/10">
-                        <Button
-                          onClick={() => openInvestDialog(plan)}
-                          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                          disabled={walletData.balance < plan.min_amount}
-                        >
-                          {walletData.balance < plan.min_amount ? (
-                            <>
-                              <Lock className="h-4 w-4 mr-2" />
-                              Insufficient Balance
-                            </>
-                          ) : (
-                            <>
-                              <Rocket className="h-4 w-4 mr-2" />
-                              Invest Now
-                            </>
-                          )}
-                        </Button>
+                        {user ? (
+                          <Button
+                            onClick={() => openInvestDialog(plan)}
+                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                            disabled={walletData.balance < plan.min_amount}
+                          >
+                            {walletData.balance < plan.min_amount ? (
+                              <>
+                                <Lock className="h-4 w-4 mr-2" />
+                                Insufficient Balance
+                              </>
+                            ) : (
+                              <>
+                                <Rocket className="h-4 w-4 mr-2" />
+                                Invest Now
+                              </>
+                            )}
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => window.location.href = '/auth'}
+                            className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800"
+                          >
+                            <Lock className="h-4 w-4 mr-2" />
+                            Login to Invest
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -650,7 +665,21 @@ export default function ROIInvestments() {
 
           {/* Portfolio Tab */}
           <TabsContent value="portfolio" className="space-y-4">
-            {userInvestments.length === 0 ? (
+            {!user ? (
+              <Card className="bg-white/5 border-white/10">
+                <CardContent className="p-12 text-center">
+                  <Lock className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">Login Required</h3>
+                  <p className="text-purple-300 mb-4">Please login to view your investment portfolio</p>
+                  <Button
+                    onClick={() => window.location.href = '/auth'}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600"
+                  >
+                    Login Now
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : userInvestments.length === 0 ? (
               <Card className="bg-white/5 border-white/10">
                 <CardContent className="p-12 text-center">
                   <Activity className="h-12 w-12 text-purple-400 mx-auto mb-4" />
@@ -766,7 +795,18 @@ export default function ROIInvestments() {
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[500px]">
-                  {userInvestments.length === 0 ? (
+                  {!user ? (
+                    <div className="text-center py-8">
+                      <Lock className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                      <p className="text-purple-300">Login to view your investment history</p>
+                      <Button
+                        onClick={() => window.location.href = '/auth'}
+                        className="mt-4 bg-gradient-to-r from-purple-600 to-pink-600"
+                      >
+                        Login Now
+                      </Button>
+                    </div>
+                  ) : userInvestments.length === 0 ? (
                     <div className="text-center py-8">
                       <Clock className="h-12 w-12 text-purple-400 mx-auto mb-4" />
                       <p className="text-purple-300">No investment history yet</p>
