@@ -154,8 +154,9 @@ export default function BinaryOptions() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background pb-20">
-      <div className="container max-w-7xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-background relative overflow-hidden pb-20">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-background"></div>
+      <div className="container max-w-7xl mx-auto px-4 py-6 relative z-10">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">

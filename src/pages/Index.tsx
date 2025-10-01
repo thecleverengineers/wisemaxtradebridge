@@ -22,14 +22,16 @@ const Index = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+      <div className="min-h-screen bg-background relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/10 to-background"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent"></div>
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center relative z-10">
           <div className="mb-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <span className="text-white font-bold text-2xl">LT</span>
+            <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary/50">
+              <span className="text-primary-foreground font-bold text-2xl">LT</span>
             </div>
-            <h1 className="text-4xl font-bold text-white mb-4">Welcome to LakToken</h1>
-            <p className="text-purple-300 text-lg max-w-md mx-auto">
+            <h1 className="text-4xl font-bold text-foreground mb-4">Welcome to LakToken</h1>
+            <p className="text-muted-foreground text-lg max-w-md mx-auto">
               Your premium trading platform for smart investments and financial growth
             </p>
           </div>
@@ -37,11 +39,11 @@ const Index = () => {
           <div className="space-y-4 w-full max-w-sm">
             <Button
               onClick={() => navigate('/auth')}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 text-lg"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-semibold py-3 text-lg shadow-lg"
             >
               Get Started
             </Button>
-            <p className="text-purple-400 text-sm">
+            <p className="text-muted-foreground text-sm">
               Join thousands of investors already earning with LakToken
             </p>
           </div>
@@ -51,7 +53,8 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-background"></div>
       <AppHeader onMenuClick={() => setSidebarOpen(true)} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <DashboardContent />

@@ -268,11 +268,12 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-background"></div>
       <AppHeader onMenuClick={() => setSidebarOpen(true)} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="p-4 pt-20 pb-20">
+      <div className="p-4 pt-20 pb-20 relative z-10">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
