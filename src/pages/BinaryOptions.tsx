@@ -95,6 +95,9 @@ export default function BinaryOptions() {
     fetchTradeHistory();
     setLoading(false);
 
+    // Generate initial signals
+    generateSignals();
+
     // Subscribe to wallet changes
     const walletChannel = supabase
       .channel('wallet-changes')
@@ -134,8 +137,10 @@ export default function BinaryOptions() {
       })
       .subscribe();
 
-    // Auto-refresh signals every 10 seconds
-    const signalInterval = setInterval(fetchSignals, 10000);
+    // Auto-generate new signals every 15 seconds
+    const signalInterval = setInterval(() => {
+      generateSignals();
+    }, 15000);
 
     return () => {
       walletChannel.unsubscribe();
@@ -144,6 +149,21 @@ export default function BinaryOptions() {
       clearInterval(signalInterval);
     };
   }, [user]);
+
+  // Function to generate new signals
+  const generateSignals = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('signal-generator');
+      if (error) {
+        console.error('Error generating signals:', error);
+      } else {
+        console.log('Signals generated:', data);
+        fetchSignals(); // Refresh signals after generation
+      }
+    } catch (err) {
+      console.error('Failed to generate signals:', err);
+    }
+  };
 
   if (loading) {
     return (
