@@ -14,6 +14,7 @@ import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, History, Trophy, Settings, BarChart3 } from 'lucide-react';
+import { BinaryDataProvider } from '@/contexts/BinaryDataContext';
 
 export default function EnhancedBinaryTrading() {
   const { user } = useAuth();
@@ -92,145 +93,147 @@ export default function EnhancedBinaryTrading() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background pb-20">
-      <div className="container max-w-7xl mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
-            Advanced Binary Trading
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Trade 15+ assets with multiple timeframes
-          </p>
+    <BinaryDataProvider>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background pb-20">
+        <div className="container max-w-7xl mx-auto px-4 py-6">
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
+              Advanced Binary Trading
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Trade 15+ assets with multiple timeframes
+            </p>
+          </div>
+
+          {/* Main Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Left Column - Asset Selection */}
+            <div className="lg:col-span-1">
+              <AssetSelector 
+                selectedAsset={selectedAsset}
+                onSelectAsset={setSelectedAsset}
+              />
+            </div>
+
+            {/* Center Column - Chart & Trading */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* Price Chart */}
+              {selectedAsset && (
+                <Card className="p-4">
+                  <PriceChart 
+                    asset={selectedAsset}
+                    timeframe={selectedTimeframe}
+                  />
+                </Card>
+              )}
+
+              {/* Tabs for Trading Interface */}
+              <Tabs defaultValue="trade" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="trade" className="flex items-center gap-1">
+                    <TrendingUp className="h-4 w-4" />
+                    Trade
+                  </TabsTrigger>
+                  <TabsTrigger value="active" className="flex items-center gap-1">
+                    <BarChart3 className="h-4 w-4" />
+                    Active
+                  </TabsTrigger>
+                  <TabsTrigger value="history" className="flex items-center gap-1">
+                    <History className="h-4 w-4" />
+                    History
+                  </TabsTrigger>
+                  <TabsTrigger value="leaderboard" className="flex items-center gap-1">
+                    <Trophy className="h-4 w-4" />
+                    Leaders
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="trade" className="space-y-4">
+                  <TimeframeSelector
+                    selectedTimeframe={selectedTimeframe}
+                    onSelectTimeframe={setSelectedTimeframe}
+                  />
+                  <EnhancedTradePanel
+                    selectedAsset={selectedAsset}
+                    selectedTimeframe={selectedTimeframe}
+                    balance={balance}
+                    demoBalance={demoBalance}
+                    isDemoMode={isDemoMode}
+                    onToggleDemoMode={handleToggleDemoMode}
+                    onTradeComplete={fetchBalances}
+                  />
+                </TabsContent>
+
+                <TabsContent value="active">
+                  <ActiveTradesList isDemoMode={isDemoMode} />
+                </TabsContent>
+
+                <TabsContent value="history">
+                  <TradeHistoryPanel isDemoMode={isDemoMode} />
+                </TabsContent>
+
+                <TabsContent value="leaderboard">
+                  <Leaderboard />
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Right Column - Stats & Info */}
+            <div className="lg:col-span-1 space-y-4">
+              {/* Market Info */}
+              {selectedAsset && (
+                <Card className="p-4">
+                  <h3 className="font-semibold mb-3">Market Info</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">24h High:</span>
+                      <span>${selectedAsset.day_high?.toFixed(4) || '--'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">24h Low:</span>
+                      <span>${selectedAsset.day_low?.toFixed(4) || '--'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Prev Close:</span>
+                      <span>${selectedAsset.previous_close?.toFixed(4) || '--'}</span>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* User Stats */}
+              {user && (
+                <Card className="p-4">
+                  <h3 className="font-semibold mb-3">Your Stats Today</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Total Trades:</span>
+                      <span>0</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Win Rate:</span>
+                      <span>--</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Profit/Loss:</span>
+                      <span>$0.00</span>
+                    </div>
+                  </div>
+                </Card>
+              )}
+            </div>
+          </div>
+
+          {/* Admin Dashboard */}
+          {isAdmin && (
+            <div className="mt-6">
+              <AdminDashboard />
+            </div>
+          )}
         </div>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Column - Asset Selection */}
-          <div className="lg:col-span-1">
-            <AssetSelector 
-              selectedAsset={selectedAsset}
-              onSelectAsset={setSelectedAsset}
-            />
-          </div>
-
-          {/* Center Column - Chart & Trading */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Price Chart */}
-            {selectedAsset && (
-              <Card className="p-4">
-                <PriceChart 
-                  asset={selectedAsset}
-                  timeframe={selectedTimeframe}
-                />
-              </Card>
-            )}
-
-            {/* Tabs for Trading Interface */}
-            <Tabs defaultValue="trade" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="trade" className="flex items-center gap-1">
-                  <TrendingUp className="h-4 w-4" />
-                  Trade
-                </TabsTrigger>
-                <TabsTrigger value="active" className="flex items-center gap-1">
-                  <BarChart3 className="h-4 w-4" />
-                  Active
-                </TabsTrigger>
-                <TabsTrigger value="history" className="flex items-center gap-1">
-                  <History className="h-4 w-4" />
-                  History
-                </TabsTrigger>
-                <TabsTrigger value="leaderboard" className="flex items-center gap-1">
-                  <Trophy className="h-4 w-4" />
-                  Leaders
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="trade" className="space-y-4">
-                <TimeframeSelector
-                  selectedTimeframe={selectedTimeframe}
-                  onSelectTimeframe={setSelectedTimeframe}
-                />
-                <EnhancedTradePanel
-                  selectedAsset={selectedAsset}
-                  selectedTimeframe={selectedTimeframe}
-                  balance={balance}
-                  demoBalance={demoBalance}
-                  isDemoMode={isDemoMode}
-                  onToggleDemoMode={handleToggleDemoMode}
-                  onTradeComplete={fetchBalances}
-                />
-              </TabsContent>
-
-              <TabsContent value="active">
-                <ActiveTradesList isDemoMode={isDemoMode} />
-              </TabsContent>
-
-              <TabsContent value="history">
-                <TradeHistoryPanel isDemoMode={isDemoMode} />
-              </TabsContent>
-
-              <TabsContent value="leaderboard">
-                <Leaderboard />
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {/* Right Column - Stats & Info */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* Market Info */}
-            {selectedAsset && (
-              <Card className="p-4">
-                <h3 className="font-semibold mb-3">Market Info</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">24h High:</span>
-                    <span>${selectedAsset.day_high?.toFixed(4) || '--'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">24h Low:</span>
-                    <span>${selectedAsset.day_low?.toFixed(4) || '--'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Prev Close:</span>
-                    <span>${selectedAsset.previous_close?.toFixed(4) || '--'}</span>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* User Stats */}
-            {user && (
-              <Card className="p-4">
-                <h3 className="font-semibold mb-3">Your Stats Today</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Trades:</span>
-                    <span>0</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Win Rate:</span>
-                    <span>--</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Profit/Loss:</span>
-                    <span>$0.00</span>
-                  </div>
-                </div>
-              </Card>
-            )}
-          </div>
-        </div>
-
-        {/* Admin Dashboard */}
-        {isAdmin && (
-          <div className="mt-6">
-            <AdminDashboard />
-          </div>
-        )}
+        <BottomNavigation />
       </div>
-      <BottomNavigation />
-    </div>
+    </BinaryDataProvider>
   );
 }

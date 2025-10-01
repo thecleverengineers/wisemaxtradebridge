@@ -5,10 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, TrendingUp, TrendingDown, Star, AlertCircle, RefreshCw } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useBinaryData } from '@/contexts/BinaryDataContext';
 
 interface Asset {
   id: string;
@@ -31,64 +31,19 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
   selectedAsset,
   onSelectAsset
 }) => {
-  const [assets, setAssets] = useState<Asset[]>([]);
+  const { assets, loading, error, refetch } = useBinaryData();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchAssets();
     loadFavorites();
     
-    // Set up real-time price updates
-    const channel = supabase
-      .channel('asset-prices')
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'binary_assets'
-      }, () => {
-        fetchAssets();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const fetchAssets = async () => {
-    try {
-      setError(null);
-      console.log('Fetching binary assets...');
-      
-      const { data, error } = await supabase
-        .from('binary_assets')
-        .select('*')
-        .eq('is_active', true)
-        .order('symbol');
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-      
-      console.log('Assets fetched:', data?.length || 0, 'assets');
-      setAssets(data || []);
-      
-      // Select first asset by default if none selected
-      if (data && data.length > 0 && !selectedAsset) {
-        onSelectAsset(data[0]);
-      }
-    } catch (error: any) {
-      console.error('Error fetching assets:', error);
-      setError(error.message || 'Failed to load assets. Please try again.');
-    } finally {
-      setLoading(false);
+    // Select first asset by default if none selected
+    if (assets.length > 0 && !selectedAsset) {
+      onSelectAsset(assets[0]);
     }
-  };
+  }, [assets]);
 
   const loadFavorites = () => {
     const saved = localStorage.getItem('binary_favorites');
@@ -186,7 +141,7 @@ export const AssetSelector: React.FC<AssetSelectorProps> = ({
                   </AlertDescription>
                 </Alert>
                 <Button 
-                  onClick={fetchAssets}
+                  onClick={refetch}
                   variant="outline"
                   size="sm"
                   className="mt-3 w-full"

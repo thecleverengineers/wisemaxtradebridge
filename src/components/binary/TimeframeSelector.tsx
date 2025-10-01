@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Clock, Zap, AlertCircle, RefreshCw } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useBinaryData } from '@/contexts/BinaryDataContext';
 
 interface Timeframe {
   id: string;
@@ -25,44 +25,14 @@ export const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({
   selectedTimeframe,
   onSelectTimeframe
 }) => {
-  const [timeframes, setTimeframes] = useState<Timeframe[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { timeframes, loading, error, refetch } = useBinaryData();
 
   useEffect(() => {
-    fetchTimeframes();
-  }, []);
-
-  const fetchTimeframes = async () => {
-    try {
-      setError(null);
-      console.log('Fetching binary timeframes...');
-      
-      const { data, error } = await supabase
-        .from('binary_timeframes')
-        .select('*')
-        .eq('is_active', true)
-        .order('duration_seconds');
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-      
-      console.log('Timeframes fetched:', data?.length || 0, 'timeframes');
-      setTimeframes(data || []);
-      
-      // Select first timeframe by default
-      if (data && data.length > 0 && !selectedTimeframe) {
-        onSelectTimeframe(data[0]);
-      }
-    } catch (error: any) {
-      console.error('Error fetching timeframes:', error);
-      setError(error.message || 'Failed to load timeframes. Please try again.');
-    } finally {
-      setLoading(false);
+    // Select first timeframe by default
+    if (timeframes.length > 0 && !selectedTimeframe) {
+      onSelectTimeframe(timeframes[0]);
     }
-  };
+  }, [timeframes]);
 
   const getTimeframeIcon = (duration: number) => {
     if (duration <= 60) return <Zap className="h-4 w-4" />;
@@ -99,7 +69,7 @@ export const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({
               </AlertDescription>
             </Alert>
             <Button 
-              onClick={fetchTimeframes}
+              onClick={refetch}
               variant="outline"
               size="sm"
               className="mt-3 w-full"
