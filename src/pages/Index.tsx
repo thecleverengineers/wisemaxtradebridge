@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { AppSidebar } from '@/components/layout/AppSidebar';
