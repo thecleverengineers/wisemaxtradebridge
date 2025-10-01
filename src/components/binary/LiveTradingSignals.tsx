@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Activity, AlertCircle, BarChart3, Zap, Clock, Signal, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, AlertCircle, BarChart3, Zap, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, ComposedChart, Bar } from 'recharts';
 
@@ -201,30 +201,21 @@ export function LiveTradingSignals() {
     if (active && payload && payload[0]) {
       const data = payload[0].payload;
       return (
-        <div className="bg-black/90 backdrop-blur-xl border border-primary/30 rounded-xl p-4 shadow-2xl shadow-primary/20">
-          <p className="text-xs text-primary/70 mb-2 font-semibold uppercase tracking-wider">{label}</p>
-          <p className="text-base font-bold">
-            <span className="text-muted-foreground">Price: </span>
-            <span className="text-primary text-lg">{payload[0].value.toFixed(5)}</span>
+        <div className="bg-background/95 backdrop-blur border border-border rounded-lg p-3 shadow-lg">
+          <p className="text-xs text-muted-foreground mb-1">{label}</p>
+          <p className="text-sm font-semibold">
+            Price: <span className="text-primary">{payload[0].value.toFixed(5)}</span>
           </p>
           {data.signal && (
             <>
-              <div className="flex items-center gap-3 mt-3 pt-3 border-t border-primary/20">
+              <div className="flex items-center gap-2 mt-2">
                 <Badge className={cn(
-                  "text-xs font-bold px-3 py-1 shadow-lg",
-                  data.signal === 'CALL' 
-                    ? 'bg-gradient-to-r from-green-500/30 to-green-600/30 text-green-400 border-green-500/40' 
-                    : 'bg-gradient-to-r from-red-500/30 to-red-600/30 text-red-400 border-red-500/40'
+                  "text-xs",
+                  data.signal === 'CALL' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
                 )}>
-                  {data.signal === 'CALL' ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
                   {data.signal}
                 </Badge>
-                <span className={cn("text-sm font-bold flex items-center gap-1", 
-                  data.confidence > 80 ? 'text-green-400' : 
-                  data.confidence > 60 ? 'text-yellow-400' : 
-                  'text-orange-400'
-                )}>
-                  <Zap className="h-3 w-3" />
+                <span className={cn("text-xs font-semibold", getSignalStrength(data.confidence).color)}>
                   {data.confidence?.toFixed(0)}%
                 </span>
               </div>
@@ -267,104 +258,75 @@ export function LiveTradingSignals() {
   };
 
   return (
-    <div className="space-y-6 p-1">
-      {/* Header with gradient background */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-2xl blur-2xl" />
-        <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-primary/20 shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent flex items-center gap-3">
-                <div className="relative">
-                  <Signal className="h-6 w-6 text-primary animate-pulse" />
-                  <div className="absolute inset-0 blur-xl bg-primary/50" />
-                </div>
-                Live Trading Signals
-              </h2>
-              <p className="text-xs text-muted-foreground mt-1">AI-Powered Technical Analysis</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <select
-                value={selectedPair}
-                onChange={(e) => setSelectedPair(e.target.value)}
-                className="bg-black/60 border border-primary/30 rounded-xl px-4 py-2 text-sm text-foreground backdrop-blur-xl hover:border-primary/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
-              >
-                <option value="EUR/USD">EUR/USD</option>
-                <option value="GBP/USD">GBP/USD</option>
-                <option value="USD/JPY">USD/JPY</option>
-                <option value="AUD/USD">AUD/USD</option>
-                <option value="USD/CAD">USD/CAD</option>
-                <option value="EUR/GBP">EUR/GBP</option>
-              </select>
-              <Badge className="bg-gradient-to-r from-green-500/20 to-green-600/20 border-green-500/30 text-green-400 shadow-lg shadow-green-500/20">
-                <span className="animate-pulse mr-2 text-green-400">●</span>
-                LIVE FEED
-              </Badge>
-            </div>
-          </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+          <Activity className="h-5 w-5 text-primary animate-pulse" />
+          Live Trading Signals
+        </h2>
+        <div className="flex items-center gap-2">
+          <select
+            value={selectedPair}
+            onChange={(e) => setSelectedPair(e.target.value)}
+            className="bg-background border border-border rounded-lg px-3 py-1 text-sm"
+          >
+            <option value="EUR/USD">EUR/USD</option>
+            <option value="GBP/USD">GBP/USD</option>
+            <option value="USD/JPY">USD/JPY</option>
+            <option value="AUD/USD">AUD/USD</option>
+            <option value="USD/CAD">USD/CAD</option>
+            <option value="EUR/GBP">EUR/GBP</option>
+          </select>
+          <Badge variant="outline" className="bg-primary/10 border-primary/30">
+            <span className="animate-pulse mr-2">●</span>
+            Real-Time Analysis
+          </Badge>
         </div>
       </div>
 
-      {/* Main Chart with dark theme */}
-      <Card className="relative bg-black/60 backdrop-blur-2xl border border-primary/20 shadow-2xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
-        <CardHeader className="relative">
+      {/* Main Chart */}
+      <Card className="bg-card/50 backdrop-blur border-primary/20">
+        <CardHeader>
           <CardTitle className="text-lg flex items-center justify-between">
-            <span className="flex items-center gap-3">
-              <div className="relative">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                <div className="absolute inset-0 blur-lg bg-primary/40" />
-              </div>
-              <span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
-                {selectedPair} Price Action
-              </span>
+            <span className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              {selectedPair} Price Action
             </span>
-            <span className="text-xs text-muted-foreground/60 font-normal px-3 py-1 bg-black/40 rounded-full border border-primary/20">
-              Live Feed • 30 Signals
+            <span className="text-sm text-muted-foreground font-normal">
+              Last 30 signals
             </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="relative">
-          <ResponsiveContainer width="100%" height={350}>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={priceHistory}>
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                  <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
                   <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                 </linearGradient>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                  <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--primary))" opacity={0.1} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
               <XAxis 
                 dataKey="time" 
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={10}
                 interval="preserveStartEnd"
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={10}
                 domain={['dataMin - 0.002', 'dataMax + 0.002']}
                 tickFormatter={(value) => value.toFixed(4)}
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Area
                 type="monotone"
                 dataKey="price"
                 stroke="hsl(var(--primary))"
-                strokeWidth={3}
+                strokeWidth={2}
                 fill="url(#colorPrice)"
                 dot={<SignalDot />}
-                filter="url(#glow)"
               />
               {priceHistory.filter(d => d.signal).map((entry, index) => (
                 <ReferenceLine
@@ -372,8 +334,7 @@ export function LiveTradingSignals() {
                   y={entry.price}
                   stroke={entry.signal === 'CALL' ? '#10b981' : '#ef4444'}
                   strokeDasharray="5 5"
-                  strokeOpacity={0.7}
-                  strokeWidth={2}
+                  strokeOpacity={0.5}
                 />
               ))}
             </AreaChart>
@@ -381,136 +342,77 @@ export function LiveTradingSignals() {
         </CardContent>
       </Card>
 
-      {/* Active Signals List with modern dark design */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-foreground flex items-center gap-3">
-            <div className="relative">
-              <Clock className="h-5 w-5 text-primary" />
-              <div className="absolute inset-0 blur-lg bg-primary/40" />
-            </div>
-            Active Signals
-            <Badge className="ml-2 bg-primary/20 text-primary border-primary/30 font-bold">
-              {signals.length} LIVE
-            </Badge>
-          </h3>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-xs text-green-400">CALL</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="h-2 w-2 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-xs text-red-400">PUT</span>
-            </div>
-          </div>
-        </div>
-        
+      {/* Active Signals List */}
+      <div className="grid gap-3">
+        <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+          <Clock className="h-4 w-4" />
+          Active Signals ({signals.length})
+        </h3>
         {signals.length === 0 ? (
-          <Card className="bg-black/60 backdrop-blur-xl border border-primary/20 shadow-xl">
-            <CardContent className="p-8 text-center">
-              <div className="relative inline-block">
-                <AlertCircle className="h-8 w-8 text-primary/60 mx-auto mb-3" />
-                <div className="absolute inset-0 blur-2xl bg-primary/30" />
-              </div>
-              <p className="text-sm text-muted-foreground">Scanning market patterns...</p>
-              <div className="flex justify-center gap-1 mt-3">
-                <div className="h-1 w-8 bg-primary/40 rounded-full animate-pulse" />
-                <div className="h-1 w-8 bg-primary/40 rounded-full animate-pulse delay-100" />
-                <div className="h-1 w-8 bg-primary/40 rounded-full animate-pulse delay-200" />
-              </div>
+          <Card className="bg-card/50 backdrop-blur border-primary/20">
+            <CardContent className="p-4 text-center">
+              <AlertCircle className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Analyzing markets for signals...</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             {signals.map((signal) => {
               const strength = getSignalStrength(signal.confidence);
               const pnl = ((signal.current_price - signal.entry_price) / signal.entry_price) * 100;
               const isProfit = signal.signal_type === 'CALL' ? pnl > 0 : pnl < 0;
               
               return (
-                <Card key={signal.id} className="relative bg-black/60 backdrop-blur-xl border border-primary/20 shadow-xl hover:shadow-2xl hover:border-primary/30 transition-all duration-300 overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <CardContent className="relative p-4">
+                <Card key={signal.id} className="bg-card/50 backdrop-blur border-primary/20">
+                  <CardContent className="p-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
                         <div className={cn(
-                          "relative p-2.5 rounded-xl shadow-lg",
-                          signal.signal_type === 'CALL' 
-                            ? 'bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30' 
-                            : 'bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30'
+                          "p-1.5 rounded",
+                          signal.signal_type === 'CALL' ? 'bg-green-500/10' : 'bg-red-500/10'
                         )}>
                           {signal.signal_type === 'CALL' ? (
-                            <>
-                              <TrendingUp className="h-5 w-5 text-green-400" />
-                              <div className="absolute inset-0 blur-xl bg-green-500/30 rounded-xl" />
-                            </>
+                            <TrendingUp className="h-4 w-4 text-green-500" />
                           ) : (
-                            <>
-                              <TrendingDown className="h-5 w-5 text-red-400" />
-                              <div className="absolute inset-0 blur-xl bg-red-500/30 rounded-xl" />
-                            </>
+                            <TrendingDown className="h-4 w-4 text-red-500" />
                           )}
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-bold text-base text-foreground">{signal.asset_pair}</span>
-                            <Badge className="bg-black/40 border-primary/30 text-xs">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm">{signal.asset_pair}</span>
+                            <Badge variant="outline" className="text-xs h-5">
                               {signal.timeframe}
                             </Badge>
                             <Badge className={cn(
-                              "text-xs font-bold shadow-lg",
-                              signal.signal_type === 'CALL' 
-                                ? 'bg-gradient-to-r from-green-500/30 to-green-600/30 text-green-400 border-green-500/40' 
-                                : 'bg-gradient-to-r from-red-500/30 to-red-600/30 text-red-400 border-red-500/40'
+                              "text-xs h-5",
+                              signal.signal_type === 'CALL' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
                             )}>
-                              {signal.signal_type === 'CALL' ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
                               {signal.signal_type}
                             </Badge>
-                            <div className={cn(
-                              "flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold",
-                              signal.confidence >= 80 
-                                ? 'bg-green-500/20 text-green-400' 
-                                : signal.confidence >= 60 
-                                ? 'bg-yellow-500/20 text-yellow-400' 
-                                : 'bg-orange-500/20 text-orange-400'
-                            )}>
-                              <Zap className="h-3 w-3" />
+                            <span className={cn("text-xs font-semibold", strength.color)}>
                               {strength.label} {signal.confidence.toFixed(0)}%
-                            </div>
+                            </span>
                           </div>
-                          <div className="flex items-center gap-6 text-xs">
-                            <div className="flex items-center gap-4 text-muted-foreground/80">
-                              <span>Entry: <span className="text-foreground font-semibold">{signal.entry_price.toFixed(5)}</span></span>
-                              <span>Current: <span className="text-foreground font-semibold">{signal.current_price.toFixed(5)}</span></span>
-                            </div>
-                            <div className={cn(
-                              "px-3 py-1 rounded-lg font-bold flex items-center gap-1",
-                              isProfit 
-                                ? 'bg-green-500/20 text-green-400' 
-                                : 'bg-red-500/20 text-red-400'
+                          <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                            <span>Entry: {signal.entry_price.toFixed(5)}</span>
+                            <span>Current: {signal.current_price.toFixed(5)}</span>
+                            <span className={cn(
+                              "font-semibold",
+                              isProfit ? 'text-green-500' : 'text-red-500'
                             )}>
-                              {isProfit ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                               {isProfit ? '+' : ''}{pnl.toFixed(3)}%
-                            </div>
+                            </span>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className={cn(
-                          "relative text-2xl font-bold",
-                          signal.expires_in < 10 
-                            ? 'text-red-400 animate-pulse' 
-                            : signal.expires_in < 30 
-                            ? 'text-yellow-400' 
-                            : 'text-foreground'
+                          "text-lg font-bold",
+                          signal.expires_in < 10 ? 'text-red-500 animate-pulse' : 'text-foreground'
                         )}>
                           {signal.expires_in}s
-                          {signal.expires_in < 10 && (
-                            <div className="absolute inset-0 blur-xl bg-red-500/40" />
-                          )}
                         </div>
-                        <div className="text-xs text-muted-foreground/60 uppercase tracking-wider">Expires</div>
+                        <div className="text-xs text-muted-foreground">expires</div>
                       </div>
                     </div>
                   </CardContent>
