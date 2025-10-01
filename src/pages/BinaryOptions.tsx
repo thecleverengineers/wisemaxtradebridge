@@ -255,10 +255,16 @@ export default function BinaryOptions() {
           </CardContent>
         </Card>
 
-        {/* Live Signals */}
+        {/* Live Trading Signals - Real-time Updates */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-foreground">Live Trading Signals</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-foreground">Live Trading Signals</h2>
+              <div className="flex items-center gap-1">
+                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-xs text-muted-foreground">LIVE</span>
+              </div>
+            </div>
             <Button 
               size="sm" 
               variant="outline"
@@ -269,15 +275,23 @@ export default function BinaryOptions() {
               {generatingSignals ? 'Generating...' : 'Refresh'}
             </Button>
           </div>
+          
+          {/* Real-time Signal Display */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {signals.map((signal) => (
-              <SignalCard key={signal.id} signal={signal} />
-            ))}
-            {signals.length === 0 && (
+            {signals.length > 0 ? (
+              signals.map((signal) => (
+                <SignalCard key={signal.id} signal={signal} />
+              ))
+            ) : (
               <Card className="col-span-full bg-card/50 backdrop-blur border-primary/20">
                 <CardContent className="p-6 text-center">
-                  <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">No active signals at the moment</p>
+                  <Activity className="h-12 w-12 text-primary/50 mx-auto mb-3 animate-pulse" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Waiting for Live Signals</h3>
+                  <p className="text-muted-foreground text-sm mb-4">New signals are generated automatically every 15 seconds</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Auto-refresh enabled</span>
+                  </div>
                   <Button 
                     className="mt-4"
                     variant="outline"
@@ -292,6 +306,14 @@ export default function BinaryOptions() {
               </Card>
             )}
           </div>
+          
+          {/* Signal Update Indicator */}
+          {signals.length > 0 && (
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              <span>Next update in 15 seconds</span>
+            </div>
+          )}
         </div>
 
         {/* Trading Interface */}
