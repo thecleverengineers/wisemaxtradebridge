@@ -11,9 +11,12 @@ import { LiveTradingSignals } from '@/components/binary/LiveTradingSignals';
 import { ActiveTrades } from '@/components/binary/ActiveTrades';
 import { TradeHistory } from '@/components/binary/TradeHistory';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { AppSidebar } from '@/components/layout/AppSidebar';
 
 export default function BinaryOptions() {
   const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [balance, setBalance] = useState(0);
   const [signals, setSignals] = useState<any[]>([]);
   const [activeTrades, setActiveTrades] = useState<any[]>([]);
@@ -154,47 +157,54 @@ export default function BinaryOptions() {
   }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-background"></div>
-      <div className="container max-w-7xl mx-auto px-4 py-6 relative z-10">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
-            Binary Options Trading
-          </h1>
-          <p className="text-muted-foreground mt-2">Trade Call/Put options with up to 80% returns</p>
-        </div>
+      
+      <AppHeader onMenuClick={() => setSidebarOpen(true)} />
+      <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="pt-20 pb-20 relative z-10">
+        <div className="container max-w-7xl mx-auto px-4 py-6">
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
+              Binary Options Trading
+            </h1>
+            <p className="text-muted-foreground mt-2">Trade Call/Put options with up to 80% returns</p>
+          </div>
 
-        {/* Balance Card */}
-        <Card className="mb-6 bg-card/50 backdrop-blur border-primary/20">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Available Balance</p>
-                <p className="text-3xl font-bold text-primary">${balance.toFixed(2)}</p>
+          {/* Balance Card */}
+          <Card className="mb-6 bg-card/50 backdrop-blur border-primary/20">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Available Balance</p>
+                  <p className="text-3xl font-bold text-primary">${balance.toFixed(2)}</p>
+                </div>
+                <Activity className="h-8 w-8 text-primary/50" />
               </div>
-              <Activity className="h-8 w-8 text-primary/50" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Live Trading Signals */}
-        <div className="mb-6">
-          <LiveTradingSignals />
+          {/* Live Trading Signals */}
+          <div className="mb-6">
+            <LiveTradingSignals />
+          </div>
+
+          {/* Trading Interface */}
+          <BinaryTradingInterface balance={balance} onTradePlace={() => {
+            fetchBalance();
+            fetchActiveTrades();
+          }} />
+
+          {/* Active Trades */}
+          <ActiveTrades trades={activeTrades} />
+
+          {/* Trade History */}
+          <TradeHistory trades={tradeHistory} />
         </div>
-
-        {/* Trading Interface */}
-        <BinaryTradingInterface balance={balance} onTradePlace={() => {
-          fetchBalance();
-          fetchActiveTrades();
-        }} />
-
-        {/* Active Trades */}
-        <ActiveTrades trades={activeTrades} />
-
-        {/* Trade History */}
-        <TradeHistory trades={tradeHistory} />
       </div>
+      
       <BottomNavigation />
     </div>
   );
