@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   Banknote
 } from 'lucide-react';
+import AdminOverview from '@/components/admin/AdminOverview';
 import ForexManagement from '@/components/admin/ForexManagement';
 import USDTStakingManagement from '@/components/admin/USDTStakingManagement';
 import BinaryManagement from '@/components/admin/BinaryManagement';
@@ -183,52 +184,6 @@ const AdminPanel = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
-};
-
-const AdminOverview = () => {
-  return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Users</CardTitle>
-          <CardDescription>Active platform users</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">1,234</div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Deposits</CardTitle>
-          <CardDescription>Lifetime deposits</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">$123,456</div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Active Investments</CardTitle>
-          <CardDescription>Current active investments</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">567</div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Withdrawals</CardTitle>
-          <CardDescription>Awaiting approval</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">23</div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
