@@ -21,6 +21,13 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
   const { isSuperAdmin } = useSuperAdmin();
 
   const menuItems = [
+    ...(isSuperAdmin ? [{ 
+      icon: Shield, 
+      label: 'Super Admin', 
+      path: '/superadmin', 
+      badge: 'SUPER ADMIN',
+      badgeColor: 'destructive' as const 
+    }] : []),
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
     { icon: BarChart3, label: 'Forex Trading', path: '/forex-trading' },
     { icon: DollarSign, label: 'USDT Staking', path: '/usdt-staking', badge: 'New' },
@@ -31,13 +38,6 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
     { icon: Award, label: 'Leaderboard', path: '/leaderboard' },
     { icon: Gift, label: 'Rewards', path: '/rewards' },
     { icon: TrendingUp, label: 'Investment Records', path: '/investment-records' },
-    ...(isSuperAdmin ? [{ 
-      icon: Shield, 
-      label: 'Super Admin', 
-      path: '/superadmin', 
-      badge: 'SUPER ADMIN',
-      badgeColor: 'destructive' as const 
-    }] : []),
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
