@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award, Shield, BarChart3, DollarSign, PiggyBank, Copy } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -14,9 +15,26 @@ interface AppSidebarProps {
 }
 
 export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
-  const { profile, isAdmin, signOut } = useAuth();
+  const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isSuperAdmin, setIsSuperAdmin] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkSuperAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'super_admin')
+          .single();
+        setIsSuperAdmin(!!data);
+      }
+    };
+    checkSuperAdmin();
+  }, []);
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
@@ -29,6 +47,13 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
     { icon: Award, label: 'Leaderboard', path: '/leaderboard' },
     { icon: Gift, label: 'Rewards', path: '/rewards' },
     { icon: TrendingUp, label: 'Investment Records', path: '/investment-records' },
+    ...(isSuperAdmin ? [{ 
+      icon: Shield, 
+      label: 'Super Admin', 
+      path: '/superadmin', 
+      badge: 'SUPER ADMIN',
+      badgeColor: 'destructive' as const 
+    }] : []),
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
@@ -90,12 +115,12 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
             <div className="flex-1 min-w-0">
               <h3 className="text-white font-semibold text-sm truncate">{profile?.name || 'User'}</h3>
               <div className="flex items-center space-x-2">
-                <p className="text-purple-300 text-xs">
-                  {isAdmin ? 'Admin' : 'Gold Member'}
-                </p>
-                {isAdmin && (
-                  <Badge className="bg-yellow-500 text-black text-xs px-1 py-0">
-                    Admin
+              <p className="text-purple-300 text-xs">
+                {isSuperAdmin ? 'Super Admin' : 'Gold Member'}
+              </p>
+              {isSuperAdmin && (
+                <Badge className="bg-red-500 text-white text-xs px-1 py-0">
+                  Super Admin
                   </Badge>
                 )}
               </div>
@@ -154,7 +179,12 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
                     <span className="font-medium text-sm truncate">{item.label}</span>
                   </div>
                   {item.badge && (
-                    <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-black">
+                    <span className={cn(
+                      "text-xs px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2",
+                      item.badgeColor === 'destructive' 
+                        ? "bg-red-500 text-white" 
+                        : "bg-gradient-to-r from-yellow-400 to-orange-500 text-black"
+                    )}>
                       {item.badge}
                     </span>
                   )}

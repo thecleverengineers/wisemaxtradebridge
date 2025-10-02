@@ -9,6 +9,7 @@ import { PrivateRoute } from "@/components/PrivateRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { Dashboard } from "./pages/Dashboard";
+import SuperAdminPanel from "./pages/superadmin/SuperAdminPanel";
 
 import Wallet from "./pages/Wallet";
 import Referrals from "./pages/Referrals";
@@ -84,6 +85,11 @@ const AppRoutes = () => {
       <Route path="/roi-investments" element={
         <PrivateRoute>
           <ROIInvestments />
+        </PrivateRoute>
+      } />
+      <Route path="/superadmin" element={
+        <PrivateRoute>
+          <SuperAdminPanel />
         </PrivateRoute>
       } />
       <Route path="/binary-options" element={
