@@ -21,6 +21,7 @@ import {
   Banknote
 } from 'lucide-react';
 import AdminOverview from '@/components/admin/AdminOverview';
+import PlatformActivityDashboard from '@/components/admin/PlatformActivityDashboard';
 import ForexManagement from '@/components/admin/ForexManagement';
 import USDTStakingManagement from '@/components/admin/USDTStakingManagement';
 import BinaryManagement from '@/components/admin/BinaryManagement';
@@ -63,6 +64,7 @@ const AdminPanel = () => {
 
   const managementSections = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'activity', label: 'Platform Activity', icon: BarChart3 },
     { id: 'wallets', label: 'Manage Wallets', icon: Banknote },
     { id: 'forex', label: 'Manage Forex', icon: TrendingUp },
     { id: 'staking', label: 'USDT Staking', icon: Wallet },
@@ -125,6 +127,10 @@ const AdminPanel = () => {
 
           <TabsContent value="overview" className="mt-6">
             <AdminOverview />
+          </TabsContent>
+
+          <TabsContent value="activity" className="mt-6">
+            <PlatformActivityDashboard />
           </TabsContent>
 
           <TabsContent value="wallets" className="mt-6">
