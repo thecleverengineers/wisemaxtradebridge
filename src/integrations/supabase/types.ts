@@ -451,6 +451,81 @@ export type Database = {
           },
         ]
       }
+      binary_records: {
+        Row: {
+          admin_forced_result: string | null
+          asset_pair: string
+          auto_trade: boolean | null
+          created_at: string | null
+          entry_price: number
+          exit_price: number | null
+          expiry_seconds: number
+          expiry_time: string
+          id: string
+          is_demo: boolean | null
+          market_indicators: Json | null
+          notes: string | null
+          payout_rate: number
+          profit_loss: number | null
+          settled_at: string | null
+          signal_id: string | null
+          signal_strength: string | null
+          stake_amount: number
+          status: string
+          trade_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          admin_forced_result?: string | null
+          asset_pair: string
+          auto_trade?: boolean | null
+          created_at?: string | null
+          entry_price: number
+          exit_price?: number | null
+          expiry_seconds: number
+          expiry_time: string
+          id?: string
+          is_demo?: boolean | null
+          market_indicators?: Json | null
+          notes?: string | null
+          payout_rate?: number
+          profit_loss?: number | null
+          settled_at?: string | null
+          signal_id?: string | null
+          signal_strength?: string | null
+          stake_amount: number
+          status?: string
+          trade_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          admin_forced_result?: string | null
+          asset_pair?: string
+          auto_trade?: boolean | null
+          created_at?: string | null
+          entry_price?: number
+          exit_price?: number | null
+          expiry_seconds?: number
+          expiry_time?: string
+          id?: string
+          is_demo?: boolean | null
+          market_indicators?: Json | null
+          notes?: string | null
+          payout_rate?: number
+          profit_loss?: number | null
+          settled_at?: string | null
+          signal_id?: string | null
+          signal_strength?: string | null
+          stake_amount?: number
+          status?: string
+          trade_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       binary_risk_settings: {
         Row: {
           cool_down_period_minutes: number | null
@@ -2854,6 +2929,33 @@ export type Database = {
       }
     }
     Views: {
+      binary_asset_performance: {
+        Row: {
+          asset_pair: string | null
+          avg_stake: number | null
+          losses: number | null
+          total_losses: number | null
+          total_profits: number | null
+          total_trades: number | null
+          wins: number | null
+        }
+        Relationships: []
+      }
+      user_binary_summary: {
+        Row: {
+          last_trade_date: string | null
+          losing_trades: number | null
+          pending_trades: number | null
+          total_losses: number | null
+          total_profits: number | null
+          total_staked: number | null
+          total_trades: number | null
+          user_id: string | null
+          win_rate: number | null
+          winning_trades: number | null
+        }
+        Relationships: []
+      }
       user_forex_summary: {
         Row: {
           avg_losing_trade: number | null

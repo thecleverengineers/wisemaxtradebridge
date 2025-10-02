@@ -1,4 +1,5 @@
 import React from 'react';
+import BinaryManagementRecords from './BinaryManagementRecords';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -10,6 +11,10 @@ import { Input } from '@/components/ui/input';
 const BinaryManagement = () => {
   return (
     <div className="space-y-6">
+      {/* Binary Trading Records Component */}
+      <BinaryManagementRecords />
+      
+      {/* Binary Options Settings */}
       <Card>
         <CardHeader>
           <CardTitle>Binary Options Settings</CardTitle>
@@ -44,10 +49,11 @@ const BinaryManagement = () => {
         </CardContent>
       </Card>
 
+      {/* Active Binary Trades (Legacy View) */}
       <Card>
         <CardHeader>
-          <CardTitle>Active Binary Trades</CardTitle>
-          <CardDescription>Monitor and manage live binary options trades</CardDescription>
+          <CardTitle>Quick Trade Control</CardTitle>
+          <CardDescription>Legacy view for quick trade management</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
