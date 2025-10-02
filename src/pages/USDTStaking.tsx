@@ -285,6 +285,23 @@ const USDTStaking = () => {
 
       if (positionError) throw positionError;
 
+      // Create record in usdtstaking_records table
+      const { error: recordError } = await supabase
+        .from('usdtstaking_records')
+        .insert({
+          user_id: user?.id,
+          plan_name: currentPlan.name,
+          plan_type: currentPlan.type,
+          amount,
+          apy: currentPlan.apy,
+          duration_days: currentPlan.duration_days,
+          maturity_date: endDate,
+          auto_renew: currentPlan.type === 'locked' ? autoRenew : false,
+          status: 'active'
+        });
+
+      if (recordError) throw recordError;
+
       // Update wallet balance
       const { error: walletError } = await supabase
         .from('wallets')
@@ -339,6 +356,16 @@ const USDTStaking = () => {
     }
 
     try {
+      const isEarlyWithdrawal = position.type === 'locked' && 
+        position.end_date && new Date(position.end_date) > new Date();
+      
+      // Return amount to wallet (without earnings if early withdrawal)
+      const returnAmount = !isEarlyWithdrawal
+        ? position.amount + position.total_earned
+        : position.amount;
+      
+      const penaltyAmount = isEarlyWithdrawal ? position.total_earned : 0;
+
       // Update position status
       const { error: positionError } = await supabase
         .from('staking_positions')
@@ -347,12 +374,25 @@ const USDTStaking = () => {
 
       if (positionError) throw positionError;
 
-      // Return amount to wallet (without earnings if early withdrawal)
-      const returnAmount = position.type === 'flexible' || 
-        (position.end_date && new Date(position.end_date) <= new Date())
-        ? position.amount + position.total_earned
-        : position.amount;
+      // Update usdtstaking_records
+      const { error: recordError } = await supabase
+        .from('usdtstaking_records')
+        .update({ 
+          status: 'withdrawn',
+          withdrawn_amount: returnAmount,
+          withdrawn_at: new Date().toISOString(),
+          early_withdrawal: isEarlyWithdrawal,
+          penalty_amount: penaltyAmount
+        })
+        .eq('user_id', user?.id)
+        .eq('amount', position.amount)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1);
 
+      if (recordError) throw recordError;
+
+      // Update wallet balance
       const { error: walletError } = await supabase
         .from('wallets')
         .update({ 
@@ -374,14 +414,14 @@ const USDTStaking = () => {
           currency: 'USDT',
           amount: returnAmount,
           status: 'completed',
-          notes: `Withdrawn from ${position.staking_plans?.name || 'staking'}`
+          notes: `Withdrawn from ${position.staking_plans?.name || 'staking'}${isEarlyWithdrawal ? ' (Early withdrawal - forfeited interest)' : ''}`
         });
 
       if (txError) throw txError;
 
       toast({
         title: "Withdrawal Successful",
-        description: `Successfully withdrawn ${returnAmount.toFixed(2)} USDT`,
+        description: `Successfully withdrawn ${returnAmount.toFixed(2)} USDT${isEarlyWithdrawal ? ' (Early withdrawal - interest forfeited)' : ''}`,
       });
       
       fetchData();
