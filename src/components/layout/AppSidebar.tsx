@@ -1,13 +1,13 @@
 
 import React from 'react';
 import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award, Shield, BarChart3, DollarSign, PiggyBank, Copy } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { useSuperAdmin } from '@/hooks/useSuperAdmin';
 
 interface AppSidebarProps {
   isOpen: boolean;
@@ -18,23 +18,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isSuperAdmin, setIsSuperAdmin] = React.useState(false);
-
-  React.useEffect(() => {
-    const checkSuperAdmin = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'super_admin')
-          .single();
-        setIsSuperAdmin(!!data);
-      }
-    };
-    checkSuperAdmin();
-  }, []);
+  const { isSuperAdmin } = useSuperAdmin();
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
