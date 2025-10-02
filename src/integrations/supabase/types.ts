@@ -1004,6 +1004,87 @@ export type Database = {
           },
         ]
       }
+      forex_records: {
+        Row: {
+          auto_close: boolean | null
+          close_reason: string | null
+          closed_at: string | null
+          closed_price: number | null
+          commission: number | null
+          created_at: string | null
+          current_price: number | null
+          entry_price: number
+          id: string
+          leverage: number | null
+          margin_used: number
+          notes: string | null
+          order_type: string
+          pair_symbol: string
+          position_type: string
+          profit_loss: number | null
+          profit_loss_percent: number | null
+          status: string
+          stop_loss: number | null
+          swap_fee: number | null
+          take_profit: number | null
+          updated_at: string | null
+          user_id: string
+          volume: number
+        }
+        Insert: {
+          auto_close?: boolean | null
+          close_reason?: string | null
+          closed_at?: string | null
+          closed_price?: number | null
+          commission?: number | null
+          created_at?: string | null
+          current_price?: number | null
+          entry_price: number
+          id?: string
+          leverage?: number | null
+          margin_used: number
+          notes?: string | null
+          order_type: string
+          pair_symbol: string
+          position_type: string
+          profit_loss?: number | null
+          profit_loss_percent?: number | null
+          status?: string
+          stop_loss?: number | null
+          swap_fee?: number | null
+          take_profit?: number | null
+          updated_at?: string | null
+          user_id: string
+          volume: number
+        }
+        Update: {
+          auto_close?: boolean | null
+          close_reason?: string | null
+          closed_at?: string | null
+          closed_price?: number | null
+          commission?: number | null
+          created_at?: string | null
+          current_price?: number | null
+          entry_price?: number
+          id?: string
+          leverage?: number | null
+          margin_used?: number
+          notes?: string | null
+          order_type?: string
+          pair_symbol?: string
+          position_type?: string
+          profit_loss?: number | null
+          profit_loss_percent?: number | null
+          status?: string
+          stop_loss?: number | null
+          swap_fee?: number | null
+          take_profit?: number | null
+          updated_at?: string | null
+          user_id?: string
+          volume?: number
+        }
+        Relationships: []
+      }
       forex_signals: {
         Row: {
           accuracy_rate: number | null
@@ -2773,6 +2854,22 @@ export type Database = {
       }
     }
     Views: {
+      user_forex_summary: {
+        Row: {
+          avg_losing_trade: number | null
+          avg_winning_trade: number | null
+          closed_positions: number | null
+          losing_trades: number | null
+          open_positions: number | null
+          total_margin_used: number | null
+          total_realized_pnl: number | null
+          total_trades: number | null
+          total_unrealized_pnl: number | null
+          user_id: string | null
+          winning_trades: number | null
+        }
+        Relationships: []
+      }
       user_staking_summary: {
         Row: {
           flexible_amount: number | null

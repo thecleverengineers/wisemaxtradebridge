@@ -1,4 +1,5 @@
 import React from 'react';
+import ForexManagementRecords from './ForexManagementRecords';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -8,6 +9,10 @@ import { Edit, Trash2, Plus } from 'lucide-react';
 const ForexManagement = () => {
   return (
     <div className="space-y-6">
+      {/* Forex Trading Records Component */}
+      <ForexManagementRecords />
+      
+      {/* Existing Forex Pairs Management */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
