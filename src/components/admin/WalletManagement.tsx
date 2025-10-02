@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Copy, Edit, Plus, Save, Wallet } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import WalletManagementRecords from './WalletManagementRecords';
 
 const WalletManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -86,6 +87,10 @@ const WalletManagement = () => {
 
   return (
     <div className="space-y-6">
+      {/* Wallet Transaction Records Component */}
+      <WalletManagementRecords />
+      
+      {/* Wallet Address Management */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">

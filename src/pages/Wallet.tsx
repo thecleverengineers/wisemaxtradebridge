@@ -163,6 +163,8 @@ const Wallet = () => {
 
     setWithdrawing(true);
     try {
+      const amount = parseFloat(withdrawAmount);
+      
       // Create withdrawal transaction
       const { error: txError } = await supabase
         .from('transactions')
@@ -171,7 +173,7 @@ const Wallet = () => {
           type: 'withdrawal',
           category: 'withdrawal',
           currency: 'USDT',
-          amount: parseFloat(withdrawAmount),
+          amount: amount,
           status: 'pending',
           to_address: withdrawAddress,
           network: 'BEP20',
@@ -180,6 +182,27 @@ const Wallet = () => {
         }]);
 
       if (txError) throw txError;
+
+      // Create record in transactions_records table
+      const { error: recordError } = await supabase
+        .from('transactions_records')
+        .insert({
+          user_id: user?.id,
+          order_type: 'withdraw',
+          amount: amount,
+          currency: 'USDT',
+          wallet_address: withdrawAddress,
+          network: 'BEP20',
+          status: 'pending',
+          payment_method: 'USDT BEP20',
+          fee: amount * 0.02, // 2% withdrawal fee example
+          metadata: {
+            requested_at: new Date().toISOString(),
+            withdrawal_address: withdrawAddress
+          }
+        });
+
+      if (recordError) throw recordError;
 
       // Update wallet balance
       const { data: walletData, error: walletError } = await supabase
@@ -193,7 +216,8 @@ const Wallet = () => {
         const { error: updateError } = await supabase
           .from('wallets')
           .update({
-            balance: walletData.balance - parseFloat(withdrawAmount)
+            balance: walletData.balance - amount,
+            locked_balance: (walletData.locked_balance || 0) + amount
           })
           .eq('id', walletData.id);
 
@@ -241,6 +265,8 @@ const Wallet = () => {
 
     setDepositing(true);
     try {
+      const amount = parseFloat(depositAmount);
+      
       // Create deposit transaction
       const { error } = await supabase
         .from('transactions')
@@ -249,7 +275,7 @@ const Wallet = () => {
           type: 'deposit',
           category: 'deposit',
           currency: 'USDT',
-          amount: parseFloat(depositAmount),
+          amount: amount,
           status: 'pending',
           from_address: ADMIN_USDT_ADDRESS,
           network: 'BEP20',
@@ -259,6 +285,29 @@ const Wallet = () => {
         }]);
 
       if (error) throw error;
+
+      // Create record in transactions_records table
+      const { error: recordError } = await supabase
+        .from('transactions_records')
+        .insert({
+          user_id: user?.id,
+          order_type: 'deposit',
+          amount: amount,
+          currency: 'USDT',
+          wallet_address: ADMIN_USDT_ADDRESS,
+          transaction_hash: depositTransactionId,
+          network: 'BEP20',
+          status: 'pending',
+          payment_method: 'USDT BEP20',
+          fee: 0, // No fee for deposits
+          metadata: {
+            deposited_at: new Date().toISOString(),
+            transaction_id: depositTransactionId,
+            deposit_address: ADMIN_USDT_ADDRESS
+          }
+        });
+
+      if (recordError) throw recordError;
 
       toast({
         title: "Deposit Request Submitted",

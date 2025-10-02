@@ -2389,6 +2389,81 @@ export type Database = {
         }
         Relationships: []
       }
+      transactions_records: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          completed_at: string | null
+          created_at: string | null
+          currency: string
+          fee: number | null
+          id: string
+          metadata: Json | null
+          net_amount: number | null
+          network: string | null
+          new_balance: number | null
+          order_type: string
+          payment_method: string | null
+          previous_balance: number | null
+          processed_at: string | null
+          rejected_at: string | null
+          rejection_reason: string | null
+          status: string
+          transaction_hash: string | null
+          updated_at: string | null
+          user_id: string
+          wallet_address: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string
+          fee?: number | null
+          id?: string
+          metadata?: Json | null
+          net_amount?: number | null
+          network?: string | null
+          new_balance?: number | null
+          order_type: string
+          payment_method?: string | null
+          previous_balance?: number | null
+          processed_at?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          status?: string
+          transaction_hash?: string | null
+          updated_at?: string | null
+          user_id: string
+          wallet_address?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string
+          fee?: number | null
+          id?: string
+          metadata?: Json | null
+          net_amount?: number | null
+          network?: string | null
+          new_balance?: number | null
+          order_type?: string
+          payment_method?: string | null
+          previous_balance?: number | null
+          processed_at?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          status?: string
+          transaction_hash?: string | null
+          updated_at?: string | null
+          user_id?: string
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
       usdtstaking_records: {
         Row: {
           amount: number
@@ -2981,6 +3056,22 @@ export type Database = {
           total_active_earnings: number | null
           total_all_time_earnings: number | null
           total_stakes: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      user_transaction_summary: {
+        Row: {
+          completed_transactions: number | null
+          last_transaction_date: string | null
+          pending_transactions: number | null
+          rejected_transactions: number | null
+          total_deposited: number | null
+          total_deposits: number | null
+          total_fees_paid: number | null
+          total_transactions: number | null
+          total_withdrawals: number | null
+          total_withdrawn: number | null
           user_id: string | null
         }
         Relationships: []
