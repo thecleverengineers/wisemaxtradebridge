@@ -21,6 +21,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
   const { isSuperAdmin } = useSuperAdmin();
 
   const menuItems = [
+    { icon: Home, label: 'Dashboard', path: '/dashboard' },
     ...(isSuperAdmin ? [{ 
       icon: Shield, 
       label: 'Super Admin', 
@@ -28,7 +29,6 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
       badge: 'SUPER ADMIN',
       badgeColor: 'destructive' as const 
     }] : []),
-    { icon: Home, label: 'Dashboard', path: '/dashboard' },
     { icon: BarChart3, label: 'Forex Trading', path: '/forex-trading' },
     { icon: DollarSign, label: 'USDT Staking', path: '/usdt-staking', badge: 'New' },
     { icon: PiggyBank, label: 'ROI Investments', path: '/roi-investments', badge: 'HOT' },
