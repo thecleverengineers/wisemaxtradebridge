@@ -5,15 +5,13 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
-import { useSuperAdmin } from '@/hooks/useSuperAdmin';
 
 interface AppHeaderProps {
   onMenuClick: () => void;
 }
 
 export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
-  const { user, profile, isAdmin, signOut } = useAuth();
-  const { isSuperAdmin } = useSuperAdmin();
+  const { user, profile, isAdmin, isSuperAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   
   const handleSignOut = async () => {

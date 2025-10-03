@@ -22,6 +22,7 @@ interface AuthContextType {
   session: Session | null;
   profile: UserProfile | null;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   loading: boolean;
   signUp: (email: string, password: string, name: string, phone?: string, referralCode?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -44,6 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -83,6 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             total_roi_earned: userProfile.total_roi_earned || 0,
             total_referral_earned: userProfile.total_referral_earned || 0
           });
+          setIsSuperAdmin(userRole?.role === 'super_admin');
           setIsAdmin(userRole?.role === 'admin' || userRole?.role === 'super_admin');
         }
         return;
@@ -103,6 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           total_roi_earned: profile.total_roi_earned || 0,
           total_referral_earned: profile.total_referral_earned || 0
         });
+        setIsSuperAdmin(profile.role === 'super_admin');
         setIsAdmin(profile.role === 'admin' || profile.role === 'super_admin');
       }
     } catch (error) {
@@ -134,6 +138,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } else {
           setProfile(null);
           setIsAdmin(false);
+          setIsSuperAdmin(false);
         }
       }
     );
@@ -267,6 +272,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setProfile(null);
       setIsAdmin(false);
+      setIsSuperAdmin(false);
       
       toast({
         title: "Signed out successfully",
@@ -290,6 +296,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     session,
     profile,
     isAdmin,
+    isSuperAdmin,
     loading,
     signUp,
     signIn,
