@@ -119,7 +119,7 @@ const AppSettings = () => {
               <Input
                 id="supportLink"
                 type="url"
-                placeholder="https://t.me/yoursupport"
+                placeholder="https://t.me/+3esl2Tswpc1mZGRk"
                 value={supportLink}
                 onChange={(e) => setSupportLink(e.target.value)}
                 className="flex-1"
