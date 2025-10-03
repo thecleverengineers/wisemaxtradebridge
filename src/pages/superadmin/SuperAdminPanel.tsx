@@ -10,6 +10,7 @@ import ActivityLog from '@/components/superadmin/ActivityLog';
 import AppSettings from '@/components/superadmin/AppSettings';
 import BinaryRecordsManagement from '@/components/superadmin/BinaryRecordsManagement';
 import ROIInvestmentManagement from '@/components/superadmin/ROIInvestmentManagement';
+import USDTStakingManagement from '@/components/superadmin/USDTStakingManagement';
 import InvestmentPlansManagement from '@/components/superadmin/InvestmentPlansManagement';
 import { AdminSidebar } from '@/components/superadmin/AdminSidebar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -63,6 +64,8 @@ const SuperAdminPanel = () => {
         return <BinaryRecordsManagement />;
       case 'roi':
         return <ROIInvestmentManagement />;
+      case 'usdt':
+        return <USDTStakingManagement />;
       case 'plans':
         return <InvestmentPlansManagement />;
       case 'activity':
