@@ -12,6 +12,7 @@ import BinaryRecordsManagement from '@/components/superadmin/BinaryRecordsManage
 import ROIInvestmentManagement from '@/components/superadmin/ROIInvestmentManagement';
 import USDTStakingManagement from '@/components/superadmin/USDTStakingManagement';
 import InvestmentPlansManagement from '@/components/superadmin/InvestmentPlansManagement';
+import StakingPlansManagement from '@/components/superadmin/StakingPlansManagement';
 import { AdminSidebar } from '@/components/superadmin/AdminSidebar';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -68,6 +69,8 @@ const SuperAdminPanel = () => {
         return <USDTStakingManagement />;
       case 'plans':
         return <InvestmentPlansManagement />;
+      case 'staking-plans':
+        return <StakingPlansManagement />;
       case 'activity':
         return <ActivityLog />;
       case 'settings':
