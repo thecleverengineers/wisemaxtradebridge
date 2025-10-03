@@ -8,11 +8,11 @@ import UserManagement from '@/components/superadmin/UserManagement';
 import SystemOverview from '@/components/superadmin/SystemOverview';
 import RoleManagement from '@/components/superadmin/RoleManagement';
 import ActivityLog from '@/components/superadmin/ActivityLog';
-import { useSuperAdmin } from '@/hooks/useSuperAdmin';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SuperAdminPanel = () => {
   const navigate = useNavigate();
-  const { isSuperAdmin, loading } = useSuperAdmin();
+  const { isSuperAdmin, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
 
   if (loading) {
