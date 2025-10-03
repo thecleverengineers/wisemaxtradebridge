@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, Users, Lock, Database, Settings, ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
+import { Activity, Users, Lock, Database, Settings, ChevronLeft, ChevronRight, TrendingUp, PiggyBank } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +15,7 @@ const sections = [
   { id: 'users', label: 'User Management', icon: Users },
   { id: 'roles', label: 'Role Management', icon: Lock },
   { id: 'binary', label: 'Binary Records', icon: TrendingUp },
+  { id: 'roi', label: 'ROI Investments', icon: PiggyBank },
   { id: 'activity', label: 'Activity Log', icon: Database },
   { id: 'settings', label: 'App Settings', icon: Settings },
 ];
