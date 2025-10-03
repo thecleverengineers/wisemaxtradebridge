@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { AppSidebar } from '@/components/layout/AppSidebar';
+import { DepositDialog } from '@/components/wallet/DepositDialog';
 
 interface WalletData {
   total_balance: number;
@@ -65,14 +66,7 @@ const Wallet = () => {
   const [withdrawAddress, setWithdrawAddress] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
 
-  // Deposit form
-  const [depositAmount, setDepositAmount] = useState('');
-  const [depositTransactionId, setDepositTransactionId] = useState('');
-  const [depositing, setDepositing] = useState(false);
   const [copied, setCopied] = useState(false);
-  
-  // Admin USDT wallet address for deposits
-  const ADMIN_USDT_ADDRESS = '0x1234567890abcdef1234567890abcdef12345678'; // BEP20 address
 
   useEffect(() => {
     if (user) {
@@ -244,100 +238,6 @@ const Wallet = () => {
     }
   };
 
-  const handleDeposit = async () => {
-    if (!depositAmount || parseFloat(depositAmount) <= 0) {
-      toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid deposit amount",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!depositTransactionId) {
-      toast({
-        title: "Missing Transaction ID",
-        description: "Please enter your USDT transaction ID",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setDepositing(true);
-    try {
-      const amount = parseFloat(depositAmount);
-      
-      // Create deposit transaction
-      const { error } = await supabase
-        .from('transactions')
-        .insert([{
-          user_id: user?.id,
-          type: 'deposit',
-          category: 'deposit',
-          currency: 'USDT',
-          amount: amount,
-          status: 'pending',
-          from_address: ADMIN_USDT_ADDRESS,
-          network: 'BEP20',
-          tx_hash: depositTransactionId,
-          notes: `USDT deposit - TxID: ${depositTransactionId}`,
-          created_at: new Date().toISOString()
-        }]);
-
-      if (error) throw error;
-
-      // Create record in transactions_records table
-      const { error: recordError } = await supabase
-        .from('transactions_records')
-        .insert({
-          user_id: user?.id,
-          order_type: 'deposit',
-          amount: amount,
-          currency: 'USDT',
-          wallet_address: ADMIN_USDT_ADDRESS,
-          transaction_hash: depositTransactionId,
-          network: 'BEP20',
-          status: 'pending',
-          payment_method: 'USDT BEP20',
-          fee: 0, // No fee for deposits
-          metadata: {
-            deposited_at: new Date().toISOString(),
-            transaction_id: depositTransactionId,
-            deposit_address: ADMIN_USDT_ADDRESS
-          }
-        });
-
-      if (recordError) throw recordError;
-
-      toast({
-        title: "Deposit Request Submitted",
-        description: "Your deposit is pending admin approval",
-      });
-
-      setDepositAmount('');
-      setDepositTransactionId('');
-      fetchWalletData();
-    } catch (error) {
-      console.error('Error submitting deposit:', error);
-      toast({
-        title: "Deposit Failed",
-        description: "Failed to submit deposit request. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setDepositing(false);
-    }
-  };
-
-  const copyAddress = () => {
-    navigator.clipboard.writeText(ADMIN_USDT_ADDRESS);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast({
-      title: "Address Copied",
-      description: "USDT BEP20 address copied to clipboard",
-    });
-  };
 
   const getTransactionIcon = (type: string) => {
     return type === 'deposit' || type === 'roi' || type === 'referral' ? ArrowDownLeft : ArrowUpRight;
@@ -434,86 +334,10 @@ const Wallet = () => {
 
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-4">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="h-16 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
-                  <ArrowDownLeft className="h-6 w-6 mr-2" />
-                  Deposit USDT
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-slate-800 border-white/10">
-                <DialogHeader>
-                  <DialogTitle className="text-white">Deposit USDT (BEP20)</DialogTitle>
-                  <DialogDescription className="text-purple-300">
-                    Send USDT to the address below and enter transaction details
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Alert className="bg-blue-500/10 border-blue-500/20">
-                    <AlertCircle className="h-4 w-4 text-blue-400" />
-                    <AlertDescription className="text-blue-300">
-                      Send USDT only on BEP20 network. Sending on wrong network may result in loss of funds.
-                    </AlertDescription>
-                  </Alert>
-
-                  <div>
-                    <Label htmlFor="admin-address" className="text-white">USDT BEP20 Address</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="admin-address"
-                        value={ADMIN_USDT_ADDRESS}
-                        readOnly
-                        className="bg-white/5 border-white/10 text-white font-mono text-sm"
-                      />
-                      <Button
-                        onClick={copyAddress}
-                        variant="outline"
-                        size="icon"
-                        className="bg-white/5 border-white/10 hover:bg-white/10"
-                      >
-                        {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4 text-white" />}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="deposit-amount" className="text-white">Amount (USDT)</Label>
-                    <Input
-                      id="deposit-amount"
-                      type="number"
-                      step="0.01"
-                      placeholder="Enter amount to deposit"
-                      value={depositAmount}
-                      onChange={(e) => setDepositAmount(e.target.value)}
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="transaction-id" className="text-white">Transaction ID</Label>
-                    <Input
-                      id="transaction-id"
-                      type="text"
-                      placeholder="Enter transaction ID after payment"
-                      value={depositTransactionId}
-                      onChange={(e) => setDepositTransactionId(e.target.value)}
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                    <p className="text-purple-300 text-sm mt-1">
-                      Enter the transaction hash after sending USDT
-                    </p>
-                  </div>
-
-                  <Button 
-                    onClick={handleDeposit}
-                    disabled={depositing || !depositAmount || !depositTransactionId}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                  >
-                    {depositing ? 'Submitting...' : 'Submit Deposit Request'}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <DepositDialog 
+              userId={user?.id || ''} 
+              onDepositCreated={fetchWalletData}
+            />
 
             <Dialog>
               <DialogTrigger asChild>
