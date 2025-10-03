@@ -8,6 +8,7 @@ import SystemOverview from '@/components/superadmin/SystemOverview';
 import RoleManagement from '@/components/superadmin/RoleManagement';
 import ActivityLog from '@/components/superadmin/ActivityLog';
 import AppSettings from '@/components/superadmin/AppSettings';
+import BinaryRecordsManagement from '@/components/superadmin/BinaryRecordsManagement';
 import { AdminSidebar } from '@/components/superadmin/AdminSidebar';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -56,6 +57,8 @@ const SuperAdminPanel = () => {
         return <UserManagement />;
       case 'roles':
         return <RoleManagement />;
+      case 'binary':
+        return <BinaryRecordsManagement />;
       case 'activity':
         return <ActivityLog />;
       case 'settings':
