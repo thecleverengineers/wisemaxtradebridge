@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, ChevronLeft, Activity, Database, Lock, Settings } from 'lucide-react';
+import { Shield, ChevronLeft } from 'lucide-react';
 import UserManagement from '@/components/superadmin/UserManagement';
 import SystemOverview from '@/components/superadmin/SystemOverview';
 import RoleManagement from '@/components/superadmin/RoleManagement';
 import ActivityLog from '@/components/superadmin/ActivityLog';
 import AppSettings from '@/components/superadmin/AppSettings';
+import { AdminSidebar } from '@/components/superadmin/AdminSidebar';
 import { useAuth } from '@/contexts/AuthContext';
 
 const SuperAdminPanel = () => {
   const navigate = useNavigate();
   const { isSuperAdmin, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeSection, setActiveSection] = useState('overview');
 
   if (loading) {
     return (
@@ -47,65 +47,55 @@ const SuperAdminPanel = () => {
     );
   }
 
-  const sections = [
-    { id: 'overview', label: 'Overview', icon: Activity },
-    { id: 'users', label: 'User Management', icon: Users },
-    { id: 'roles', label: 'Role Management', icon: Lock },
-    { id: 'activity', label: 'Activity Log', icon: Database },
-    { id: 'settings', label: 'App Settings', icon: Settings },
-  ];
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'overview':
+        return <SystemOverview />;
+      case 'users':
+        return <UserManagement />;
+      case 'roles':
+        return <RoleManagement />;
+      case 'activity':
+        return <ActivityLog />;
+      case 'settings':
+        return <AppSettings />;
+      default:
+        return <SystemOverview />;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-4">
-        <div className="flex items-center gap-4 mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate('/dashboard')}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <Shield className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Super Admin Panel</h1>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <div className="border-b border-border bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => navigate('/dashboard')}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <Shield className="h-8 w-8 text-primary" />
+              <h1 className="text-3xl font-bold">Super Admin Panel</h1>
+            </div>
           </div>
         </div>
+      </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-5 gap-2 h-auto">
-            {sections.map((section) => (
-              <TabsTrigger 
-                key={section.id} 
-                value={section.id}
-                className="flex flex-col gap-1 h-auto py-2"
-              >
-                <section.icon className="h-4 w-4" />
-                <span className="text-xs">{section.label}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          <TabsContent value="overview" className="mt-6">
-            <SystemOverview />
-          </TabsContent>
-
-          <TabsContent value="users" className="mt-6">
-            <UserManagement />
-          </TabsContent>
-
-          <TabsContent value="roles" className="mt-6">
-            <RoleManagement />
-          </TabsContent>
-
-          <TabsContent value="activity" className="mt-6">
-            <ActivityLog />
-          </TabsContent>
-
-          <TabsContent value="settings" className="mt-6">
-            <AppSettings />
-          </TabsContent>
-        </Tabs>
+      {/* Main Content with Sidebar */}
+      <div className="flex flex-1">
+        <AdminSidebar 
+          activeSection={activeSection} 
+          onSectionChange={setActiveSection} 
+        />
+        <main className="flex-1 overflow-auto">
+          <div className="container mx-auto p-6">
+            {renderContent()}
+          </div>
+        </main>
       </div>
     </div>
   );
