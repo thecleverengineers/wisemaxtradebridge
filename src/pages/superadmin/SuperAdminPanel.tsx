@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, ChevronLeft, Activity, Database, Lock } from 'lucide-react';
+import { Shield, Users, ChevronLeft, Activity, Database, Lock, Wallet } from 'lucide-react';
 import UserManagement from '@/components/superadmin/UserManagement';
 import SystemOverview from '@/components/superadmin/SystemOverview';
 import RoleManagement from '@/components/superadmin/RoleManagement';
 import ActivityLog from '@/components/superadmin/ActivityLog';
+import DepositManagement from '@/components/superadmin/DepositManagement';
 import { useAuth } from '@/contexts/AuthContext';
 
 const SuperAdminPanel = () => {
@@ -49,6 +50,7 @@ const SuperAdminPanel = () => {
   const sections = [
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'users', label: 'User Management', icon: Users },
+    { id: 'deposits', label: 'Deposits', icon: Wallet },
     { id: 'roles', label: 'Role Management', icon: Lock },
     { id: 'activity', label: 'Activity Log', icon: Database },
   ];
@@ -71,7 +73,7 @@ const SuperAdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 gap-2 h-auto">
+          <TabsList className="grid grid-cols-5 gap-2 h-auto">
             {sections.map((section) => (
               <TabsTrigger 
                 key={section.id} 
@@ -90,6 +92,10 @@ const SuperAdminPanel = () => {
 
           <TabsContent value="users" className="mt-6">
             <UserManagement />
+          </TabsContent>
+
+          <TabsContent value="deposits" className="mt-6">
+            <DepositManagement />
           </TabsContent>
 
           <TabsContent value="roles" className="mt-6">
