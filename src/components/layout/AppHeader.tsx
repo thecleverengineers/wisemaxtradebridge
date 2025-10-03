@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { useSuperAdmin } from '@/hooks/useSuperAdmin';
 
 interface AppHeaderProps {
   onMenuClick: () => void;
@@ -12,6 +13,7 @@ interface AppHeaderProps {
 
 export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
   const { user, profile, isAdmin, signOut } = useAuth();
+  const { isSuperAdmin } = useSuperAdmin();
   const navigate = useNavigate();
   
   const handleSignOut = async () => {
@@ -37,11 +39,18 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
             </div>
             <div>
               <span className="text-white font-bold text-lg">LakToken</span>
-              {isAdmin && (
+              {isSuperAdmin ? (
+                <Badge 
+                  className="ml-2 bg-purple-600 text-white text-xs cursor-pointer hover:bg-purple-700 transition-colors"
+                  onClick={() => navigate('/superadmin')}
+                >
+                  Super Admin
+                </Badge>
+              ) : isAdmin ? (
                 <Badge className="ml-2 bg-yellow-500 text-black text-xs">
                   Admin
                 </Badge>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
