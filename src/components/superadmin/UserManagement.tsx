@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Search, RefreshCw, Edit, UserCheck, UserX, Wallet, TrendingUp } from 'lucide-react';
+import { Search, RefreshCw, Edit, UserCheck, UserX, Wallet, TrendingUp, KeyRound } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -42,6 +42,9 @@ const UserManagement = () => {
   const [showWalletDialog, setShowWalletDialog] = useState(false);
   const [walletAmount, setWalletAmount] = useState('');
   const [walletAction, setWalletAction] = useState<'add' | 'deduct'>('add');
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -272,6 +275,65 @@ const UserManagement = () => {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!editingUser) return;
+
+    if (!newPassword || !confirmPassword) {
+      toast({
+        title: 'Error',
+        description: 'Please fill in both password fields',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: 'Error',
+        description: 'Passwords do not match',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: 'Error',
+        description: 'Password must be at least 6 characters long',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('reset-user-password', {
+        body: {
+          userId: editingUser.id,
+          newPassword: newPassword,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Password has been reset successfully',
+      });
+
+      setShowPasswordDialog(false);
+      setNewPassword('');
+      setConfirmPassword('');
+      setEditingUser(null);
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to reset password',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -388,6 +450,16 @@ const UserManagement = () => {
                           }}
                         >
                           <Wallet className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setEditingUser(user);
+                            setShowPasswordDialog(true);
+                          }}
+                        >
+                          <KeyRound className="h-4 w-4" />
                         </Button>
                         <Button
                           size="sm"
@@ -509,6 +581,52 @@ const UserManagement = () => {
             </Button>
             <Button onClick={handleWalletAction}>
               {walletAction === 'add' ? 'Add Funds' : 'Deduct Funds'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset User Password</DialogTitle>
+            <DialogDescription>
+              Set a new password for {editingUser?.email}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>New Password</Label>
+              <Input
+                type="password"
+                placeholder="Enter new password (min 6 characters)"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                minLength={6}
+              />
+            </div>
+            <div>
+              <Label>Confirm Password</Label>
+              <Input
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                minLength={6}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowPasswordDialog(false);
+              setNewPassword('');
+              setConfirmPassword('');
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleResetPassword}>
+              Reset Password
             </Button>
           </DialogFooter>
         </DialogContent>

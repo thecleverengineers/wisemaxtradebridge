@@ -1,1 +1,4 @@
-project_id = "yfdzckmpkkcdzaekogkn"
+project_id = "verauoklhuanklwsuwrr"
+
+[functions.reset-user-password]
+verify_jwt = true
