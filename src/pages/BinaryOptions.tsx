@@ -59,7 +59,7 @@ export default function BinaryOptions() {
     if (!user) return;
 
     const { data, error } = await supabase
-      .from('binary_options_trades')
+      .from('binary_records')
       .select('*')
       .eq('user_id', user.id)
       .eq('status', 'pending')
@@ -75,7 +75,7 @@ export default function BinaryOptions() {
     if (!user) return;
 
     const { data, error } = await supabase
-      .from('binary_options_trades')
+      .from('binary_records')
       .select('*')
       .eq('user_id', user.id)
       .in('status', ['won', 'lost'])
@@ -87,21 +87,52 @@ export default function BinaryOptions() {
     }
   };
 
-  // Auto-settle expired trades
+  // Auto-settle expired trades (frontend-only)
   const settleExpiredTrades = async () => {
+    if (!user) return;
+
     try {
-      const { data, error } = await supabase.functions.invoke('settle-expired-trades');
-      if (error) {
-        console.error('Error settling trades:', error);
-      } else if (data?.settled > 0) {
-        console.log(`Auto-settled ${data.settled} expired trades`);
-        // Refresh active trades and history
-        fetchActiveTrades();
-        fetchTradeHistory();
-        fetchBalance();
+      // Query expired pending trades
+      const { data: expiredTrades, error: fetchError } = await supabase
+        .from('binary_records')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'pending')
+        .lte('expiry_time', new Date().toISOString());
+
+      if (fetchError) {
+        console.error('Error fetching expired trades:', fetchError);
+        return;
+      }
+
+      if (!expiredTrades || expiredTrades.length === 0) {
+        return;
+      }
+
+      console.log(`Found ${expiredTrades.length} expired trades to settle`);
+
+      // Settle each expired trade
+      for (const trade of expiredTrades) {
+        // Simulate price movement (±0.5% random)
+        const priceMovement = (Math.random() - 0.5) * 0.01;
+        const exitPrice = trade.entry_price * (1 + priceMovement);
+
+        // Update the trade with exit price - this triggers the DB settlement logic
+        const { error: updateError } = await supabase
+          .from('binary_records')
+          .update({
+            exit_price: exitPrice,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', trade.id)
+          .eq('status', 'pending'); // Only update if still pending
+
+        if (updateError) {
+          console.error('Error settling trade:', updateError);
+        }
       }
     } catch (error) {
-      console.error('Error calling settle function:', error);
+      console.error('Error in settlement process:', error);
     }
   };
 
@@ -135,7 +166,7 @@ export default function BinaryOptions() {
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'binary_options_trades',
+        table: 'binary_records',
         filter: `user_id=eq.${user.id}`
       }, () => {
         fetchActiveTrades();
@@ -147,7 +178,7 @@ export default function BinaryOptions() {
     const signalsChannel = supabase
       .channel('signal-updates')
       .on('postgres_changes', {
-        event: 'INSERT',
+        event: '*',
         schema: 'public',
         table: 'binary_signals'
       }, () => {
