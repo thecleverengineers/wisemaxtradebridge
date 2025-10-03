@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import logo from '@/assets/laktoken-logo.jpg';
 
 interface AppHeaderProps {
   onMenuClick: () => void;
@@ -32,9 +33,7 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
             <Menu className="h-6 w-6" />
           </Button>
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">LT</span>
-            </div>
+            <img src={logo} alt="LakToken Logo" className="w-8 h-8 rounded-lg object-cover" />
             <div>
               <span className="text-white font-bold text-lg">LakToken</span>
               {isSuperAdmin ? (

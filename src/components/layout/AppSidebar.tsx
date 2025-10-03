@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useSuperAdmin } from '@/hooks/useSuperAdmin';
+import logo from '@/assets/laktoken-logo.jpg';
 
 interface AppSidebarProps {
   isOpen: boolean;
@@ -70,9 +71,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
         {/* Header - Fixed */}
         <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">LT</span>
-            </div>
+            <img src={logo} alt="LakToken Logo" className="w-8 h-8 rounded-lg object-cover" />
             <div>
               <h2 className="text-white font-bold text-base">LakToken</h2>
               <p className="text-purple-300 text-xs">Premium Trading</p>
