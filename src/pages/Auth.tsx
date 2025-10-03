@@ -13,6 +13,7 @@ import { signInSchema, signUpSchema } from '@/lib/validations';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import logo from '@/assets/laktoken-logo.jpg';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -165,9 +166,7 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-white/10 border-white/20 backdrop-blur-xl">
         <CardHeader className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-white font-bold text-xl">LT</span>
-          </div>
+          <img src={logo} alt="LakToken Logo" className="w-16 h-16 rounded-2xl object-cover mx-auto mb-4 shadow-lg" />
           <CardTitle className="text-2xl font-bold text-white">
             {isLogin ? 'Welcome Back' : 'Join LakToken'}
           </CardTitle>
