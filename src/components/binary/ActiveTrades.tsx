@@ -35,7 +35,7 @@ export function ActiveTrades({ trades }: ActiveTradesProps) {
           const seconds = Math.floor((difference / 1000) % 60);
           newTimeLeftMap[trade.id] = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         } else {
-          newTimeLeftMap[trade.id] = 'Processing...';
+          newTimeLeftMap[trade.id] = 'Settling...';
         }
       });
 

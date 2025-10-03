@@ -87,6 +87,24 @@ export default function BinaryOptions() {
     }
   };
 
+  // Auto-settle expired trades
+  const settleExpiredTrades = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('settle-expired-trades');
+      if (error) {
+        console.error('Error settling trades:', error);
+      } else if (data?.settled > 0) {
+        console.log(`Auto-settled ${data.settled} expired trades`);
+        // Refresh active trades and history
+        fetchActiveTrades();
+        fetchTradeHistory();
+        fetchBalance();
+      }
+    } catch (error) {
+      console.error('Error calling settle function:', error);
+    }
+  };
+
   // Set up real-time subscriptions
   useEffect(() => {
     if (!user) return;
@@ -139,12 +157,18 @@ export default function BinaryOptions() {
 
     // Auto-refresh signals every 10 seconds
     const signalInterval = setInterval(fetchSignals, 10000);
+    
+    // Auto-settle expired trades every 15 seconds
+    const settlementInterval = setInterval(settleExpiredTrades, 15000);
+    // Run immediately on mount
+    settleExpiredTrades();
 
     return () => {
       walletChannel.unsubscribe();
       tradesChannel.unsubscribe();
       signalsChannel.unsubscribe();
       clearInterval(signalInterval);
+      clearInterval(settlementInterval);
     };
   }, [user]);
 

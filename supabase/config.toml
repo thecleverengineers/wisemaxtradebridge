@@ -2,3 +2,6 @@ project_id = "verauoklhuanklwsuwrr"
 
 [functions.reset-user-password]
 verify_jwt = true
+
+[functions.settle-expired-trades]
+verify_jwt = false
