@@ -9,6 +9,7 @@ import RoleManagement from '@/components/superadmin/RoleManagement';
 import ActivityLog from '@/components/superadmin/ActivityLog';
 import AppSettings from '@/components/superadmin/AppSettings';
 import BinaryRecordsManagement from '@/components/superadmin/BinaryRecordsManagement';
+import ForexRecordsManagement from '@/components/superadmin/ForexRecordsManagement';
 import ROIInvestmentManagement from '@/components/superadmin/ROIInvestmentManagement';
 import USDTStakingManagement from '@/components/superadmin/USDTStakingManagement';
 import InvestmentPlansManagement from '@/components/superadmin/InvestmentPlansManagement';
@@ -63,6 +64,8 @@ const SuperAdminPanel = () => {
         return <RoleManagement />;
       case 'binary':
         return <BinaryRecordsManagement />;
+      case 'forex':
+        return <ForexRecordsManagement />;
       case 'roi':
         return <ROIInvestmentManagement />;
       case 'usdt':
