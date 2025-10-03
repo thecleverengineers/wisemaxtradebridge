@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award, Shield, BarChart3, DollarSign, PiggyBank, Copy } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Home, TrendingUp, Wallet, Users, Settings, LogOut, Gift, Calculator, Award, Shield, BarChart3, DollarSign, PiggyBank, Copy, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useSuperAdmin } from '@/hooks/useSuperAdmin';
+import { supabase } from '@/integrations/supabase/client';
 import logo from '@/assets/laktoken-logo.jpg';
 
 interface AppSidebarProps {
@@ -20,6 +21,23 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isSuperAdmin } = useSuperAdmin();
+  const [supportLink, setSupportLink] = useState<string>('');
+
+  useEffect(() => {
+    const fetchSupportLink = async () => {
+      const { data } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_key', 'support_link')
+        .single();
+
+      if (data?.setting_value && typeof data.setting_value === 'object' && 'url' in data.setting_value) {
+        setSupportLink(data.setting_value.url as string);
+      }
+    };
+
+    fetchSupportLink();
+  }, []);
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
@@ -177,8 +195,19 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
           </div>
         </nav>
 
-        {/* Logout - Fixed */}
-        <div className="p-3 border-t border-white/10 flex-shrink-0">
+        {/* Support & Logout - Fixed */}
+        <div className="p-3 border-t border-white/10 flex-shrink-0 space-y-1">
+          {supportLink && (
+            <a
+              href={supportLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center space-x-3 px-3 py-2.5 text-green-400 hover:bg-green-500/10 rounded-lg transition-all duration-200"
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span className="font-medium text-sm">Support</span>
+            </a>
+          )}
           <button 
             onClick={handleSignOut}
             className="w-full flex items-center space-x-3 px-3 py-2.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"

@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, ChevronLeft, Activity, Database, Lock } from 'lucide-react';
+import { Shield, Users, ChevronLeft, Activity, Database, Lock, Settings } from 'lucide-react';
 import UserManagement from '@/components/superadmin/UserManagement';
 import SystemOverview from '@/components/superadmin/SystemOverview';
 import RoleManagement from '@/components/superadmin/RoleManagement';
 import ActivityLog from '@/components/superadmin/ActivityLog';
+import AppSettings from '@/components/superadmin/AppSettings';
 import { useAuth } from '@/contexts/AuthContext';
 
 const SuperAdminPanel = () => {
@@ -51,6 +52,7 @@ const SuperAdminPanel = () => {
     { id: 'users', label: 'User Management', icon: Users },
     { id: 'roles', label: 'Role Management', icon: Lock },
     { id: 'activity', label: 'Activity Log', icon: Database },
+    { id: 'settings', label: 'App Settings', icon: Settings },
   ];
 
   return (
@@ -71,7 +73,7 @@ const SuperAdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 gap-2 h-auto">
+          <TabsList className="grid grid-cols-5 gap-2 h-auto">
             {sections.map((section) => (
               <TabsTrigger 
                 key={section.id} 
@@ -98,6 +100,10 @@ const SuperAdminPanel = () => {
 
           <TabsContent value="activity" className="mt-6">
             <ActivityLog />
+          </TabsContent>
+
+          <TabsContent value="settings" className="mt-6">
+            <AppSettings />
           </TabsContent>
         </Tabs>
       </div>
