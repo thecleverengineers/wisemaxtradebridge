@@ -15,6 +15,7 @@ const SuperAdminPanel = () => {
   const navigate = useNavigate();
   const { isSuperAdmin, loading } = useAuth();
   const [activeSection, setActiveSection] = useState('overview');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   if (loading) {
     return (
@@ -89,7 +90,9 @@ const SuperAdminPanel = () => {
       <div className="flex flex-1">
         <AdminSidebar 
           activeSection={activeSection} 
-          onSectionChange={setActiveSection} 
+          onSectionChange={setActiveSection}
+          isCollapsed={isSidebarCollapsed}
+          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto p-6">
