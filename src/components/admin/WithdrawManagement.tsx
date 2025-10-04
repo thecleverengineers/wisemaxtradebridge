@@ -34,7 +34,48 @@ const WithdrawManagement = () => {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const checkUserRole = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('No authenticated user found');
+        return;
+      }
+
+      console.log('Current user ID:', user.id);
+
+      // Check if user has admin or super_admin role
+      const { data: roleData, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .in('role', ['admin', 'super_admin']);
+
+      console.log('User roles:', roleData);
+
+      if (error) {
+        console.error('Error checking user role:', error);
+        return;
+      }
+
+      if (roleData && roleData.length > 0) {
+        setUserRole(roleData[0].role);
+        console.log('User role set to:', roleData[0].role);
+      } else {
+        console.error('User does not have admin or super_admin role');
+        toast({
+          title: 'Access Denied',
+          description: 'You do not have permission to manage withdrawals',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error in checkUserRole:', error);
+    }
+  };
 
   const fetchWithdrawals = async () => {
     try {
@@ -91,6 +132,7 @@ const WithdrawManagement = () => {
   };
 
   useEffect(() => {
+    checkUserRole();
     fetchWithdrawals();
   }, []);
 
@@ -98,16 +140,31 @@ const WithdrawManagement = () => {
     try {
       setProcessingId(withdrawal.id);
 
+      console.log('Approving withdrawal:', withdrawal.id);
+
       // Call secure database function to approve withdrawal
       const { data, error } = await supabase.rpc('approve_withdrawal', {
         p_transaction_id: withdrawal.id
       });
 
-      if (error) throw error;
+      console.log('RPC Response - data:', data);
+      console.log('RPC Response - error:', error);
+
+      if (error) {
+        console.error('Supabase RPC error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        console.error('No data returned from RPC call');
+        throw new Error('No response from server');
+      }
 
       const result = data as unknown as WithdrawalActionResponse;
+      console.log('Parsed result:', result);
       
       if (!result.success) {
+        console.error('Operation failed:', result.error);
         throw new Error(result.error || 'Failed to approve withdrawal');
       }
 
@@ -119,9 +176,12 @@ const WithdrawManagement = () => {
       await fetchWithdrawals();
     } catch (error) {
       console.error('Error approving withdrawal:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to approve withdrawal';
+      console.error('Final error message:', errorMessage);
+      
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to approve withdrawal',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -133,16 +193,31 @@ const WithdrawManagement = () => {
     try {
       setProcessingId(withdrawal.id);
 
+      console.log('Rejecting withdrawal:', withdrawal.id);
+
       // Call secure database function to reject withdrawal
       const { data, error } = await supabase.rpc('reject_withdrawal', {
         p_transaction_id: withdrawal.id
       });
 
-      if (error) throw error;
+      console.log('RPC Response - data:', data);
+      console.log('RPC Response - error:', error);
+
+      if (error) {
+        console.error('Supabase RPC error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        console.error('No data returned from RPC call');
+        throw new Error('No response from server');
+      }
 
       const result = data as unknown as WithdrawalActionResponse;
+      console.log('Parsed result:', result);
       
       if (!result.success) {
+        console.error('Operation failed:', result.error);
         throw new Error(result.error || 'Failed to reject withdrawal');
       }
 
@@ -154,9 +229,12 @@ const WithdrawManagement = () => {
       await fetchWithdrawals();
     } catch (error) {
       console.error('Error rejecting withdrawal:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reject withdrawal';
+      console.error('Final error message:', errorMessage);
+      
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to reject withdrawal',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -181,6 +259,21 @@ const WithdrawManagement = () => {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!userRole) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Access Denied</CardTitle>
+            <CardDescription>
+              You do not have permission to access this page. Please contact an administrator.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     );
   }
