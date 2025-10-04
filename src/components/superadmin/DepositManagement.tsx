@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, DollarSign, CheckCircle, XCircle, Clock, TrendingUp } from 'lucide-react';
+import { Loader2, DollarSign, CheckCircle, XCircle, Clock, TrendingUp, Check, X } from 'lucide-react';
 
 interface DepositRecord {
   id: string;
@@ -79,6 +79,78 @@ const DepositManagement = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleApprove = async (deposit: DepositRecord) => {
+    try {
+      // Update transaction status
+      const { error: txError } = await supabase
+        .from('transactions')
+        .update({ status: 'completed' })
+        .eq('id', deposit.id);
+
+      if (txError) throw txError;
+
+      // Get current wallet balance
+      const { data: walletData, error: fetchError } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', deposit.user_id)
+        .eq('currency', deposit.currency)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+
+      const currentBalance = walletData?.balance || 0;
+      const newBalance = Number(currentBalance) + Number(deposit.amount);
+
+      // Update user's wallet balance
+      const { error: walletError } = await supabase
+        .from('wallets')
+        .update({ balance: newBalance })
+        .eq('user_id', deposit.user_id)
+        .eq('currency', deposit.currency);
+
+      if (walletError) throw walletError;
+
+      toast({
+        title: 'Deposit Approved',
+        description: `Successfully approved deposit of ${deposit.amount} ${deposit.currency} for ${deposit.user_email}`,
+      });
+
+      fetchDeposits();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleReject = async (deposit: DepositRecord) => {
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .update({ status: 'rejected' })
+        .eq('id', deposit.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Deposit Rejected',
+        description: `Rejected deposit of ${deposit.amount} ${deposit.currency} for ${deposit.user_email}`,
+        variant: 'destructive',
+      });
+
+      fetchDeposits();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -224,6 +296,7 @@ const DepositManagement = () => {
                   <TableHead>Status</TableHead>
                   <TableHead>Notes</TableHead>
                   <TableHead>Created</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -268,6 +341,32 @@ const DepositManagement = () => {
                       </TableCell>
                       <TableCell className="text-sm">
                         {new Date(deposit.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        {deposit.status === 'pending' ? (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleApprove(deposit)}
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleReject(deposit)}
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            {deposit.status === 'completed' ? 'Approved' : 'Rejected'}
+                          </span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
