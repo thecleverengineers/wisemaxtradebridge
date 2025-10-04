@@ -16,6 +16,8 @@ interface WithdrawalRecord {
   status: string;
   type: string;
   category?: string;
+  network?: string;
+  to_address?: string;
   notes?: string;
   created_at: string;
   user_email?: string;
@@ -41,6 +43,8 @@ const WithdrawManagement = () => {
           status,
           type,
           category,
+          network,
+          to_address,
           notes,
           created_at
         `)
@@ -234,9 +238,9 @@ const WithdrawManagement = () => {
                     <TableCell>
                       {withdrawal.amount} {withdrawal.currency}
                     </TableCell>
-                    <TableCell>{withdrawal.category || 'Crypto'}</TableCell>
+                    <TableCell>{withdrawal.network || 'N/A'}</TableCell>
                     <TableCell className="max-w-[200px] truncate">
-                      {withdrawal.notes || 'N/A'}
+                      {withdrawal.to_address || 'N/A'}
                     </TableCell>
                     <TableCell>{format(new Date(withdrawal.created_at), 'MMM dd, yyyy')}</TableCell>
                     <TableCell>
