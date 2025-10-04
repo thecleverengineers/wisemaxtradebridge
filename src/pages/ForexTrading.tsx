@@ -596,20 +596,22 @@ const ForexTrading = () => {
             </Card>
           </div>
 
-          {/* Main Trading Interface */}
-          <Tabs defaultValue="signals" className="space-y-3 sm:space-y-4">
-            <ScrollArea className="w-full">
-              <TabsList className="w-full justify-start">
-                <TabsTrigger value="signals" className="text-xs sm:text-sm">Signals</TabsTrigger>
-                <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
-                <TabsTrigger value="trading" className="text-xs sm:text-sm">Trading</TabsTrigger>
-                <TabsTrigger value="positions" className="text-xs sm:text-sm">Positions</TabsTrigger>
-                <TabsTrigger value="copy" className="text-xs sm:text-sm">Copy</TabsTrigger>
-                <TabsTrigger value="bots" className="text-xs sm:text-sm">Bots</TabsTrigger>
-              </TabsList>
-            </ScrollArea>
+          {/* Signals Section */}
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
+              <h2 className="text-lg sm:text-xl font-bold text-white">Live Trading Signals</h2>
+            </div>
+            <LiveTradingSignals />
+          </div>
 
-            <TabsContent value="overview" className="space-y-3 sm:space-y-4">
+          {/* Overview Section */}
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
+              <h2 className="text-lg sm:text-xl font-bold text-white">Market Overview</h2>
+            </div>
+            <div className="space-y-3 sm:space-y-4">
               <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
                 {/* Performance Chart */}
                 <Card className="bg-white/5 border-white/10">
@@ -676,9 +678,16 @@ const ForexTrading = () => {
                   </ScrollArea>
                 </CardContent>
               </Card>
-            </TabsContent>
+            </div>
+          </div>
 
-            <TabsContent value="trading" className="space-y-3 sm:space-y-4">
+          {/* Trading Section */}
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
+              <h2 className="text-lg sm:text-xl font-bold text-white">Place Trade</h2>
+            </div>
+            <div className="space-y-3 sm:space-y-4">
               <div className="grid gap-3 sm:gap-4 lg:grid-cols-3">
                 {/* Chart Section */}
                 <div className="lg:col-span-2 space-y-3 sm:space-y-4">
@@ -906,14 +915,21 @@ const ForexTrading = () => {
                   </Card>
                 </div>
               </div>
-            </TabsContent>
+            </div>
+          </div>
 
-            <TabsContent value="positions" className="space-y-3 sm:space-y-4">
+          {/* Positions Section */}
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
+              <h2 className="text-lg sm:text-xl font-bold text-white">Open Positions</h2>
+            </div>
+            <div className="space-y-3 sm:space-y-4">
               <Card className="bg-white/5 border-white/10">
                 <CardHeader className="pb-2 sm:pb-4">
-                  <CardTitle className="text-sm sm:text-base text-white">Open Positions</CardTitle>
+                  <CardTitle className="text-sm sm:text-base text-white">Active Trades</CardTitle>
                   <CardDescription className="text-xs sm:text-sm text-purple-300">
-                    Manage your active trades
+                    {positions.filter(p => p.status === 'open').length} open position(s)
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -962,20 +978,26 @@ const ForexTrading = () => {
                   </ScrollArea>
                 </CardContent>
               </Card>
-            </TabsContent>
+            </div>
+          </div>
 
-            <TabsContent value="signals" className="space-y-4">
-              <LiveTradingSignals />
-            </TabsContent>
+          {/* Copy Trading Section */}
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
+              <h2 className="text-lg sm:text-xl font-bold text-white">Copy Trading</h2>
+            </div>
+            <CopyTrading />
+          </div>
 
-            <TabsContent value="copy" className="space-y-4">
-              <CopyTrading />
-            </TabsContent>
-
-            <TabsContent value="bots" className="space-y-4">
-              <AutomatedBots />
-            </TabsContent>
-          </Tabs>
+          {/* Auto Bots Section */}
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
+              <h2 className="text-lg sm:text-xl font-bold text-white">Automated Trading Bots</h2>
+            </div>
+            <AutomatedBots />
+          </div>
         </div>
       </div>
 
