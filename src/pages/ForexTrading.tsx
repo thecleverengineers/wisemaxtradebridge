@@ -851,19 +851,49 @@ const ForexTrading = () => {
 
                       {/* Leverage */}
                       <div>
-                        <Label className="text-xs sm:text-sm text-purple-300">Leverage</Label>
-                        <Select value={leverage} onValueChange={setLeverage}>
-                          <SelectTrigger className="bg-white/5 border-white/10 text-white text-xs sm:text-sm h-8 sm:h-10">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">1:1</SelectItem>
-                            <SelectItem value="10">1:10</SelectItem>
-                            <SelectItem value="50">1:50</SelectItem>
-                            <SelectItem value="100">1:100</SelectItem>
-                            <SelectItem value="200">1:200</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Label className="text-xs sm:text-sm text-purple-300 mb-2 block">Leverage</Label>
+                        <div className="grid grid-cols-3 gap-2">
+                          <Button
+                            size="sm"
+                            variant={leverage === '1' ? 'default' : 'outline'}
+                            onClick={() => setLeverage('1')}
+                            className={`text-xs sm:text-sm ${leverage === '1' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'border-white/10'}`}
+                          >
+                            1:1
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={leverage === '10' ? 'default' : 'outline'}
+                            onClick={() => setLeverage('10')}
+                            className={`text-xs sm:text-sm ${leverage === '10' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'border-white/10'}`}
+                          >
+                            1:10
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={leverage === '50' ? 'default' : 'outline'}
+                            onClick={() => setLeverage('50')}
+                            className={`text-xs sm:text-sm ${leverage === '50' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'border-white/10'}`}
+                          >
+                            1:50
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={leverage === '100' ? 'default' : 'outline'}
+                            onClick={() => setLeverage('100')}
+                            className={`text-xs sm:text-sm ${leverage === '100' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'border-white/10'}`}
+                          >
+                            1:100
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={leverage === '200' ? 'default' : 'outline'}
+                            onClick={() => setLeverage('200')}
+                            className={`text-xs sm:text-sm ${leverage === '200' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'border-white/10'}`}
+                          >
+                            1:200
+                          </Button>
+                        </div>
                       </div>
 
                       {/* Take Profit */}
