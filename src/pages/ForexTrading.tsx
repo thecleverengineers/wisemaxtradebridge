@@ -515,32 +515,32 @@ const ForexTrading = () => {
       <AppHeader onMenuClick={() => setSidebarOpen(true)} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="p-4 pt-20 pb-20">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="px-3 sm:px-4 pt-16 sm:pt-20 pb-20 sm:pb-24">
+        <div className="max-w-7xl mx-auto space-y-3 sm:space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div>
-              <h1 className="text-3xl font-bold text-white">Forex Trading</h1>
-              <p className="text-purple-300">Welcome back, {profile?.name || 'Trader'}</p>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">Forex Trading</h1>
+              <p className="text-xs sm:text-sm text-purple-300">Welcome back, {profile?.name || 'Trader'}</p>
             </div>
             <Badge className={profile?.kyc_status === 'verified' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'}>
-              KYC: {profile?.kyc_status || 'Pending'}
+              <span className="text-xs">KYC: {profile?.kyc_status || 'Pending'}</span>
             </Badge>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
             <Card className="bg-white/5 border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-purple-300">Total Balance</CardTitle>
-                <Wallet className="h-4 w-4 text-purple-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium text-purple-300">Total Balance</CardTitle>
+                <Wallet className="h-3 w-3 sm:h-4 sm:w-4 text-purple-300" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">${walletBalance.toFixed(2)}</div>
-                <p className="text-xs text-purple-300">
+              <CardContent className="pt-1">
+                <div className="text-lg sm:text-2xl font-bold text-white">${walletBalance.toFixed(2)}</div>
+                <p className="text-[10px] sm:text-xs text-purple-300">
                   {walletBalance > 0 ? (
                     <span className="text-green-400 flex items-center">
-                      <TrendingUp className="h-3 w-3 mr-1" />
+                      <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3 mr-1" />
                       Active
                     </span>
                   ) : (
@@ -551,72 +551,74 @@ const ForexTrading = () => {
             </Card>
 
             <Card className="bg-white/5 border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-purple-300">Used Margin</CardTitle>
-                <DollarSign className="h-4 w-4 text-purple-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium text-purple-300">Used Margin</CardTitle>
+                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-purple-300" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">${totalMargin.toFixed(2)}</div>
-                <p className="text-xs text-purple-300">
+              <CardContent className="pt-1">
+                <div className="text-lg sm:text-2xl font-bold text-white">${totalMargin.toFixed(2)}</div>
+                <p className="text-[10px] sm:text-xs text-purple-300">
                   {openPositions} open positions
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-white/5 border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-purple-300">Total P&L</CardTitle>
-                <Users className="h-4 w-4 text-purple-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium text-purple-300">Total P&L</CardTitle>
+                <Users className="h-3 w-3 sm:h-4 sm:w-4 text-purple-300" />
               </CardHeader>
-              <CardContent>
-                <div className={`text-2xl font-bold ${totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              <CardContent className="pt-1">
+                <div className={`text-lg sm:text-2xl font-bold ${totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)} USDT
                 </div>
-                <p className="text-xs text-purple-300">
-                  Unrealized profit/loss
+                <p className="text-[10px] sm:text-xs text-purple-300">
+                  Unrealized P/L
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-white/5 border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-purple-300">Win Rate</CardTitle>
-                <Activity className="h-4 w-4 text-purple-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium text-purple-300">Win Rate</CardTitle>
+                <Activity className="h-3 w-3 sm:h-4 sm:w-4 text-purple-300" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">
+              <CardContent className="pt-1">
+                <div className="text-lg sm:text-2xl font-bold text-white">
                   {positions.filter(p => p.profit_loss > 0).length > 0 
                     ? `${((positions.filter(p => p.profit_loss > 0).length / positions.length) * 100).toFixed(1)}%`
                     : '0%'}
                 </div>
-                <p className="text-xs text-purple-300">
-                  {positions.length} total trades
+                <p className="text-[10px] sm:text-xs text-purple-300">
+                  {positions.length} total
                 </p>
               </CardContent>
             </Card>
           </div>
 
           {/* Main Trading Interface */}
-          <Tabs defaultValue="signals" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="signals">Signals</TabsTrigger>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="trading">Trading</TabsTrigger>
-              <TabsTrigger value="positions">Positions</TabsTrigger>
-              <TabsTrigger value="copy">Copy Trading</TabsTrigger>
-              <TabsTrigger value="bots">Auto Bots</TabsTrigger>
-            </TabsList>
+          <Tabs defaultValue="signals" className="space-y-3 sm:space-y-4">
+            <ScrollArea className="w-full">
+              <TabsList className="w-full justify-start">
+                <TabsTrigger value="signals" className="text-xs sm:text-sm">Signals</TabsTrigger>
+                <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+                <TabsTrigger value="trading" className="text-xs sm:text-sm">Trading</TabsTrigger>
+                <TabsTrigger value="positions" className="text-xs sm:text-sm">Positions</TabsTrigger>
+                <TabsTrigger value="copy" className="text-xs sm:text-sm">Copy</TabsTrigger>
+                <TabsTrigger value="bots" className="text-xs sm:text-sm">Bots</TabsTrigger>
+              </TabsList>
+            </ScrollArea>
 
-            <TabsContent value="overview" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+            <TabsContent value="overview" className="space-y-3 sm:space-y-4">
+              <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
                 {/* Performance Chart */}
                 <Card className="bg-white/5 border-white/10">
-                  <CardHeader>
-                    <CardTitle className="text-white">Trading Performance</CardTitle>
-                    <CardDescription className="text-purple-300">Your P&L over the last 7 days</CardDescription>
+                  <CardHeader className="pb-2 sm:pb-4">
+                    <CardTitle className="text-sm sm:text-base text-white">Trading Performance</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm text-purple-300">Your P&L over the last 7 days</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height="300">
+                    <ResponsiveContainer width="100%" height={250}>
                       <AreaChart data={performanceData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
                         <XAxis dataKey="date" stroke="#a78bfa" />
@@ -631,9 +633,9 @@ const ForexTrading = () => {
 
                 {/* Market Sessions */}
                 <Card className="bg-white/5 border-white/10">
-                  <CardHeader>
-                    <CardTitle className="text-white">Market Sessions</CardTitle>
-                    <CardDescription className="text-purple-300">Global trading sessions status</CardDescription>
+                  <CardHeader className="pb-2 sm:pb-4">
+                    <CardTitle className="text-sm sm:text-base text-white">Market Sessions</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm text-purple-300">Global trading sessions status</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <MarketSession />
@@ -643,51 +645,54 @@ const ForexTrading = () => {
 
               {/* Currency Pairs */}
               <Card className="bg-white/5 border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white">Popular Currency Pairs</CardTitle>
-                  <CardDescription className="text-purple-300">Top traded forex pairs</CardDescription>
+                <CardHeader className="pb-2 sm:pb-4">
+                  <CardTitle className="text-sm sm:text-base text-white">Popular Currency Pairs</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm text-purple-300">Top traded forex pairs</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {forexPairs.slice(0, 5).map((pair) => (
-                      <div key={pair.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
-                        <div className="flex items-center space-x-4">
-                          <Globe className="h-8 w-8 text-purple-400" />
-                          <div>
-                            <p className="font-medium text-white">{pair.symbol}</p>
-                            <p className="text-sm text-purple-300">{pair.base_currency}/{pair.quote_currency}</p>
+                  <ScrollArea className="h-[300px] sm:h-auto">
+                    <div className="space-y-2 sm:space-y-4">
+                      {forexPairs.slice(0, 5).map((pair) => (
+                        <div key={pair.id} className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
+                          <div className="flex items-center space-x-2 sm:space-x-4">
+                            <Globe className="h-6 w-6 sm:h-8 sm:w-8 text-purple-400" />
+                            <div>
+                              <p className="text-sm sm:text-base font-medium text-white">{pair.symbol}</p>
+                              <p className="text-xs sm:text-sm text-purple-300">{pair.base_currency}/{pair.quote_currency}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-base sm:text-2xl font-bold text-white">{pair.current_price.toFixed(5)}</p>
+                            <p className={`text-xs sm:text-sm flex items-center justify-end ${
+                              pair.change_percent >= 0 ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {pair.change_percent >= 0 ? <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> : <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />}
+                              {Math.abs(pair.change_percent).toFixed(2)}%
+                            </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-white">{pair.current_price.toFixed(5)}</p>
-                          <p className={`text-sm flex items-center justify-end ${
-                            pair.change_percent >= 0 ? 'text-green-400' : 'text-red-400'
-                          }`}>
-                            {pair.change_percent >= 0 ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
-                            {Math.abs(pair.change_percent).toFixed(2)}%
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="trading" className="space-y-4">
-              <div className="grid gap-4 lg:grid-cols-3">
+            <TabsContent value="trading" className="space-y-3 sm:space-y-4">
+              <div className="grid gap-3 sm:gap-4 lg:grid-cols-3">
                 {/* Chart Section */}
-                <div className="lg:col-span-2 space-y-4">
+                <div className="lg:col-span-2 space-y-3 sm:space-y-4">
                   {/* Currency Pairs */}
                   <Card className="bg-white/5 border-white/10">
-                    <CardContent className="p-4">
+                    <CardContent className="p-2 sm:p-4">
                       <ScrollArea className="w-full">
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2 pb-2">
                           {forexPairs.map((pair) => (
                             <Button
                               key={pair.id}
                               variant={selectedPair?.id === pair.id ? 'default' : 'outline'}
                               onClick={() => setSelectedPair(pair)}
+                              size="sm"
                               className={`flex-shrink-0 ${
                                 selectedPair?.id === pair.id 
                                   ? 'bg-gradient-to-r from-purple-600 to-blue-600' 
@@ -695,13 +700,13 @@ const ForexTrading = () => {
                               }`}
                             >
                               <div className="flex flex-col items-start">
-                                <span className="font-semibold">{pair.symbol}</span>
+                                <span className="text-xs sm:text-sm font-semibold">{pair.symbol}</span>
                                 <div className="flex items-center space-x-1">
-                                  <span className="text-xs">{pair.current_price.toFixed(5)}</span>
-                                  <span className={`text-xs flex items-center ${
+                                  <span className="text-[10px] sm:text-xs">{pair.current_price.toFixed(5)}</span>
+                                  <span className={`text-[10px] sm:text-xs flex items-center ${
                                     pair.change_percent >= 0 ? 'text-green-400' : 'text-red-400'
                                   }`}>
-                                    {pair.change_percent >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                    {pair.change_percent >= 0 ? <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3" /> : <TrendingDown className="h-2 w-2 sm:h-3 sm:w-3" />}
                                     {Math.abs(pair.change_percent).toFixed(2)}%
                                   </span>
                                 </div>
@@ -716,46 +721,47 @@ const ForexTrading = () => {
                   {/* Trading Chart */}
                   {selectedPair && (
                     <Card className="bg-white/5 border-white/10">
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
+                      <CardHeader className="pb-2 sm:pb-4">
+                        <div className="flex items-center justify-between gap-2">
                           <div>
-                            <CardTitle className="text-white flex items-center">
-                              <Globe className="h-5 w-5 mr-2" />
+                            <CardTitle className="text-sm sm:text-base text-white flex items-center">
+                              <Globe className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                               {selectedPair.symbol}
                             </CardTitle>
-                            <CardDescription className="text-purple-300">
+                            <CardDescription className="text-xs sm:text-sm text-purple-300">
                               {selectedPair.base_currency}/{selectedPair.quote_currency}
                             </CardDescription>
                           </div>
                           <div className="text-right">
-                            <p className="text-2xl font-bold text-white">{selectedPair.current_price.toFixed(5)}</p>
-                            <p className={`text-sm flex items-center justify-end ${
+                            <p className="text-base sm:text-2xl font-bold text-white">{selectedPair.current_price.toFixed(5)}</p>
+                            <p className={`text-xs sm:text-sm flex items-center justify-end ${
                               selectedPair.change_percent >= 0 ? 'text-green-400' : 'text-red-400'
                             }`}>
-                              {selectedPair.change_percent >= 0 ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
-                              {selectedPair.change_amount.toFixed(5)} ({selectedPair.change_percent.toFixed(2)}%)
+                              {selectedPair.change_percent >= 0 ? <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> : <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />}
+                              <span className="hidden sm:inline">{selectedPair.change_amount.toFixed(5)} </span>
+                              ({selectedPair.change_percent.toFixed(2)}%)
                             </p>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent>
                         {/* Market Info */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                          <div className="p-3 bg-white/5 rounded-lg">
-                            <p className="text-purple-300 text-xs">24h High</p>
-                            <p className="text-white font-semibold">{selectedPair.daily_high.toFixed(5)}</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mt-2 sm:mt-4">
+                          <div className="p-2 sm:p-3 bg-white/5 rounded-lg">
+                            <p className="text-purple-300 text-[10px] sm:text-xs">24h High</p>
+                            <p className="text-white text-xs sm:text-sm font-semibold">{selectedPair.daily_high.toFixed(5)}</p>
                           </div>
-                          <div className="p-3 bg-white/5 rounded-lg">
-                            <p className="text-purple-300 text-xs">24h Low</p>
-                            <p className="text-white font-semibold">{selectedPair.daily_low.toFixed(5)}</p>
+                          <div className="p-2 sm:p-3 bg-white/5 rounded-lg">
+                            <p className="text-purple-300 text-[10px] sm:text-xs">24h Low</p>
+                            <p className="text-white text-xs sm:text-sm font-semibold">{selectedPair.daily_low.toFixed(5)}</p>
                           </div>
-                          <div className="p-3 bg-white/5 rounded-lg">
-                            <p className="text-purple-300 text-xs">Bid</p>
-                            <p className="text-green-400 font-semibold">{selectedPair.bid.toFixed(5)}</p>
+                          <div className="p-2 sm:p-3 bg-white/5 rounded-lg">
+                            <p className="text-purple-300 text-[10px] sm:text-xs">Bid</p>
+                            <p className="text-green-400 text-xs sm:text-sm font-semibold">{selectedPair.bid.toFixed(5)}</p>
                           </div>
-                          <div className="p-3 bg-white/5 rounded-lg">
-                            <p className="text-purple-300 text-xs">Ask</p>
-                            <p className="text-red-400 font-semibold">{selectedPair.ask.toFixed(5)}</p>
+                          <div className="p-2 sm:p-3 bg-white/5 rounded-lg">
+                            <p className="text-purple-300 text-[10px] sm:text-xs">Ask</p>
+                            <p className="text-red-400 text-xs sm:text-sm font-semibold">{selectedPair.ask.toFixed(5)}</p>
                           </div>
                         </div>
                       </CardContent>
@@ -764,22 +770,22 @@ const ForexTrading = () => {
                 </div>
 
                 {/* Order Form */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
 
                   {/* Place Order */}
                   <Card className="bg-white/5 border-white/10">
-                    <CardHeader>
-                      <CardTitle className="text-white">Place Order</CardTitle>
-                      <CardDescription className="text-purple-300">
+                    <CardHeader className="pb-2 sm:pb-4">
+                      <CardTitle className="text-sm sm:text-base text-white">Place Order</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm text-purple-300">
                         Create a new position
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-3 sm:space-y-4">
                       {/* Order Type */}
                       <div>
-                        <Label className="text-purple-300">Order Type</Label>
+                        <Label className="text-xs sm:text-sm text-purple-300">Order Type</Label>
                         <Select value={orderType} onValueChange={(value: any) => setOrderType(value)}>
-                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                          <SelectTrigger className="bg-white/5 border-white/10 text-white text-xs sm:text-sm h-8 sm:h-10">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -793,16 +799,18 @@ const ForexTrading = () => {
                       {/* Buy/Sell Toggle */}
                       <div className="grid grid-cols-2 gap-2">
                         <Button
+                          size="sm"
                           variant={positionType === 'buy' ? 'default' : 'outline'}
                           onClick={() => setPositionType('buy')}
-                          className={positionType === 'buy' ? 'bg-green-600 hover:bg-green-700' : 'border-white/10'}
+                          className={`text-xs sm:text-sm ${positionType === 'buy' ? 'bg-green-600 hover:bg-green-700' : 'border-white/10'}`}
                         >
                           Buy
                         </Button>
                         <Button
+                          size="sm"
                           variant={positionType === 'sell' ? 'default' : 'outline'}
                           onClick={() => setPositionType('sell')}
-                          className={positionType === 'sell' ? 'bg-red-600 hover:bg-red-700' : 'border-white/10'}
+                          className={`text-xs sm:text-sm ${positionType === 'sell' ? 'bg-red-600 hover:bg-red-700' : 'border-white/10'}`}
                         >
                           Sell
                         </Button>
@@ -810,35 +818,35 @@ const ForexTrading = () => {
 
                       {/* Volume */}
                       <div>
-                        <Label className="text-purple-300">Volume (Lots)</Label>
+                        <Label className="text-xs sm:text-sm text-purple-300">Volume (Lots)</Label>
                         <Input
                           type="number"
                           placeholder="0.01"
                           value={volume}
                           onChange={(e) => setVolume(e.target.value)}
-                          className="bg-white/5 border-white/10 text-white"
+                          className="bg-white/5 border-white/10 text-white text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </div>
 
                       {/* Price (for limit/stop orders) */}
                       {orderType !== 'market' && (
                         <div>
-                          <Label className="text-purple-300">Price</Label>
+                          <Label className="text-xs sm:text-sm text-purple-300">Price</Label>
                           <Input
                             type="number"
                             placeholder={selectedPair?.current_price.toFixed(5)}
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
-                            className="bg-white/5 border-white/10 text-white"
+                            className="bg-white/5 border-white/10 text-white text-xs sm:text-sm h-8 sm:h-10"
                           />
                         </div>
                       )}
 
                       {/* Leverage */}
                       <div>
-                        <Label className="text-purple-300">Leverage</Label>
+                        <Label className="text-xs sm:text-sm text-purple-300">Leverage</Label>
                         <Select value={leverage} onValueChange={setLeverage}>
-                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                          <SelectTrigger className="bg-white/5 border-white/10 text-white text-xs sm:text-sm h-8 sm:h-10">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -853,33 +861,33 @@ const ForexTrading = () => {
 
                       {/* Take Profit */}
                       <div>
-                        <Label className="text-purple-300">Take Profit (Optional)</Label>
+                        <Label className="text-xs sm:text-sm text-purple-300">Take Profit (Optional)</Label>
                         <Input
                           type="number"
                           placeholder="0.00000"
                           value={takeProfit}
                           onChange={(e) => setTakeProfit(e.target.value)}
-                          className="bg-white/5 border-white/10 text-white"
+                          className="bg-white/5 border-white/10 text-white text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </div>
 
                       {/* Stop Loss */}
                       <div>
-                        <Label className="text-purple-300">Stop Loss (Optional)</Label>
+                        <Label className="text-xs sm:text-sm text-purple-300">Stop Loss (Optional)</Label>
                         <Input
                           type="number"
                           placeholder="0.00000"
                           value={stopLoss}
                           onChange={(e) => setStopLoss(e.target.value)}
-                          className="bg-white/5 border-white/10 text-white"
+                          className="bg-white/5 border-white/10 text-white text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </div>
 
                       {/* Margin Info */}
                       {volume && selectedPair && (
-                        <div className="p-3 bg-gradient-to-r from-purple-600/10 to-blue-600/10 rounded-lg border border-purple-500/20">
-                          <p className="text-purple-300 text-sm mb-1">Required Margin</p>
-                          <p className="text-white font-semibold">
+                        <div className="p-2 sm:p-3 bg-gradient-to-r from-purple-600/10 to-blue-600/10 rounded-lg border border-purple-500/20">
+                          <p className="text-purple-300 text-xs sm:text-sm mb-1">Required Margin</p>
+                          <p className="text-white text-sm sm:text-base font-semibold">
                             ${((parseFloat(volume) * selectedPair.current_price) / parseInt(leverage)).toFixed(2)}
                           </p>
                         </div>
@@ -888,9 +896,10 @@ const ForexTrading = () => {
                       {/* Place Order Button */}
                       <Button
                         onClick={handlePlaceOrder}
-                        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                        size="sm"
+                        className="w-full text-xs sm:text-sm bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                       >
-                        <Zap className="h-4 w-4 mr-2" />
+                        <Zap className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                         Place Order
                       </Button>
                     </CardContent>
@@ -899,49 +908,49 @@ const ForexTrading = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="positions" className="space-y-4">
+            <TabsContent value="positions" className="space-y-3 sm:space-y-4">
               <Card className="bg-white/5 border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white">Open Positions</CardTitle>
-                  <CardDescription className="text-purple-300">
+                <CardHeader className="pb-2 sm:pb-4">
+                  <CardTitle className="text-sm sm:text-base text-white">Open Positions</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm text-purple-300">
                     Manage your active trades
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="h-[400px]">
-                    <div className="space-y-4">
+                  <ScrollArea className="h-[300px] sm:h-[400px]">
+                    <div className="space-y-2 sm:space-y-4">
                       {positions.filter(p => p.status === 'open').length === 0 ? (
                         <div className="text-center py-8">
                           <BarChart3 className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                          <p className="text-purple-300">No open positions</p>
+                          <p className="text-sm text-purple-300">No open positions</p>
                         </div>
                       ) : (
                         positions.filter(p => p.status === 'open').map((position) => (
-                          <div key={position.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
-                            <div className="flex items-center space-x-4">
+                          <div key={position.id} className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
+                            <div className="flex items-center space-x-2 sm:space-x-4">
                               {position.position_type === 'buy' ? (
-                                <ArrowUpRight className="h-5 w-5 text-green-400" />
+                                <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
                               ) : (
-                                <ArrowDownRight className="h-5 w-5 text-red-400" />
+                                <ArrowDownRight className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
                               )}
                               <div>
-                                <p className="font-medium capitalize text-white">
+                                <p className="text-xs sm:text-sm font-medium capitalize text-white">
                                   {position.forex_pairs?.symbol || 'Unknown'} - {position.position_type}
                                 </p>
-                                <p className="text-sm text-purple-300">
+                                <p className="text-[10px] sm:text-xs text-purple-300">
                                   {formatDistanceToNow(new Date(position.created_at), { addSuffix: true })}
                                 </p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className={`text-lg font-bold ${position.profit_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                              <p className={`text-sm sm:text-lg font-bold ${position.profit_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                 {position.profit_loss >= 0 ? '+' : ''}{position.profit_loss.toFixed(2)} USDT
                               </p>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleClosePosition(position.id)}
-                                className="border-white/10 mt-2"
+                                className="border-white/10 mt-1 sm:mt-2 text-xs"
                               >
                                 Close
                               </Button>
