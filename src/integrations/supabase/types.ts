@@ -2351,6 +2351,7 @@ export type Database = {
           to_address: string | null
           tx_hash: string | null
           type: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -2371,6 +2372,7 @@ export type Database = {
           to_address?: string | null
           tx_hash?: string | null
           type: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -2391,6 +2393,7 @@ export type Database = {
           to_address?: string | null
           tx_hash?: string | null
           type?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
