@@ -44,7 +44,8 @@ const WithdrawManagement = () => {
           notes,
           created_at
         `)
-        .eq('type', 'withdraw')
+        .eq('type', 'withdrawal')
+        .eq('category', 'withdrawal')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
