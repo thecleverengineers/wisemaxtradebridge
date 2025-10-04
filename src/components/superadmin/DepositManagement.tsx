@@ -12,24 +12,14 @@ import { Loader2, DollarSign, CheckCircle, XCircle, Clock, TrendingUp } from 'lu
 interface DepositRecord {
   id: string;
   user_id: string;
-  wallet_id: string | null;
-  amount: number;
+  type: string;
+  category: string;
   currency: string;
-  network: string;
-  from_address: string | null;
-  to_address: string | null;
-  transaction_hash: string | null;
-  confirmations: number;
-  required_confirmations: number;
+  amount: number;
   status: string;
-  admin_notes: string | null;
-  rejection_reason: string | null;
-  approved_by: string | null;
-  approved_at: string | null;
-  rejected_by: string | null;
-  rejected_at: string | null;
+  reference_id: string | null;
+  notes: string | null;
   created_at: string;
-  updated_at: string;
   user_email?: string;
   user_name?: string;
 }
@@ -49,8 +39,9 @@ const DepositManagement = () => {
     try {
       setLoading(true);
       let query = supabase
-        .from('deposit_transactions')
+        .from('transactions')
         .select('*')
+        .eq('category', 'deposit')
         .order('created_at', { ascending: false })
         .limit(100);
 
@@ -69,7 +60,7 @@ const DepositManagement = () => {
             .from('users')
             .select('email, name')
             .eq('id', deposit.user_id)
-            .single();
+            .maybeSingle();
 
           return {
             ...deposit,
@@ -94,7 +85,7 @@ const DepositManagement = () => {
   const filteredDeposits = deposits.filter(
     (deposit) =>
       deposit.user_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.transaction_hash?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deposit.reference_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deposit.currency.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -200,7 +191,7 @@ const DepositManagement = () => {
         <CardContent>
           <div className="flex gap-4 mb-4">
             <Input
-              placeholder="Search by email, hash, or currency..."
+              placeholder="Search by email, reference, or currency..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
@@ -228,10 +219,10 @@ const DepositManagement = () => {
                   <TableHead>User</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Currency</TableHead>
-                  <TableHead>Network</TableHead>
-                  <TableHead>Hash</TableHead>
-                  <TableHead>Confirmations</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Reference</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Notes</TableHead>
                   <TableHead>Created</TableHead>
                 </TableRow>
               </TableHeader>
@@ -257,21 +248,23 @@ const DepositManagement = () => {
                         ${Number(deposit.amount).toFixed(2)}
                       </TableCell>
                       <TableCell>{deposit.currency}</TableCell>
-                      <TableCell>{deposit.network}</TableCell>
                       <TableCell>
-                        <span className="text-xs font-mono">
-                          {deposit.transaction_hash
-                            ? `${deposit.transaction_hash.substring(0, 8)}...`
-                            : 'N/A'}
-                        </span>
+                        <span className="text-xs capitalize">{deposit.type}</span>
                       </TableCell>
                       <TableCell>
-                        {deposit.confirmations}/{deposit.required_confirmations}
+                        <span className="text-xs font-mono">
+                          {deposit.reference_id
+                            ? `${deposit.reference_id.substring(0, 8)}...`
+                            : 'N/A'}
+                        </span>
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusColor(deposit.status)}>
                           {deposit.status}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs max-w-[200px] truncate">
+                        {deposit.notes || 'N/A'}
                       </TableCell>
                       <TableCell className="text-sm">
                         {new Date(deposit.created_at).toLocaleDateString()}
