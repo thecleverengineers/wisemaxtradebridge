@@ -137,51 +137,31 @@ const WithdrawManagement = () => {
   }, []);
 
   const handleApprove = async (withdrawal: WithdrawalRecord) => {
+    setProcessingId(withdrawal.id);
+    
     try {
-      setProcessingId(withdrawal.id);
-
-      console.log('Approving withdrawal:', withdrawal.id);
-
-      // Call secure database function to approve withdrawal
       const { data, error } = await supabase.rpc('approve_withdrawal', {
         p_transaction_id: withdrawal.id
       });
-
-      console.log('RPC Response - data:', data);
-      console.log('RPC Response - error:', error);
-
-      if (error) {
-        console.error('Supabase RPC error:', error);
-        throw error;
-      }
-
-      if (!data) {
-        console.error('No data returned from RPC call');
-        throw new Error('No response from server');
-      }
-
+      
+      if (error) throw error;
+      
       const result = data as unknown as WithdrawalActionResponse;
-      console.log('Parsed result:', result);
       
       if (!result.success) {
-        console.error('Operation failed:', result.error);
         throw new Error(result.error || 'Failed to approve withdrawal');
       }
-
+      
       toast({
         title: 'Success',
         description: result.message || 'Withdrawal approved successfully',
       });
-
+      
       await fetchWithdrawals();
     } catch (error) {
-      console.error('Error approving withdrawal:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to approve withdrawal';
-      console.error('Final error message:', errorMessage);
-      
       toast({
         title: 'Error',
-        description: errorMessage,
+        description: error instanceof Error ? error.message : 'Failed to approve withdrawal',
         variant: 'destructive',
       });
     } finally {
@@ -190,51 +170,31 @@ const WithdrawManagement = () => {
   };
 
   const handleReject = async (withdrawal: WithdrawalRecord) => {
+    setProcessingId(withdrawal.id);
+    
     try {
-      setProcessingId(withdrawal.id);
-
-      console.log('Rejecting withdrawal:', withdrawal.id);
-
-      // Call secure database function to reject withdrawal
       const { data, error } = await supabase.rpc('reject_withdrawal', {
         p_transaction_id: withdrawal.id
       });
-
-      console.log('RPC Response - data:', data);
-      console.log('RPC Response - error:', error);
-
-      if (error) {
-        console.error('Supabase RPC error:', error);
-        throw error;
-      }
-
-      if (!data) {
-        console.error('No data returned from RPC call');
-        throw new Error('No response from server');
-      }
-
+      
+      if (error) throw error;
+      
       const result = data as unknown as WithdrawalActionResponse;
-      console.log('Parsed result:', result);
       
       if (!result.success) {
-        console.error('Operation failed:', result.error);
         throw new Error(result.error || 'Failed to reject withdrawal');
       }
-
-      toast({
-        title: 'Success',
-        description: result.message || 'Withdrawal rejected successfully',
-      });
-
-      await fetchWithdrawals();
-    } catch (error) {
-      console.error('Error rejecting withdrawal:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to reject withdrawal';
-      console.error('Final error message:', errorMessage);
       
       toast({
+        title: 'Success',
+        description: result.message || 'Withdrawal rejected and funds returned',
+      });
+      
+      await fetchWithdrawals();
+    } catch (error) {
+      toast({
         title: 'Error',
-        description: errorMessage,
+        description: error instanceof Error ? error.message : 'Failed to reject withdrawal',
         variant: 'destructive',
       });
     } finally {

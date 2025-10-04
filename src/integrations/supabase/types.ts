@@ -2336,6 +2336,7 @@ export type Database = {
         Row: {
           amount: number
           category: string
+          completed_at: string | null
           created_at: string | null
           currency: string
           fee: number | null
@@ -2345,6 +2346,7 @@ export type Database = {
           notes: string | null
           processed_at: string | null
           reference_id: string | null
+          rejected_at: string | null
           status: string | null
           to_address: string | null
           tx_hash: string | null
@@ -2354,6 +2356,7 @@ export type Database = {
         Insert: {
           amount: number
           category: string
+          completed_at?: string | null
           created_at?: string | null
           currency: string
           fee?: number | null
@@ -2363,6 +2366,7 @@ export type Database = {
           notes?: string | null
           processed_at?: string | null
           reference_id?: string | null
+          rejected_at?: string | null
           status?: string | null
           to_address?: string | null
           tx_hash?: string | null
@@ -2372,6 +2376,7 @@ export type Database = {
         Update: {
           amount?: number
           category?: string
+          completed_at?: string | null
           created_at?: string | null
           currency?: string
           fee?: number | null
@@ -2381,6 +2386,7 @@ export type Database = {
           notes?: string | null
           processed_at?: string | null
           reference_id?: string | null
+          rejected_at?: string | null
           status?: string | null
           to_address?: string | null
           tx_hash?: string | null
