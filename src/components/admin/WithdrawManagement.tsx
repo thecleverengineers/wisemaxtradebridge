@@ -24,6 +24,12 @@ interface WithdrawalRecord {
   user_name?: string;
 }
 
+interface WithdrawalActionResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
 const WithdrawManagement = () => {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,21 +98,22 @@ const WithdrawManagement = () => {
     try {
       setProcessingId(withdrawal.id);
 
-      // Update withdrawal status to completed
-      const { error: updateError } = await supabase
-        .from('transactions')
-        .update({ 
-          status: 'completed',
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', withdrawal.id)
-        .select();
+      // Call secure database function to approve withdrawal
+      const { data, error } = await supabase.rpc('approve_withdrawal', {
+        p_transaction_id: withdrawal.id
+      });
 
-      if (updateError) throw updateError;
+      if (error) throw error;
+
+      const result = data as unknown as WithdrawalActionResponse;
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to approve withdrawal');
+      }
 
       toast({
         title: 'Success',
-        description: 'Withdrawal approved successfully',
+        description: result.message || 'Withdrawal approved successfully',
       });
 
       await fetchWithdrawals();
@@ -114,7 +121,7 @@ const WithdrawManagement = () => {
       console.error('Error approving withdrawal:', error);
       toast({
         title: 'Error',
-        description: 'Failed to approve withdrawal',
+        description: error instanceof Error ? error.message : 'Failed to approve withdrawal',
         variant: 'destructive',
       });
     } finally {
@@ -126,43 +133,22 @@ const WithdrawManagement = () => {
     try {
       setProcessingId(withdrawal.id);
 
-      // Update withdrawal status to rejected
-      const { error: updateError } = await supabase
-        .from('transactions')
-        .update({ 
-          status: 'rejected',
-          rejected_at: new Date().toISOString()
-        })
-        .eq('id', withdrawal.id)
-        .select();
+      // Call secure database function to reject withdrawal
+      const { data, error } = await supabase.rpc('reject_withdrawal', {
+        p_transaction_id: withdrawal.id
+      });
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
-      // Get current wallet balance
-      const { data: walletData, error: fetchError } = await supabase
-        .from('wallets')
-        .select('balance, locked_balance')
-        .eq('user_id', withdrawal.user_id)
-        .eq('currency', withdrawal.currency)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Return the amount back to user's wallet
-      const { error: walletError } = await supabase
-        .from('wallets')
-        .update({
-          balance: walletData.balance + withdrawal.amount,
-          locked_balance: Math.max(0, walletData.locked_balance - withdrawal.amount)
-        })
-        .eq('user_id', withdrawal.user_id)
-        .eq('currency', withdrawal.currency);
-
-      if (walletError) throw walletError;
+      const result = data as unknown as WithdrawalActionResponse;
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to reject withdrawal');
+      }
 
       toast({
         title: 'Success',
-        description: `Withdrawal rejected and ${withdrawal.amount} ${withdrawal.currency} returned to user wallet`,
+        description: result.message || 'Withdrawal rejected successfully',
       });
 
       await fetchWithdrawals();
@@ -170,7 +156,7 @@ const WithdrawManagement = () => {
       console.error('Error rejecting withdrawal:', error);
       toast({
         title: 'Error',
-        description: 'Failed to reject withdrawal',
+        description: error instanceof Error ? error.message : 'Failed to reject withdrawal',
         variant: 'destructive',
       });
     } finally {

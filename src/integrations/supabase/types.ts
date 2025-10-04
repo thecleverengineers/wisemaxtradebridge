@@ -3078,6 +3078,10 @@ export type Database = {
       }
     }
     Functions: {
+      approve_withdrawal: {
+        Args: { p_transaction_id: string }
+        Returns: Json
+      }
       generate_trading_signal: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -3122,6 +3126,10 @@ export type Database = {
       process_roi_payouts: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      reject_withdrawal: {
+        Args: { p_transaction_id: string }
+        Returns: Json
       }
       settle_binary_trade: {
         Args: { p_trade_id: string }
