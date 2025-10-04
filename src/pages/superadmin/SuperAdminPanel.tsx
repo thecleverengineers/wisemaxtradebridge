@@ -15,6 +15,7 @@ import USDTStakingManagement from '@/components/superadmin/USDTStakingManagement
 import InvestmentPlansManagement from '@/components/superadmin/InvestmentPlansManagement';
 import StakingPlansManagement from '@/components/superadmin/StakingPlansManagement';
 import DepositManagement from '@/components/superadmin/DepositManagement';
+import WithdrawManagement from '@/components/admin/WithdrawManagement';
 import { AdminSidebar } from '@/components/superadmin/AdminSidebar';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -73,6 +74,8 @@ const SuperAdminPanel = () => {
         return <USDTStakingManagement />;
       case 'deposits':
         return <DepositManagement />;
+      case 'withdrawals':
+        return <WithdrawManagement />;
       case 'plans':
         return <InvestmentPlansManagement />;
       case 'staking-plans':
