@@ -511,12 +511,12 @@ const ForexTrading = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-900 overflow-x-hidden scroll-smooth">
       <AppHeader onMenuClick={() => setSidebarOpen(true)} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="px-3 sm:px-4 pt-16 sm:pt-20 pb-24 sm:pb-28 max-w-[100vw] overflow-x-hidden">
-        <div className="max-w-7xl mx-auto space-y-3 sm:space-y-6 w-full">
+      <main className="px-3 sm:px-4 pt-16 sm:pt-20 pb-28 sm:pb-32 max-w-[100vw] overflow-x-hidden">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 w-full animate-fade-in">
           {/* Header */}
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0 flex-1">
@@ -612,15 +612,15 @@ const ForexTrading = () => {
               <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Market Overview</h2>
             </div>
             <div className="space-y-3 sm:space-y-4 w-full">
-              <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+              <div className="grid gap-3 sm:gap-4 lg:grid-cols-2 w-full">
                 {/* Performance Chart */}
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader className="pb-2 sm:pb-4">
                     <CardTitle className="text-sm sm:text-base text-white">Trading Performance</CardTitle>
                     <CardDescription className="text-xs sm:text-sm text-purple-300">Your P&L over the last 7 days</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={250}>
+                  <CardContent className="pb-2">
+                    <ResponsiveContainer width="100%" height={200}>
                       <AreaChart data={performanceData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
                         <XAxis dataKey="date" stroke="#a78bfa" />
@@ -651,9 +651,8 @@ const ForexTrading = () => {
                   <CardTitle className="text-sm sm:text-base text-white">Popular Currency Pairs</CardTitle>
                   <CardDescription className="text-xs sm:text-sm text-purple-300">Top traded forex pairs</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-[300px] sm:h-auto">
-                    <div className="space-y-2 sm:space-y-4">
+                <CardContent className="pb-2">
+                  <div className="space-y-2 sm:space-y-3 max-h-[400px] overflow-y-auto">
                       {forexPairs.slice(0, 5).map((pair) => (
                         <div key={pair.id} className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
                           <div className="flex items-center space-x-2 sm:space-x-4">
@@ -675,9 +674,8 @@ const ForexTrading = () => {
                         </div>
                       ))}
                     </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
             </div>
           </div>
 
@@ -688,14 +686,14 @@ const ForexTrading = () => {
               <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Place Trade</h2>
             </div>
             <div className="space-y-3 sm:space-y-4 w-full">
-              <div className="grid gap-3 sm:gap-4 lg:grid-cols-3">
+              <div className="grid gap-3 sm:gap-4 lg:grid-cols-3 w-full">
                 {/* Chart Section */}
-                <div className="lg:col-span-2 space-y-3 sm:space-y-4">
+                <div className="lg:col-span-2 space-y-3 sm:space-y-4 w-full">
                   {/* Currency Pairs */}
-                  <Card className="bg-white/5 border-white/10">
+                  <Card className="bg-white/5 border-white/10 overflow-hidden">
                     <CardContent className="p-2 sm:p-4">
-                      <ScrollArea className="w-full">
-                        <div className="flex space-x-2 pb-2">
+                      <ScrollArea className="w-full max-w-full">
+                        <div className="flex space-x-2 pb-2 min-w-max">
                           {forexPairs.map((pair) => (
                             <Button
                               key={pair.id}
@@ -730,20 +728,20 @@ const ForexTrading = () => {
                   {/* Trading Chart */}
                   {selectedPair && (
                     <Card className="bg-white/5 border-white/10">
-                      <CardHeader className="pb-2 sm:pb-4">
-                        <div className="flex items-center justify-between gap-2">
-                          <div>
-                            <CardTitle className="text-sm sm:text-base text-white flex items-center">
-                              <Globe className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                              {selectedPair.symbol}
+                       <CardHeader className="pb-2 sm:pb-4">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="min-w-0 flex-1">
+                            <CardTitle className="text-sm sm:text-base text-white flex items-center flex-wrap">
+                              <Globe className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+                              <span className="truncate">{selectedPair.symbol}</span>
                             </CardTitle>
-                            <CardDescription className="text-xs sm:text-sm text-purple-300">
+                            <CardDescription className="text-xs sm:text-sm text-purple-300 truncate">
                               {selectedPair.base_currency}/{selectedPair.quote_currency}
                             </CardDescription>
                           </div>
-                          <div className="text-right">
-                            <p className="text-base sm:text-2xl font-bold text-white">{selectedPair.current_price.toFixed(5)}</p>
-                            <p className={`text-xs sm:text-sm flex items-center justify-end ${
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-base sm:text-xl lg:text-2xl font-bold text-white whitespace-nowrap">{selectedPair.current_price.toFixed(5)}</p>
+                            <p className={`text-xs sm:text-sm flex items-center justify-end whitespace-nowrap ${
                               selectedPair.change_percent >= 0 ? 'text-green-400' : 'text-red-400'
                             }`}>
                               {selectedPair.change_percent >= 0 ? <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> : <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />}
@@ -753,9 +751,9 @@ const ForexTrading = () => {
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="pb-2">
                         {/* Market Info */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mt-2 sm:mt-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                           <div className="p-2 sm:p-3 bg-white/5 rounded-lg">
                             <p className="text-purple-300 text-[10px] sm:text-xs">24h High</p>
                             <p className="text-white text-xs sm:text-sm font-semibold">{selectedPair.daily_high.toFixed(5)}</p>
@@ -779,7 +777,7 @@ const ForexTrading = () => {
                 </div>
 
                 {/* Order Form */}
-                <div className="space-y-3 sm:space-y-4">
+                <div className="space-y-3 sm:space-y-4 w-full">
 
                   {/* Place Order */}
                   <Card className="bg-white/5 border-white/10">
@@ -789,7 +787,7 @@ const ForexTrading = () => {
                         Create a new position
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-3 sm:space-y-4">
+                    <CardContent className="space-y-2 sm:space-y-3 pb-4">
                       {/* Order Type */}
                       <div>
                         <Label className="text-xs sm:text-sm text-purple-300">Order Type</Label>
@@ -932,41 +930,41 @@ const ForexTrading = () => {
                     {positions.filter(p => p.status === 'open').length} open position(s)
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-[300px] sm:h-[400px]">
-                    <div className="space-y-2 sm:space-y-4">
+                <CardContent className="pb-2">
+                  <ScrollArea className="h-[250px] sm:h-[350px]">
+                    <div className="space-y-2 sm:space-y-3 pb-2">
                       {positions.filter(p => p.status === 'open').length === 0 ? (
-                        <div className="text-center py-8">
-                          <BarChart3 className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                          <p className="text-sm text-purple-300">No open positions</p>
+                        <div className="text-center py-6 sm:py-8">
+                          <BarChart3 className="h-10 w-10 sm:h-12 sm:w-12 text-purple-400 mx-auto mb-3 sm:mb-4" />
+                          <p className="text-xs sm:text-sm text-purple-300">No open positions</p>
                         </div>
                       ) : (
                         positions.filter(p => p.status === 'open').map((position) => (
-                          <div key={position.id} className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
-                            <div className="flex items-center space-x-2 sm:space-x-4">
+                          <div key={position.id} className="flex items-center justify-between p-2 sm:p-3 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10 gap-2">
+                            <div className="flex items-center space-x-2 min-w-0 flex-1">
                               {position.position_type === 'buy' ? (
-                                <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
+                                <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-green-400 flex-shrink-0" />
                               ) : (
-                                <ArrowDownRight className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
+                                <ArrowDownRight className="h-4 w-4 sm:h-5 sm:w-5 text-red-400 flex-shrink-0" />
                               )}
-                              <div>
-                                <p className="text-xs sm:text-sm font-medium capitalize text-white">
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs sm:text-sm font-medium capitalize text-white truncate">
                                   {position.forex_pairs?.symbol || 'Unknown'} - {position.position_type}
                                 </p>
-                                <p className="text-[10px] sm:text-xs text-purple-300">
+                                <p className="text-[10px] sm:text-xs text-purple-300 truncate">
                                   {formatDistanceToNow(new Date(position.created_at), { addSuffix: true })}
                                 </p>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <p className={`text-sm sm:text-lg font-bold ${position.profit_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {position.profit_loss >= 0 ? '+' : ''}{position.profit_loss.toFixed(2)} USDT
+                            <div className="text-right flex-shrink-0">
+                              <p className={`text-sm sm:text-base font-bold ${position.profit_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {position.profit_loss >= 0 ? '+' : ''}{position.profit_loss.toFixed(2)}
                               </p>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleClosePosition(position.id)}
-                                className="border-white/10 mt-1 sm:mt-2 text-xs"
+                                className="border-white/10 mt-1 text-[10px] sm:text-xs h-6 sm:h-7 px-2"
                               >
                                 Close
                               </Button>
@@ -999,7 +997,7 @@ const ForexTrading = () => {
             <AutomatedBots />
           </div>
         </div>
-      </div>
+      </main>
 
       <BottomNavigation />
     </div>
