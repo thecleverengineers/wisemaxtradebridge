@@ -7,6 +7,7 @@ import { DashboardContent } from '@/components/dashboard/DashboardContent';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import logo from '@/assets/laktoken-logo.png';
 
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -39,8 +40,8 @@ const Index = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent"></div>
         <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center relative z-10">
           <div className="mb-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary/50">
-              <span className="text-primary-foreground font-bold text-2xl">LT</span>
+            <div className="mx-auto mb-6 flex justify-center">
+              <img src={logo} alt="LakToken Logo" className="w-32 h-32 object-contain" />
             </div>
             <h1 className="text-4xl font-bold text-foreground mb-4">Welcome to LakToken</h1>
             <p className="text-muted-foreground text-lg max-w-md mx-auto">
