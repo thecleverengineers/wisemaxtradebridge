@@ -511,25 +511,25 @@ const ForexTrading = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-slate-900 overflow-x-hidden">
       <AppHeader onMenuClick={() => setSidebarOpen(true)} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="px-3 sm:px-4 pt-16 sm:pt-20 pb-20 sm:pb-24">
-        <div className="max-w-7xl mx-auto space-y-3 sm:space-y-6">
+      <div className="px-3 sm:px-4 pt-16 sm:pt-20 pb-24 sm:pb-28 max-w-[100vw] overflow-x-hidden">
+        <div className="max-w-7xl mx-auto space-y-3 sm:space-y-6 w-full">
           {/* Header */}
           <div className="flex items-center justify-between gap-2">
-            <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">Forex Trading</h1>
-              <p className="text-xs sm:text-sm text-purple-300">Welcome back, {profile?.name || 'Trader'}</p>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white truncate">Forex Trading</h1>
+              <p className="text-xs sm:text-sm text-purple-300 truncate">Welcome back, {profile?.name || 'Trader'}</p>
             </div>
-            <Badge className={profile?.kyc_status === 'verified' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'}>
+            <Badge className={`flex-shrink-0 ${profile?.kyc_status === 'verified' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'}`}>
               <span className="text-xs">KYC: {profile?.kyc_status || 'Pending'}</span>
             </Badge>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 w-full">
             <Card className="bg-white/5 border-white/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
                 <CardTitle className="text-xs sm:text-sm font-medium text-purple-300">Total Balance</CardTitle>
@@ -597,21 +597,21 @@ const ForexTrading = () => {
           </div>
 
           {/* Signals Section */}
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3 sm:space-y-4 w-full">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
-              <h2 className="text-lg sm:text-xl font-bold text-white">Live Trading Signals</h2>
+              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Live Trading Signals</h2>
             </div>
             <LiveTradingSignals />
           </div>
 
           {/* Overview Section */}
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3 sm:space-y-4 w-full">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
-              <h2 className="text-lg sm:text-xl font-bold text-white">Market Overview</h2>
+              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Market Overview</h2>
             </div>
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-3 sm:space-y-4 w-full">
               <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
                 {/* Performance Chart */}
                 <Card className="bg-white/5 border-white/10">
@@ -682,12 +682,12 @@ const ForexTrading = () => {
           </div>
 
           {/* Trading Section */}
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3 sm:space-y-4 w-full">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
-              <h2 className="text-lg sm:text-xl font-bold text-white">Place Trade</h2>
+              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Place Trade</h2>
             </div>
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-3 sm:space-y-4 w-full">
               <div className="grid gap-3 sm:gap-4 lg:grid-cols-3">
                 {/* Chart Section */}
                 <div className="lg:col-span-2 space-y-3 sm:space-y-4">
@@ -919,12 +919,12 @@ const ForexTrading = () => {
           </div>
 
           {/* Positions Section */}
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3 sm:space-y-4 w-full">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
-              <h2 className="text-lg sm:text-xl font-bold text-white">Open Positions</h2>
+              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Open Positions</h2>
             </div>
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-3 sm:space-y-4 w-full">
               <Card className="bg-white/5 border-white/10">
                 <CardHeader className="pb-2 sm:pb-4">
                   <CardTitle className="text-sm sm:text-base text-white">Active Trades</CardTitle>
@@ -982,19 +982,19 @@ const ForexTrading = () => {
           </div>
 
           {/* Copy Trading Section */}
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3 sm:space-y-4 w-full">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
-              <h2 className="text-lg sm:text-xl font-bold text-white">Copy Trading</h2>
+              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Copy Trading</h2>
             </div>
             <CopyTrading />
           </div>
 
           {/* Auto Bots Section */}
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3 sm:space-y-4 w-full">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full"></div>
-              <h2 className="text-lg sm:text-xl font-bold text-white">Automated Trading Bots</h2>
+              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Automated Trading Bots</h2>
             </div>
             <AutomatedBots />
           </div>

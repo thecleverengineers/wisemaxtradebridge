@@ -17,7 +17,7 @@ export const BottomNavigation = () => {
   const location = useLocation();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40">
+    <div className="fixed bottom-0 left-0 right-0 z-[50]">
       <div className="bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 backdrop-blur-md border-t border-white/10">
         <div className="flex items-center justify-around px-2 py-2">
           {navItems.map((item, index) => {

@@ -21,7 +21,7 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 backdrop-blur-md border-b border-white/10">
+    <header className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 backdrop-blur-md border-b border-white/10">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center space-x-3">
           <Button
