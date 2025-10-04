@@ -511,36 +511,36 @@ const ForexTrading = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 overflow-x-hidden scroll-smooth">
+    <div className="min-h-screen bg-slate-900 overflow-x-hidden">
       <AppHeader onMenuClick={() => setSidebarOpen(true)} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <main className="px-3 sm:px-4 pt-16 sm:pt-20 pb-28 sm:pb-32 max-w-[100vw] overflow-x-hidden">
-        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 w-full animate-fade-in">
+      <main className="px-2 sm:px-4 pt-14 sm:pt-16 pb-20 sm:pb-24 w-full overflow-x-hidden">
+        <div className="max-w-7xl mx-auto w-full space-y-3 sm:space-y-4">
           {/* Header */}
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-start sm:items-center justify-between gap-2 px-1">
             <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white truncate">Forex Trading</h1>
-              <p className="text-xs sm:text-sm text-purple-300 truncate">Welcome back, {profile?.name || 'Trader'}</p>
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-white truncate leading-tight">Forex Trading</h1>
+              <p className="text-[10px] sm:text-sm text-purple-300 truncate">Welcome, {profile?.name || 'Trader'}</p>
             </div>
-            <Badge className={`flex-shrink-0 ${profile?.kyc_status === 'verified' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'}`}>
-              <span className="text-xs">KYC: {profile?.kyc_status || 'Pending'}</span>
+            <Badge className={`flex-shrink-0 text-[10px] sm:text-xs px-1.5 py-0.5 ${profile?.kyc_status === 'verified' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'}`}>
+              KYC: {profile?.kyc_status || 'Pending'}
             </Badge>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 w-full">
+          <div className="grid gap-2 grid-cols-2 lg:grid-cols-4 w-full px-1">
             <Card className="bg-white/5 border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-                <CardTitle className="text-xs sm:text-sm font-medium text-purple-300">Total Balance</CardTitle>
-                <Wallet className="h-3 w-3 sm:h-4 sm:w-4 text-purple-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
+                <CardTitle className="text-[10px] sm:text-xs font-medium text-purple-300 leading-tight">Total Balance</CardTitle>
+                <Wallet className="h-3 w-3 text-purple-300 flex-shrink-0" />
               </CardHeader>
-              <CardContent className="pt-1">
-                <div className="text-lg sm:text-2xl font-bold text-white">${walletBalance.toFixed(2)}</div>
-                <p className="text-[10px] sm:text-xs text-purple-300">
+              <CardContent className="pt-0 px-3 pb-3">
+                <div className="text-base sm:text-xl font-bold text-white leading-tight">${walletBalance.toFixed(2)}</div>
+                <p className="text-[9px] sm:text-xs text-purple-300 mt-0.5">
                   {walletBalance > 0 ? (
                     <span className="text-green-400 flex items-center">
-                      <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3 mr-1" />
+                      <TrendingUp className="h-2 w-2 mr-0.5" />
                       Active
                     </span>
                   ) : (
@@ -551,45 +551,45 @@ const ForexTrading = () => {
             </Card>
 
             <Card className="bg-white/5 border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-                <CardTitle className="text-xs sm:text-sm font-medium text-purple-300">Used Margin</CardTitle>
-                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-purple-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
+                <CardTitle className="text-[10px] sm:text-xs font-medium text-purple-300 leading-tight">Used Margin</CardTitle>
+                <DollarSign className="h-3 w-3 text-purple-300 flex-shrink-0" />
               </CardHeader>
-              <CardContent className="pt-1">
-                <div className="text-lg sm:text-2xl font-bold text-white">${totalMargin.toFixed(2)}</div>
-                <p className="text-[10px] sm:text-xs text-purple-300">
-                  {openPositions} open positions
+              <CardContent className="pt-0 px-3 pb-3">
+                <div className="text-base sm:text-xl font-bold text-white leading-tight">${totalMargin.toFixed(2)}</div>
+                <p className="text-[9px] sm:text-xs text-purple-300 mt-0.5">
+                  {openPositions} positions
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-white/5 border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-                <CardTitle className="text-xs sm:text-sm font-medium text-purple-300">Total P&L</CardTitle>
-                <Users className="h-3 w-3 sm:h-4 sm:w-4 text-purple-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
+                <CardTitle className="text-[10px] sm:text-xs font-medium text-purple-300 leading-tight">Total P&L</CardTitle>
+                <Users className="h-3 w-3 text-purple-300 flex-shrink-0" />
               </CardHeader>
-              <CardContent className="pt-1">
-                <div className={`text-lg sm:text-2xl font-bold ${totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)} USDT
+              <CardContent className="pt-0 px-3 pb-3">
+                <div className={`text-base sm:text-xl font-bold leading-tight ${totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)}
                 </div>
-                <p className="text-[10px] sm:text-xs text-purple-300">
+                <p className="text-[9px] sm:text-xs text-purple-300 mt-0.5">
                   Unrealized P/L
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-white/5 border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-                <CardTitle className="text-xs sm:text-sm font-medium text-purple-300">Win Rate</CardTitle>
-                <Activity className="h-3 w-3 sm:h-4 sm:w-4 text-purple-300" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
+                <CardTitle className="text-[10px] sm:text-xs font-medium text-purple-300 leading-tight">Win Rate</CardTitle>
+                <Activity className="h-3 w-3 text-purple-300 flex-shrink-0" />
               </CardHeader>
-              <CardContent className="pt-1">
-                <div className="text-lg sm:text-2xl font-bold text-white">
+              <CardContent className="pt-0 px-3 pb-3">
+                <div className="text-base sm:text-xl font-bold text-white leading-tight">
                   {positions.filter(p => p.profit_loss > 0).length > 0 
                     ? `${((positions.filter(p => p.profit_loss > 0).length / positions.length) * 100).toFixed(1)}%`
                     : '0%'}
                 </div>
-                <p className="text-[10px] sm:text-xs text-purple-300">
+                <p className="text-[9px] sm:text-xs text-purple-300 mt-0.5">
                   {positions.length} total
                 </p>
               </CardContent>
@@ -597,21 +597,21 @@ const ForexTrading = () => {
           </div>
 
           {/* Signals Section */}
-          <div className="space-y-3 sm:space-y-4 w-full">
-            <div className="flex items-center gap-2">
-              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
-              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Live Trading Signals</h2>
+          <div className="space-y-2 w-full px-1">
+            <div className="flex items-center gap-1.5">
+              <div className="h-5 w-0.5 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-sm sm:text-base font-bold text-white">Live Trading Signals</h2>
             </div>
             <LiveTradingSignals />
           </div>
 
           {/* Overview Section */}
-          <div className="space-y-3 sm:space-y-4 w-full">
-            <div className="flex items-center gap-2">
-              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
-              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Market Overview</h2>
+          <div className="space-y-2 w-full px-1">
+            <div className="flex items-center gap-1.5">
+              <div className="h-5 w-0.5 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-sm sm:text-base font-bold text-white">Market Overview</h2>
             </div>
-            <div className="space-y-3 sm:space-y-4 w-full">
+            <div className="space-y-2 w-full">
               <div className="grid gap-3 sm:gap-4 lg:grid-cols-2 w-full">
                 {/* Performance Chart */}
                 <Card className="bg-white/5 border-white/10">
@@ -680,12 +680,12 @@ const ForexTrading = () => {
           </div>
 
           {/* Trading Section */}
-          <div className="space-y-3 sm:space-y-4 w-full">
-            <div className="flex items-center gap-2">
-              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
-              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Place Trade</h2>
+          <div className="space-y-2 w-full px-1">
+            <div className="flex items-center gap-1.5">
+              <div className="h-5 w-0.5 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-sm sm:text-base font-bold text-white">Place Trade</h2>
             </div>
-            <div className="space-y-3 sm:space-y-4 w-full">
+            <div className="space-y-2 w-full">
               <div className="grid gap-3 sm:gap-4 lg:grid-cols-3 w-full">
                 {/* Chart Section */}
                 <div className="lg:col-span-2 space-y-3 sm:space-y-4 w-full">
@@ -917,12 +917,12 @@ const ForexTrading = () => {
           </div>
 
           {/* Positions Section */}
-          <div className="space-y-3 sm:space-y-4 w-full">
-            <div className="flex items-center gap-2">
-              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
-              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Open Positions</h2>
+          <div className="space-y-2 w-full px-1">
+            <div className="flex items-center gap-1.5">
+              <div className="h-5 w-0.5 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-sm sm:text-base font-bold text-white">Open Positions</h2>
             </div>
-            <div className="space-y-3 sm:space-y-4 w-full">
+            <div className="space-y-2 w-full">
               <Card className="bg-white/5 border-white/10">
                 <CardHeader className="pb-2 sm:pb-4">
                   <CardTitle className="text-sm sm:text-base text-white">Active Trades</CardTitle>
@@ -980,19 +980,19 @@ const ForexTrading = () => {
           </div>
 
           {/* Copy Trading Section */}
-          <div className="space-y-3 sm:space-y-4 w-full">
-            <div className="flex items-center gap-2">
-              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
-              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Copy Trading</h2>
+          <div className="space-y-2 w-full px-1">
+            <div className="flex items-center gap-1.5">
+              <div className="h-5 w-0.5 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-sm sm:text-base font-bold text-white">Copy Trading</h2>
             </div>
             <CopyTrading />
           </div>
 
           {/* Auto Bots Section */}
-          <div className="space-y-3 sm:space-y-4 w-full">
-            <div className="flex items-center gap-2">
-              <div className="h-6 sm:h-8 w-1 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
-              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Automated Trading Bots</h2>
+          <div className="space-y-2 w-full px-1 mb-4">
+            <div className="flex items-center gap-1.5">
+              <div className="h-5 w-0.5 bg-gradient-to-b from-purple-600 to-blue-600 rounded-full flex-shrink-0"></div>
+              <h2 className="text-sm sm:text-base font-bold text-white">Automated Trading Bots</h2>
             </div>
             <AutomatedBots />
           </div>
