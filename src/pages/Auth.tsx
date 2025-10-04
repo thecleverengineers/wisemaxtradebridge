@@ -13,7 +13,7 @@ import { signInSchema, signUpSchema } from '@/lib/validations';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import logo from '@/assets/laktoken-logo.jpg';
+import logo from '@/assets/laktoken-logo.png';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);

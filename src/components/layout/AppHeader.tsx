@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
-import logo from '@/assets/laktoken-logo.jpg';
+import logo from '@/assets/laktoken-logo.png';
 
 interface AppHeaderProps {
   onMenuClick: () => void;

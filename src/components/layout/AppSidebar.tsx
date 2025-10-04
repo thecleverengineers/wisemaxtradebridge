@@ -9,7 +9,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useSuperAdmin } from '@/hooks/useSuperAdmin';
 import { supabase } from '@/integrations/supabase/client';
-import logo from '@/assets/laktoken-logo.jpg';
+import logo from '@/assets/laktoken-logo.png';
 
 interface AppSidebarProps {
   isOpen: boolean;
