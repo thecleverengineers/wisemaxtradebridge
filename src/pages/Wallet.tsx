@@ -244,17 +244,17 @@ const Wallet = () => {
   };
 
   const getTransactionColor = (type: string) => {
-    return type === 'deposit' || type === 'roi' || type === 'referral' ? 'text-green-400' : 'text-red-400';
+    return type === 'deposit' || type === 'roi' || type === 'referral' ? 'text-primary' : 'text-destructive';
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-500/10 text-green-400 border-green-500/20">Completed</Badge>;
+        return <Badge variant="default">Completed</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20">Pending</Badge>;
+        return <Badge variant="secondary">Pending</Badge>;
       case 'failed':
-        return <Badge className="bg-red-500/10 text-red-400 border-red-500/20">Failed</Badge>;
+        return <Badge variant="destructive">Failed</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -262,7 +262,7 @@ const Wallet = () => {
 
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-background">
       <AppHeader onMenuClick={() => setSidebarOpen(true)} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
@@ -275,34 +275,32 @@ const Wallet = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/')}
-                className="text-white hover:bg-white/10"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-white">USDT Wallet</h1>
-                <p className="text-purple-300">Manage your USDT funds</p>
+                <h1 className="text-2xl font-bold text-foreground">USDT Wallet</h1>
+                <p className="text-muted-foreground">Manage your USDT funds</p>
               </div>
             </div>
           </div>
 
           {/* Balance Card */}
-          <Card className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 border-0 text-white">
+          <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 border-border">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <WalletIcon className="h-8 w-8" />
+                  <WalletIcon className="h-8 w-8 text-primary" />
                   <div>
-                    <p className="text-blue-100">USDT Balance (BEP20)</p>
+                    <p className="text-muted-foreground">USDT Balance (BEP20)</p>
                     <div className="flex items-center space-x-2">
-                      <p className="text-3xl font-bold">
+                      <p className="text-3xl font-bold text-foreground">
                         {showBalance ? `${walletData?.total_balance?.toFixed(2) || '0.00'} USDT` : '****'}
                       </p>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setShowBalance(!showBalance)}
-                        className="text-white hover:bg-white/10"
                       >
                         {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
@@ -313,20 +311,20 @@ const Wallet = () => {
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-blue-100 text-sm">ROI Income</p>
-                  <p className="text-white font-semibold">{walletData?.roi_income?.toFixed(2) || '0.00'} USDT</p>
+                  <p className="text-muted-foreground text-sm">ROI Income</p>
+                  <p className="text-foreground font-semibold">{walletData?.roi_income?.toFixed(2) || '0.00'} USDT</p>
                 </div>
                 <div>
-                  <p className="text-blue-100 text-sm">Referral Income</p>
-                  <p className="text-white font-semibold">{walletData?.referral_income?.toFixed(2) || '0.00'} USDT</p>
+                  <p className="text-muted-foreground text-sm">Referral Income</p>
+                  <p className="text-foreground font-semibold">{walletData?.referral_income?.toFixed(2) || '0.00'} USDT</p>
                 </div>
                 <div>
-                  <p className="text-blue-100 text-sm">Bonus Income</p>
-                  <p className="text-white font-semibold">{walletData?.bonus_income?.toFixed(2) || '0.00'} USDT</p>
+                  <p className="text-muted-foreground text-sm">Bonus Income</p>
+                  <p className="text-foreground font-semibold">{walletData?.bonus_income?.toFixed(2) || '0.00'} USDT</p>
                 </div>
                 <div>
-                  <p className="text-blue-100 text-sm">Total Withdrawn</p>
-                  <p className="text-white font-semibold">{walletData?.total_withdrawn?.toFixed(2) || '0.00'} USDT</p>
+                  <p className="text-muted-foreground text-sm">Total Withdrawn</p>
+                  <p className="text-foreground font-semibold">{walletData?.total_withdrawn?.toFixed(2) || '0.00'} USDT</p>
                 </div>
               </div>
             </CardContent>
@@ -341,21 +339,21 @@ const Wallet = () => {
 
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="h-16 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800">
+                <Button variant="destructive" className="h-16">
                   <ArrowUpRight className="h-6 w-6 mr-2" />
                   Withdraw USDT
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-slate-800 border-white/10 max-w-md">
+              <DialogContent className="bg-card border-border max-w-md">
                 <DialogHeader>
-                  <DialogTitle className="text-white">Withdraw USDT (BEP20)</DialogTitle>
-                  <DialogDescription className="text-purple-300">
+                  <DialogTitle className="text-foreground">Withdraw USDT (BEP20)</DialogTitle>
+                  <DialogDescription className="text-muted-foreground">
                     Withdraw USDT to your BEP20 wallet
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="withdraw-amount" className="text-white">Amount (USDT)</Label>
+                    <Label htmlFor="withdraw-amount" className="text-foreground">Amount (USDT)</Label>
                     <Input
                       id="withdraw-amount"
                       type="number"
@@ -363,49 +361,49 @@ const Wallet = () => {
                       placeholder="Enter amount to withdraw"
                       value={withdrawAmount}
                       onChange={(e) => setWithdrawAmount(e.target.value)}
-                      className="bg-white/5 border-white/10 text-white"
                     />
-                    <p className="text-purple-300 text-sm mt-1">
+                    <p className="text-muted-foreground text-sm mt-1">
                       Available: {walletData?.total_balance?.toFixed(2) || '0.00'} USDT
                     </p>
                   </div>
 
                   <div>
-                    <Label htmlFor="withdraw-address" className="text-white">USDT BEP20 Wallet Address</Label>
+                    <Label htmlFor="withdraw-address" className="text-foreground">USDT BEP20 Wallet Address</Label>
                     <Input
                       id="withdraw-address"
                       type="text"
                       placeholder="Enter your USDT BEP20 address"
                       value={withdrawAddress}
                       onChange={(e) => setWithdrawAddress(e.target.value)}
-                      className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                      className="font-mono text-sm"
                     />
                   </div>
 
                   {withdrawAmount && (
-                    <div className="bg-white/5 rounded-lg p-3 space-y-1">
+                    <div className="bg-muted rounded-lg p-3 space-y-1">
                       <div className="flex justify-between text-sm">
-                        <span className="text-purple-300">Withdrawal Amount:</span>
-                        <span className="text-white">{parseFloat(withdrawAmount).toFixed(2)} USDT</span>
+                        <span className="text-muted-foreground">Withdrawal Amount:</span>
+                        <span className="text-foreground">{parseFloat(withdrawAmount).toFixed(2)} USDT</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-purple-300">Network:</span>
-                        <span className="text-white">BEP20</span>
+                        <span className="text-muted-foreground">Network:</span>
+                        <span className="text-foreground">BEP20</span>
                       </div>
                     </div>
                   )}
 
-                  <Alert className="bg-yellow-500/10 border-yellow-500/20">
-                    <AlertCircle className="h-4 w-4 text-yellow-400" />
-                    <AlertDescription className="text-yellow-300">
+                  <Alert className="bg-muted border-border">
+                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                    <AlertDescription className="text-muted-foreground">
                       Withdrawals require admin approval and may take 24-48 hours to process.
                     </AlertDescription>
                   </Alert>
 
                   <Button 
+                    variant="destructive"
                     onClick={handleWithdraw}
                     disabled={withdrawing || !withdrawAmount || !withdrawAddress}
-                    className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+                    className="w-full"
                   >
                     {withdrawing ? 'Processing...' : 'Submit Withdrawal Request'}
                   </Button>
@@ -415,40 +413,40 @@ const Wallet = () => {
           </div>
 
           {/* Transaction History */}
-          <Card className="bg-white/5 border-white/10">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-white flex items-center">
+              <CardTitle className="flex items-center">
                 <History className="h-5 w-5 mr-2" />
                 Transaction History
               </CardTitle>
-              <CardDescription className="text-purple-300">
+              <CardDescription>
                 Your recent USDT transactions
               </CardDescription>
             </CardHeader>
             <CardContent>
               {transactions.length === 0 ? (
                 <div className="text-center py-8">
-                  <DollarSign className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                  <p className="text-purple-300">No transactions found</p>
+                  <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No transactions found</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {transactions.map((transaction) => {
                     const TransactionIcon = getTransactionIcon(transaction.type);
                     return (
-                      <div key={transaction.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                      <div key={transaction.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
                         <div className="flex items-center space-x-3">
-                          <div className={`p-2 rounded-full bg-white/10`}>
+                          <div className="p-2 rounded-full bg-background">
                             <TransactionIcon className={`h-4 w-4 ${getTransactionColor(transaction.type)}`} />
                           </div>
                           <div>
-                            <h4 className="text-white font-medium capitalize">{transaction.type}</h4>
-                            <p className="text-purple-300 text-sm">
+                            <h4 className="text-foreground font-medium capitalize">{transaction.type}</h4>
+                            <p className="text-muted-foreground text-sm">
                               {new Date(transaction.created_at).toLocaleDateString()} • 
                               {new Date(transaction.created_at).toLocaleTimeString()}
                             </p>
                             {transaction.tx_hash && (
-                              <p className="text-purple-400 text-xs font-mono">
+                              <p className="text-muted-foreground text-xs font-mono">
                                 TxID: {transaction.tx_hash.substring(0, 10)}...
                               </p>
                             )}
