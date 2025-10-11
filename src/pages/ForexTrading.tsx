@@ -515,29 +515,29 @@ const ForexTrading = () => {
       <AppHeader onMenuClick={() => setSidebarOpen(true)} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <main className="px-2 sm:px-4 pt-12 sm:pt-14 pb-24 sm:pb-28 w-full overflow-x-hidden max-w-full">
-        <div className="max-w-7xl mx-auto w-full space-y-2 sm:space-y-3">
+      <main className="px-2 sm:px-4 pt-16 sm:pt-14 pb-24 sm:pb-28 w-full overflow-x-hidden max-w-full">
+        <div className="max-w-7xl mx-auto w-full space-y-3 sm:space-y-3">
           {/* Header */}
-          <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex items-center justify-between gap-2 px-1 py-2">
             <div className="min-w-0 flex-1">
               <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-foreground truncate leading-tight">Forex Trading</h1>
-              <p className="text-[9px] sm:text-xs text-muted-foreground truncate">Welcome, {profile?.name || 'Trader'}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground truncate mt-0.5">Welcome, {profile?.name || 'Trader'}</p>
             </div>
-            <Badge variant={profile?.kyc_status === 'verified' ? 'default' : 'secondary'} className="flex-shrink-0 text-[9px] sm:text-xs px-1.5 py-0.5">
+            <Badge variant={profile?.kyc_status === 'verified' ? 'default' : 'secondary'} className="flex-shrink-0 text-[9px] sm:text-xs px-2 py-1">
               KYC: {profile?.kyc_status || 'Pending'}
             </Badge>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid gap-1.5 sm:gap-2 grid-cols-2 lg:grid-cols-4 w-full px-1">
+          <div className="grid gap-2 sm:gap-2 grid-cols-2 lg:grid-cols-4 w-full px-1">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0.5 px-2 sm:px-3 pt-2 sm:pt-3">
-                <CardTitle className="text-[9px] sm:text-xs font-medium text-muted-foreground leading-tight">Balance</CardTitle>
-                <Wallet className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-muted-foreground flex-shrink-0" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 sm:px-3 pt-3 sm:pt-3">
+                <CardTitle className="text-[10px] sm:text-xs font-medium text-muted-foreground leading-tight">Balance</CardTitle>
+                <Wallet className="h-3 w-3 sm:h-3 sm:w-3 text-muted-foreground flex-shrink-0" />
               </CardHeader>
-              <CardContent className="pt-0 px-2 sm:px-3 pb-2 sm:pb-3">
-                <div className="text-sm sm:text-base lg:text-xl font-bold text-foreground leading-tight">${walletBalance.toFixed(2)}</div>
-                <p className="text-[8px] sm:text-[9px] text-muted-foreground mt-0.5">
+              <CardContent className="pt-0 px-3 sm:px-3 pb-3 sm:pb-3">
+                <div className="text-base sm:text-base lg:text-xl font-bold text-foreground leading-tight">${walletBalance.toFixed(2)}</div>
+                <p className="text-[9px] sm:text-[9px] text-muted-foreground mt-1">
                   {walletBalance > 0 ? (
                     <span className="text-primary flex items-center">
                       <TrendingUp className="h-2 w-2 mr-0.5" />
@@ -551,45 +551,45 @@ const ForexTrading = () => {
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0.5 px-2 sm:px-3 pt-2 sm:pt-3">
-                <CardTitle className="text-[9px] sm:text-xs font-medium text-muted-foreground leading-tight">Margin</CardTitle>
-                <DollarSign className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-muted-foreground flex-shrink-0" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 sm:px-3 pt-3 sm:pt-3">
+                <CardTitle className="text-[10px] sm:text-xs font-medium text-muted-foreground leading-tight">Margin</CardTitle>
+                <DollarSign className="h-3 w-3 sm:h-3 sm:w-3 text-muted-foreground flex-shrink-0" />
               </CardHeader>
-              <CardContent className="pt-0 px-2 sm:px-3 pb-2 sm:pb-3">
-                <div className="text-sm sm:text-base lg:text-xl font-bold text-foreground leading-tight">${totalMargin.toFixed(2)}</div>
-                <p className="text-[8px] sm:text-[9px] text-muted-foreground mt-0.5">
+              <CardContent className="pt-0 px-3 sm:px-3 pb-3 sm:pb-3">
+                <div className="text-base sm:text-base lg:text-xl font-bold text-foreground leading-tight">${totalMargin.toFixed(2)}</div>
+                <p className="text-[9px] sm:text-[9px] text-muted-foreground mt-1">
                   {openPositions} positions
                 </p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0.5 px-2 sm:px-3 pt-2 sm:pt-3">
-                <CardTitle className="text-[9px] sm:text-xs font-medium text-muted-foreground leading-tight">P&L</CardTitle>
-                <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-muted-foreground flex-shrink-0" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 sm:px-3 pt-3 sm:pt-3">
+                <CardTitle className="text-[10px] sm:text-xs font-medium text-muted-foreground leading-tight">P&L</CardTitle>
+                <Users className="h-3 w-3 sm:h-3 sm:w-3 text-muted-foreground flex-shrink-0" />
               </CardHeader>
-              <CardContent className="pt-0 px-2 sm:px-3 pb-2 sm:pb-3">
-                <div className={`text-sm sm:text-base lg:text-xl font-bold leading-tight ${totalPnL >= 0 ? 'text-primary' : 'text-destructive'}`}>
+              <CardContent className="pt-0 px-3 sm:px-3 pb-3 sm:pb-3">
+                <div className={`text-base sm:text-base lg:text-xl font-bold leading-tight ${totalPnL >= 0 ? 'text-primary' : 'text-destructive'}`}>
                   {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)}
                 </div>
-                <p className="text-[8px] sm:text-[9px] text-muted-foreground mt-0.5">
+                <p className="text-[9px] sm:text-[9px] text-muted-foreground mt-1">
                   Unrealized
                 </p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0.5 px-2 sm:px-3 pt-2 sm:pt-3">
-                <CardTitle className="text-[9px] sm:text-xs font-medium text-muted-foreground leading-tight">Win Rate</CardTitle>
-                <Activity className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-muted-foreground flex-shrink-0" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 sm:px-3 pt-3 sm:pt-3">
+                <CardTitle className="text-[10px] sm:text-xs font-medium text-muted-foreground leading-tight">Win Rate</CardTitle>
+                <Activity className="h-3 w-3 sm:h-3 sm:w-3 text-muted-foreground flex-shrink-0" />
               </CardHeader>
-              <CardContent className="pt-0 px-2 sm:px-3 pb-2 sm:pb-3">
-                <div className="text-sm sm:text-base lg:text-xl font-bold text-foreground leading-tight">
+              <CardContent className="pt-0 px-3 sm:px-3 pb-3 sm:pb-3">
+                <div className="text-base sm:text-base lg:text-xl font-bold text-foreground leading-tight">
                   {positions.filter(p => p.profit_loss > 0).length > 0 
                     ? `${((positions.filter(p => p.profit_loss > 0).length / positions.length) * 100).toFixed(1)}%`
                     : '0%'}
                 </div>
-                <p className="text-[8px] sm:text-[9px] text-muted-foreground mt-0.5">
+                <p className="text-[9px] sm:text-[9px] text-muted-foreground mt-1">
                   {positions.length} total
                 </p>
               </CardContent>
@@ -597,19 +597,19 @@ const ForexTrading = () => {
           </div>
 
           {/* Signals Section */}
-          <div className="space-y-1.5 sm:space-y-2 w-full px-1">
-            <div className="flex items-center gap-1">
+          <div className="space-y-2 sm:space-y-2 w-full px-1 mt-2">
+            <div className="flex items-center gap-1.5">
               <div className="h-4 w-0.5 bg-gradient-to-b from-primary to-accent rounded-full flex-shrink-0"></div>
-              <h2 className="text-xs sm:text-sm font-bold text-foreground">Live Signals</h2>
+              <h2 className="text-sm sm:text-sm font-bold text-foreground">Live Signals</h2>
             </div>
             <LiveTradingSignals />
           </div>
 
           {/* Overview Section */}
-          <div className="space-y-1.5 sm:space-y-2 w-full px-1">
-            <div className="flex items-center gap-1">
+          <div className="space-y-2 sm:space-y-2 w-full px-1 mt-2">
+            <div className="flex items-center gap-1.5">
               <div className="h-4 w-0.5 bg-gradient-to-b from-primary to-accent rounded-full flex-shrink-0"></div>
-              <h2 className="text-xs sm:text-sm font-bold text-foreground">Market Overview</h2>
+              <h2 className="text-sm sm:text-sm font-bold text-foreground">Market Overview</h2>
             </div>
             <div className="space-y-2 w-full">
               <div className="grid gap-2 sm:gap-3 lg:grid-cols-2 w-full">
@@ -680,10 +680,10 @@ const ForexTrading = () => {
           </div>
 
           {/* Trading Section */}
-          <div className="space-y-1.5 sm:space-y-2 w-full px-1">
-            <div className="flex items-center gap-1">
+          <div className="space-y-2 sm:space-y-2 w-full px-1 mt-3">
+            <div className="flex items-center gap-1.5">
               <div className="h-4 w-0.5 bg-gradient-to-b from-primary to-accent rounded-full flex-shrink-0"></div>
-              <h2 className="text-xs sm:text-sm font-bold text-foreground">Place Trade</h2>
+              <h2 className="text-sm sm:text-sm font-bold text-foreground">Place Trade</h2>
             </div>
             <div className="space-y-2 w-full">
               <div className="grid gap-2 sm:gap-3 lg:grid-cols-3 w-full">
@@ -776,18 +776,18 @@ const ForexTrading = () => {
 
                   {/* Place Order */}
                   <Card>
-                    <CardHeader className="pb-1.5 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
-                      <CardTitle className="text-xs sm:text-sm">Place Order</CardTitle>
-                      <CardDescription className="text-[10px] sm:text-xs">
+                    <CardHeader className="pb-2 sm:pb-2 px-4 sm:px-6 pt-4 sm:pt-6">
+                      <CardTitle className="text-sm sm:text-sm">Place Order</CardTitle>
+                      <CardDescription className="text-[11px] sm:text-xs">
                         Create new position
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-2 pb-3 sm:pb-4 px-3 sm:px-6">
+                    <CardContent className="space-y-3 pb-4 sm:pb-4 px-4 sm:px-6">
                       {/* Order Type */}
                       <div>
-                        <Label className="text-[10px] sm:text-xs mb-1 block">Order Type</Label>
+                        <Label className="text-[11px] sm:text-xs mb-1.5 block">Order Type</Label>
                         <Select value={orderType} onValueChange={(value: any) => setOrderType(value)}>
-                          <SelectTrigger className="text-[10px] sm:text-xs h-7 sm:h-8">
+                          <SelectTrigger className="text-[11px] sm:text-xs h-9 sm:h-8">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -799,12 +799,12 @@ const ForexTrading = () => {
                       </div>
 
                       {/* Buy/Sell Toggle */}
-                      <div className="grid grid-cols-2 gap-1.5">
+                      <div className="grid grid-cols-2 gap-2">
                         <Button
                           size="sm"
                           variant={positionType === 'buy' ? 'default' : 'outline'}
                           onClick={() => setPositionType('buy')}
-                          className="text-[10px] sm:text-xs h-7 sm:h-8"
+                          className="text-[11px] sm:text-xs h-9 sm:h-8"
                         >
                           Buy
                         </Button>
