@@ -59,7 +59,17 @@ interface TradingSignal {
   };
 }
 
-const LiveTradingSignals: React.FC = () => {
+interface LiveTradingSignalsProps {
+  onTradeClick?: (signalData: {
+    pair: string;
+    action: string;
+    entry: string;
+    takeProfit: string;
+    stopLoss: string;
+  }) => void;
+}
+
+const LiveTradingSignals: React.FC<LiveTradingSignalsProps> = ({ onTradeClick }) => {
   const { toast } = useToast();
   const [signals, setSignals] = useState<TradingSignal[]>([]);
   const [selectedSignal, setSelectedSignal] = useState<TradingSignal | null>(null);
@@ -297,6 +307,27 @@ const LiveTradingSignals: React.FC = () => {
                           <span className="text-muted-foreground">Accuracy</span>
                           <span className="text-primary">{signal.accuracy_rate.toFixed(0)}%</span>
                         </div>
+
+                        {/* Trade Button */}
+                        {onTradeClick && (
+                          <Button
+                            size="sm"
+                            className="w-full mt-3"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onTradeClick({
+                                pair: signal.pair,
+                                action: signal.signal_type.toUpperCase(),
+                                entry: signal.entry_price.toFixed(5),
+                                takeProfit: signal.take_profit_1.toFixed(5),
+                                stopLoss: signal.stop_loss.toFixed(5),
+                              });
+                            }}
+                          >
+                            <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
+                            Trade
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}

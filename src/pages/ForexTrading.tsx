@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
@@ -116,6 +117,8 @@ const ForexTrading = () => {
   const [leverage, setLeverage] = useState('10');
   const [takeProfit, setTakeProfit] = useState('');
   const [stopLoss, setStopLoss] = useState('');
+  const [isPlaceOrderOpen, setIsPlaceOrderOpen] = useState(false);
+  const [selectedSignalData, setSelectedSignalData] = useState<any>(null);
 
   const [chartData, setChartData] = useState<any[]>([]);
   const [performanceData, setPerformanceData] = useState<any[]>([]);
@@ -602,7 +605,12 @@ const ForexTrading = () => {
               <div className="h-4 w-0.5 bg-gradient-to-b from-primary to-accent rounded-full flex-shrink-0"></div>
               <h2 className="text-sm sm:text-sm font-bold text-foreground">Live Signals</h2>
             </div>
-            <LiveTradingSignals />
+            <LiveTradingSignals 
+              onTradeClick={(signalData) => {
+                setSelectedSignalData(signalData);
+                setIsPlaceOrderOpen(true);
+              }} 
+            />
           </div>
 
           {/* Overview Section */}
@@ -686,11 +694,10 @@ const ForexTrading = () => {
               <h2 className="text-sm sm:text-sm font-bold text-foreground">Place Trade</h2>
             </div>
             <div className="space-y-2 w-full">
-              <div className="grid gap-2 sm:gap-3 lg:grid-cols-3 w-full">
-                {/* Chart Section */}
-                <div className="lg:col-span-2 space-y-2 sm:space-y-3 w-full">
-                  {/* Currency Pairs */}
-                  <Card className="overflow-hidden">
+              {/* Chart Section */}
+              <div className="space-y-2 sm:space-y-3 w-full">
+                {/* Currency Pairs */}
+                <Card className="overflow-hidden">
                     <CardContent className="p-1.5 sm:p-2">
                       <ScrollArea className="w-full max-w-full">
                         <div className="flex space-x-1.5 pb-1.5 min-w-max">
@@ -770,178 +777,10 @@ const ForexTrading = () => {
                     </Card>
                   )}
                 </div>
-
-                {/* Order Form */}
-                <div className="space-y-2 sm:space-y-3 w-full flex flex-col">
-
-                  {/* Place Order */}
-                  <Card className="flex-1">
-                    <CardHeader className="pb-2 sm:pb-2 px-4 sm:px-6 pt-4 sm:pt-6">
-                      <CardTitle className="text-sm sm:text-sm">Place Order</CardTitle>
-                      <CardDescription className="text-[11px] sm:text-xs">
-                        Create new position
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3 pb-4 sm:pb-4 px-4 sm:px-6">
-                      {/* Order Type */}
-                      <div>
-                        <Label className="text-[11px] sm:text-xs mb-1.5 block">Order Type</Label>
-                        <Select value={orderType} onValueChange={(value: any) => setOrderType(value)}>
-                          <SelectTrigger className="text-[11px] sm:text-xs h-9 sm:h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="market">Market</SelectItem>
-                            <SelectItem value="limit">Limit</SelectItem>
-                            <SelectItem value="stop">Stop</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Buy/Sell Toggle */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          size="sm"
-                          variant={positionType === 'buy' ? 'default' : 'outline'}
-                          onClick={() => setPositionType('buy')}
-                          className="text-[11px] sm:text-xs h-9 sm:h-8"
-                        >
-                          Buy
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={positionType === 'sell' ? 'destructive' : 'outline'}
-                          onClick={() => setPositionType('sell')}
-                          className="text-[10px] sm:text-xs h-7 sm:h-8"
-                        >
-                          Sell
-                        </Button>
-                      </div>
-
-                      {/* Volume */}
-                      <div>
-                        <Label className="text-[10px] sm:text-xs mb-1 block">Volume (Lots)</Label>
-                        <Input
-                          type="number"
-                          placeholder="0.01"
-                          value={volume}
-                          onChange={(e) => setVolume(e.target.value)}
-                          className="text-[10px] sm:text-xs h-7 sm:h-8"
-                        />
-                      </div>
-
-                      {/* Price (for limit/stop orders) */}
-                      {orderType !== 'market' && (
-                        <div>
-                          <Label className="text-[10px] sm:text-xs mb-1 block">Price</Label>
-                          <Input
-                            type="number"
-                            placeholder={selectedPair?.current_price.toFixed(5)}
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                            className="text-[10px] sm:text-xs h-7 sm:h-8"
-                          />
-                        </div>
-                      )}
-
-                      {/* Leverage */}
-                      <div>
-                        <Label className="text-[10px] sm:text-xs mb-1.5 block">Leverage</Label>
-                        <div className="grid grid-cols-3 gap-1.5">
-                          <Button
-                            size="sm"
-                            variant={leverage === '1' ? 'default' : 'outline'}
-                            onClick={() => setLeverage('1')}
-                            className="text-[10px] sm:text-xs h-7 sm:h-8"
-                          >
-                            1:1
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={leverage === '10' ? 'default' : 'outline'}
-                            onClick={() => setLeverage('10')}
-                            className="text-[10px] sm:text-xs h-7 sm:h-8"
-                          >
-                            1:10
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={leverage === '50' ? 'default' : 'outline'}
-                            onClick={() => setLeverage('50')}
-                            className="text-[10px] sm:text-xs h-7 sm:h-8"
-                          >
-                            1:50
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={leverage === '100' ? 'default' : 'outline'}
-                            onClick={() => setLeverage('100')}
-                            className="text-[10px] sm:text-xs h-7 sm:h-8"
-                          >
-                            1:100
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={leverage === '200' ? 'default' : 'outline'}
-                            onClick={() => setLeverage('200')}
-                            className="text-[10px] sm:text-xs h-7 sm:h-8"
-                          >
-                            1:200
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Take Profit */}
-                      <div>
-                        <Label className="text-[10px] sm:text-xs mb-1 block">Take Profit (Optional)</Label>
-                        <Input
-                          type="number"
-                          placeholder="0.00000"
-                          value={takeProfit}
-                          onChange={(e) => setTakeProfit(e.target.value)}
-                          className="text-[10px] sm:text-xs h-7 sm:h-8"
-                        />
-                      </div>
-
-                      {/* Stop Loss */}
-                      <div>
-                        <Label className="text-[10px] sm:text-xs mb-1 block">Stop Loss (Optional)</Label>
-                        <Input
-                          type="number"
-                          placeholder="0.00000"
-                          value={stopLoss}
-                          onChange={(e) => setStopLoss(e.target.value)}
-                          className="text-[10px] sm:text-xs h-7 sm:h-8"
-                        />
-                      </div>
-
-                      {/* Margin Info */}
-                      {volume && selectedPair && (
-                        <div className="p-2 bg-muted rounded-lg border border-border">
-                          <p className="text-muted-foreground text-[10px] sm:text-xs mb-0.5">Required Margin</p>
-                          <p className="text-foreground text-xs sm:text-sm font-semibold">
-                            ${((parseFloat(volume) * selectedPair.current_price) / parseInt(leverage)).toFixed(2)}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Place Order Button */}
-                      <Button
-                        onClick={handlePlaceOrder}
-                        size="sm"
-                        className="w-full text-[10px] sm:text-xs h-7 sm:h-8"
-                      >
-                        <Zap className="h-3 w-3 mr-1.5" />
-                        Place Order
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
               </div>
             </div>
-          </div>
 
-          {/* Positions Section */}
+            {/* Positions Section */}
           <div className="space-y-1.5 sm:space-y-2 w-full px-1">
             <div className="flex items-center gap-1">
               <div className="h-4 w-0.5 bg-gradient-to-b from-primary to-accent rounded-full flex-shrink-0"></div>
@@ -1025,6 +864,182 @@ const ForexTrading = () => {
       </main>
 
       <BottomNavigation />
+
+      {/* Place Order Dialog */}
+      <Dialog open={isPlaceOrderOpen} onOpenChange={setIsPlaceOrderOpen}>
+        <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              Place Order
+            </DialogTitle>
+            {selectedSignalData && (
+              <DialogDescription className="text-sm">
+                {selectedSignalData.pair} - {selectedSignalData.action} Signal
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          
+          <div className="space-y-4 pt-2">
+            {/* Order Type */}
+            <div>
+              <Label className="text-xs mb-1.5 block">Order Type</Label>
+              <Select value={orderType} onValueChange={(value: any) => setOrderType(value)}>
+                <SelectTrigger className="text-xs h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="market">Market</SelectItem>
+                  <SelectItem value="limit">Limit</SelectItem>
+                  <SelectItem value="stop">Stop</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Buy/Sell Toggle */}
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                size="default"
+                variant={positionType === 'buy' ? 'default' : 'outline'}
+                onClick={() => setPositionType('buy')}
+                className="text-xs h-10"
+              >
+                <ArrowUpRight className="w-4 h-4 mr-1" />
+                Buy
+              </Button>
+              <Button
+                size="default"
+                variant={positionType === 'sell' ? 'destructive' : 'outline'}
+                onClick={() => setPositionType('sell')}
+                className="text-xs h-10"
+              >
+                <ArrowDownRight className="w-4 h-4 mr-1" />
+                Sell
+              </Button>
+            </div>
+
+            {/* Volume */}
+            <div>
+              <Label className="text-xs mb-1 block">Volume (Lots)</Label>
+              <Input
+                type="number"
+                placeholder="0.01"
+                value={volume}
+                onChange={(e) => setVolume(e.target.value)}
+                className="text-xs h-9"
+              />
+            </div>
+
+            {/* Price (for limit/stop orders) */}
+            {orderType !== 'market' && (
+              <div>
+                <Label className="text-xs mb-1 block">Price</Label>
+                <Input
+                  type="number"
+                  placeholder={selectedPair?.current_price.toFixed(5)}
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
+            )}
+
+            {/* Leverage */}
+            <div>
+              <Label className="text-xs mb-1.5 block">Leverage</Label>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  size="sm"
+                  variant={leverage === '1' ? 'default' : 'outline'}
+                  onClick={() => setLeverage('1')}
+                  className="text-xs h-8"
+                >
+                  1:1
+                </Button>
+                <Button
+                  size="sm"
+                  variant={leverage === '10' ? 'default' : 'outline'}
+                  onClick={() => setLeverage('10')}
+                  className="text-xs h-8"
+                >
+                  1:10
+                </Button>
+                <Button
+                  size="sm"
+                  variant={leverage === '50' ? 'default' : 'outline'}
+                  onClick={() => setLeverage('50')}
+                  className="text-xs h-8"
+                >
+                  1:50
+                </Button>
+                <Button
+                  size="sm"
+                  variant={leverage === '100' ? 'default' : 'outline'}
+                  onClick={() => setLeverage('100')}
+                  className="text-xs h-8"
+                >
+                  1:100
+                </Button>
+                <Button
+                  size="sm"
+                  variant={leverage === '200' ? 'default' : 'outline'}
+                  onClick={() => setLeverage('200')}
+                  className="text-xs h-8"
+                >
+                  1:200
+                </Button>
+              </div>
+            </div>
+
+            {/* Take Profit */}
+            <div>
+              <Label className="text-xs mb-1 block">Take Profit (Optional)</Label>
+              <Input
+                type="number"
+                placeholder={selectedSignalData?.takeProfit || "0.00000"}
+                value={takeProfit}
+                onChange={(e) => setTakeProfit(e.target.value)}
+                className="text-xs h-9"
+              />
+            </div>
+
+            {/* Stop Loss */}
+            <div>
+              <Label className="text-xs mb-1 block">Stop Loss (Optional)</Label>
+              <Input
+                type="number"
+                placeholder={selectedSignalData?.stopLoss || "0.00000"}
+                value={stopLoss}
+                onChange={(e) => setStopLoss(e.target.value)}
+                className="text-xs h-9"
+              />
+            </div>
+
+            {/* Margin Info */}
+            {volume && selectedPair && (
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <p className="text-muted-foreground text-xs mb-1">Required Margin</p>
+                <p className="text-foreground text-sm font-semibold">
+                  ${((parseFloat(volume) * selectedPair.current_price) / parseInt(leverage)).toFixed(2)}
+                </p>
+              </div>
+            )}
+
+            {/* Place Order Button */}
+            <Button
+              onClick={() => {
+                handlePlaceOrder();
+                setIsPlaceOrderOpen(false);
+              }}
+              size="lg"
+              className="w-full text-sm h-11"
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              Confirm Order
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
