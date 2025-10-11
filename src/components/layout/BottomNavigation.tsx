@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { Home, TrendingUp, Wallet, Users, BarChart3 } from 'lucide-react';
+import { Home, TrendingUp, Wallet, Users, BarChart3, PieChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const navItems = [
   { icon: Home, label: 'Home', path: '/' },
+  { icon: PieChart, label: 'ROI', path: '/roi-investments' },
   { icon: TrendingUp, label: 'Binary', path: '/binary-options', badge: true },
   { icon: Wallet, label: 'Wallet', path: '/wallet' },
   { icon: Users, label: 'Referrals', path: '/referrals' },
