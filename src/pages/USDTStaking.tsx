@@ -451,133 +451,146 @@ const USDTStaking = () => {
   const currentPlan = getCurrentPlan();
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-background pb-20">
       <AppHeader onMenuClick={() => setSidebarOpen(true)} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="p-4 pt-16 pb-20">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="p-4 pt-20 pb-20">
+        <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h1 className="text-2xl md:text-3xl font-bold text-white">USDT Staking</h1>
-              <p className="text-sm md:text-base text-purple-300">Earn passive income with stable returns</p>
+            <div className="space-y-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">USDT Staking</h1>
+              <p className="text-base md:text-lg text-muted-foreground">Earn passive income with stable returns</p>
             </div>
             <Button 
               onClick={() => handleOpenStakeDialog()}
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+              size="lg"
+              className="hidden md:flex"
             >
+              <Lock className="h-5 w-5 mr-2" />
               Stake Now
             </Button>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <Card className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border-green-500/20">
-              <CardContent className="p-3 md:p-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="border-border/50 bg-card/50 backdrop-blur">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-green-400 text-xs md:text-sm">Available Balance</p>
-                    <p className="text-lg md:text-2xl font-bold text-white">₹{walletBalance.toLocaleString()}</p>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Available Balance</p>
+                    <p className="text-2xl font-bold text-foreground">₹{walletBalance.toLocaleString()}</p>
                   </div>
-                  <DollarSign className="h-6 w-6 md:h-8 md:w-8 text-green-400" />
+                  <div className="p-3 rounded-xl bg-green-500/10">
+                    <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/20">
-              <CardContent className="p-3 md:p-4">
+            <Card className="border-border/50 bg-card/50 backdrop-blur">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-blue-400 text-xs md:text-sm">Total Staked</p>
-                    <p className="text-lg md:text-2xl font-bold text-white">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Total Staked</p>
+                    <p className="text-2xl font-bold text-foreground">
                       ₹{totalStats.totalStaked.toLocaleString()}
                     </p>
                   </div>
-                  <Lock className="h-6 w-6 md:h-8 md:w-8 text-blue-400" />
+                  <div className="p-3 rounded-xl bg-primary/10">
+                    <Lock className="h-6 w-6 text-primary" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/20">
-              <CardContent className="p-3 md:p-4">
+            <Card className="border-border/50 bg-card/50 backdrop-blur">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-purple-400 text-xs md:text-sm">Total Earned</p>
-                    <p className="text-lg md:text-2xl font-bold text-white">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Total Earned</p>
+                    <p className="text-2xl font-bold text-foreground">
                       ₹{totalStats.totalEarned.toFixed(2)}
                     </p>
                   </div>
-                  <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-purple-400" />
+                  <div className="p-3 rounded-xl bg-primary/10">
+                    <TrendingUp className="h-6 w-6 text-primary" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border-yellow-500/20">
-              <CardContent className="p-3 md:p-4">
+            <Card className="border-border/50 bg-card/50 backdrop-blur">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-yellow-400 text-xs md:text-sm">Daily Earnings</p>
-                    <p className="text-lg md:text-2xl font-bold text-white">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Daily Earnings</p>
+                    <p className="text-2xl font-bold text-foreground">
                       ₹{totalStats.dailyEarnings.toFixed(2)}
                     </p>
                   </div>
-                  <Clock className="h-6 w-6 md:h-8 md:w-8 text-yellow-400" />
+                  <div className="p-3 rounded-xl bg-primary/10">
+                    <Clock className="h-6 w-6 text-primary" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Staking Plans */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg md:text-xl font-bold text-white flex items-center">
-                <Percent className="h-5 w-5 mr-2 text-yellow-400" />
-                Available Plans
-              </h2>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <Percent className="h-6 w-6 text-primary" />
+                  Available Plans
+                </h2>
+                <p className="text-muted-foreground mt-1">Choose the plan that fits your strategy</p>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {plans.map((plan) => (
                 <Card
                   key={plan.id}
-                  className="bg-white/5 border-white/10 hover:border-purple-500/30 transition-all cursor-pointer group"
+                  className="group hover:shadow-lg transition-all duration-300"
                 >
-                  <CardContent className="p-4 md:p-6">
+                  <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h3 className="text-base md:text-lg font-semibold text-white mb-1">{plan.name}</h3>
-                        <p className="text-xs md:text-sm text-gray-400">{plan.description}</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">{plan.name}</h3>
+                        <p className="text-sm text-muted-foreground">{plan.description}</p>
                       </div>
-                      <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center ${
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
                         plan.type === 'flexible' 
                           ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
                           : 'bg-gradient-to-br from-blue-500 to-cyan-500'
                       }`}>
-                        {plan.type === 'flexible' ? <Unlock className="h-5 w-5 md:h-6 md:w-6 text-white" /> : <Lock className="h-5 w-5 md:h-6 md:w-6 text-white" />}
+                        {plan.type === 'flexible' ? <Unlock className="h-6 w-6 text-white" /> : <Lock className="h-6 w-6 text-white" />}
                       </div>
                     </div>
                     
-                    <div className="space-y-2 md:space-y-3 mb-4">
+                    <div className="space-y-3 mb-4 p-4 rounded-lg bg-muted/50">
                       <div className="flex justify-between items-center">
-                        <span className="text-purple-300 text-xs md:text-sm">APY</span>
-                        <span className="text-xl md:text-2xl font-bold text-green-400">{plan.apy}%</span>
+                        <span className="text-muted-foreground text-sm">APY</span>
+                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">{plan.apy}%</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-purple-300 text-xs md:text-sm">Duration</span>
-                        <span className="text-white text-sm md:text-base font-medium">
+                        <span className="text-muted-foreground text-sm">Duration</span>
+                        <span className="text-foreground font-medium">
                           {plan.type === 'flexible' ? 'Flexible' : `${plan.duration_days} Days`}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-purple-300 text-xs md:text-sm">Min. Stake</span>
-                        <span className="text-white text-sm md:text-base font-medium">₹{plan.min_amount}</span>
+                      <div className="flex justify-between items-center pt-2 border-t border-border/50">
+                        <span className="text-muted-foreground text-sm">Min. Stake</span>
+                        <span className="text-foreground font-medium">₹{plan.min_amount.toLocaleString()}</span>
                       </div>
                     </div>
 
                     {plan.bonus_text && (
-                      <div className="mb-4 p-2 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-                        <p className="text-yellow-400 text-xs flex items-center">
-                          <Gift className="h-3 w-3 mr-1" />
+                      <div className="mb-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
+                        <p className="text-primary text-sm flex items-center gap-2">
+                          <Gift className="h-4 w-4" />
                           {plan.bonus_text}
                         </p>
                       </div>
@@ -585,7 +598,8 @@ const USDTStaking = () => {
 
                     <Button
                       onClick={() => handleOpenStakeDialog(plan)}
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-sm md:text-base"
+                      className="w-full"
+                      size="lg"
                     >
                       Stake Now
                       <ChevronRight className="h-4 w-4 ml-1" />
@@ -597,80 +611,85 @@ const USDTStaking = () => {
           </div>
 
           {/* Active Positions */}
-          <div>
-            <h2 className="text-lg md:text-xl font-bold text-white mb-4 flex items-center">
-              <Lock className="h-5 w-5 mr-2 text-purple-400" />
-              My Active Positions
-            </h2>
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <Lock className="h-6 w-6 text-primary" />
+                My Active Positions
+              </h2>
+              <p className="text-muted-foreground mt-1">Track your staking positions</p>
+            </div>
             {positions.filter(p => p.status === 'active').length === 0 ? (
-              <Card className="bg-white/5 border-white/10">
-                <CardContent className="p-8 text-center">
-                  <Lock className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                  <p className="text-purple-300">No active staking positions</p>
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-foreground mb-2">No Active Positions</h3>
+                  <p className="text-muted-foreground mb-4">Start staking to earn passive income</p>
                   <Button
                     onClick={() => handleOpenStakeDialog()}
-                    className="mt-4 bg-gradient-to-r from-green-600 to-emerald-600"
+                    size="lg"
                   >
+                    <Lock className="h-5 w-5 mr-2" />
                     Start Staking
                   </Button>
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4">
+              <div className="grid gap-6">
                 {positions
                   .filter(p => p.status === 'active')
                   .map((position) => (
-                  <Card key={position.id} className="bg-white/5 border-white/10">
-                    <CardContent className="p-4 md:p-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center ${
+                  <Card key={position.id} className="overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
                             position.type === 'flexible' 
                               ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
                               : 'bg-gradient-to-br from-blue-500 to-cyan-500'
                           }`}>
-                            {position.type === 'flexible' ? <Unlock className="h-5 w-5 md:h-6 md:w-6 text-white" /> : <Lock className="h-5 w-5 md:h-6 md:w-6 text-white" />}
+                            {position.type === 'flexible' ? <Unlock className="h-6 w-6 text-white" /> : <Lock className="h-6 w-6 text-white" />}
                           </div>
                           <div>
-                            <h3 className="text-white text-sm md:text-base font-semibold">
+                            <h3 className="text-foreground text-lg font-semibold">
                               {position.staking_plans?.name || (position.type === 'flexible' ? 'Flexible Staking' : `${position.duration_days} Days Locked`)}
                             </h3>
-                            <p className="text-purple-300 text-xs md:text-sm">
+                            <p className="text-muted-foreground text-sm">
                               Started: {new Date(position.start_date).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
-                        <Badge className="bg-green-500 text-white w-fit">
+                        <Badge variant="default" className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20 w-fit">
                           Active
                         </Badge>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 rounded-lg bg-muted/50">
                         <div>
-                          <p className="text-purple-300 text-xs md:text-sm">Staked Amount</p>
-                          <p className="text-white text-sm md:text-base font-semibold">₹{position.amount?.toLocaleString()}</p>
+                          <p className="text-muted-foreground text-sm mb-1">Staked Amount</p>
+                          <p className="text-foreground font-semibold">₹{position.amount?.toLocaleString()}</p>
                         </div>
                         <div>
-                          <p className="text-purple-300 text-xs md:text-sm">APY</p>
-                          <p className="text-white text-sm md:text-base font-semibold">{position.apy}%</p>
+                          <p className="text-muted-foreground text-sm mb-1">APY</p>
+                          <p className="text-foreground font-semibold">{position.apy}%</p>
                         </div>
                         <div>
-                          <p className="text-purple-300 text-xs md:text-sm">Total Earned</p>
-                          <p className="text-green-400 text-sm md:text-base font-semibold">₹{position.total_earned?.toFixed(2)}</p>
+                          <p className="text-muted-foreground text-sm mb-1">Total Earned</p>
+                          <p className="text-green-600 dark:text-green-400 font-semibold">₹{position.total_earned?.toFixed(2)}</p>
                         </div>
                         <div>
-                          <p className="text-purple-300 text-xs md:text-sm">Daily Earnings</p>
-                          <p className="text-white text-sm md:text-base font-semibold">₹{calculateDailyEarnings(position.amount, position.apy).toFixed(4)}</p>
+                          <p className="text-muted-foreground text-sm mb-1">Daily Earnings</p>
+                          <p className="text-foreground font-semibold">₹{calculateDailyEarnings(position.amount, position.apy).toFixed(4)}</p>
                         </div>
                       </div>
 
                       {position.type === 'locked' && position.end_date && (
                         <div className="mb-4">
-                          <div className="flex justify-between text-xs md:text-sm mb-2">
-                            <span className="text-purple-300">Time Remaining</span>
-                            <span className="text-white">{getRemainingDays(position.end_date)} days</span>
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-muted-foreground">Time Remaining</span>
+                            <span className="text-foreground font-medium">{getRemainingDays(position.end_date)} days</span>
                           </div>
-                          <div className="w-full bg-white/10 rounded-full h-2">
+                          <div className="w-full bg-muted rounded-full h-2">
                             <div 
                               className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-300"
                               style={{ 
@@ -683,16 +702,15 @@ const USDTStaking = () => {
 
                       <div className="flex items-center justify-between">
                         {position.auto_renew && (
-                          <div className="flex items-center space-x-1 text-blue-400">
-                            <RefreshCw className="h-3 w-3 md:h-4 md:w-4" />
-                            <span className="text-xs md:text-sm">Auto-Renew ON</span>
+                          <div className="flex items-center gap-2 text-primary">
+                            <RefreshCw className="h-4 w-4" />
+                            <span className="text-sm font-medium">Auto-Renew ON</span>
                           </div>
                         )}
                         <Button
                           variant="outline"
-                          size="sm"
                           onClick={() => handleWithdraw(position)}
-                          className="ml-auto border-white/10 text-xs md:text-sm"
+                          className="ml-auto"
                         >
                           {position.type === 'flexible' ? 'Withdraw' : 'Redeem'}
                         </Button>
@@ -705,53 +723,52 @@ const USDTStaking = () => {
           </div>
 
           {/* Earnings History */}
-          <div>
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center text-base md:text-xl">
-                  <Calendar className="h-5 w-5 mr-2 text-purple-400" />
-                  Earnings History
-                </CardTitle>
-                <CardDescription className="text-purple-300 text-xs md:text-sm">
-                  Your daily staking rewards
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {earnings.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                    <p className="text-purple-300">No earnings history yet</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {earnings.map((earning) => (
-                      <div
-                        key={earning.id}
-                        className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                            <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-white" />
-                          </div>
-                          <div>
-                            <p className="text-white text-sm md:text-base font-medium">Daily Reward</p>
-                            <p className="text-purple-300 text-xs md:text-sm">
-                              {new Date(earning.earned_date).toLocaleDateString()}
-                            </p>
-                          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                Earnings History
+              </CardTitle>
+              <CardDescription>
+                Your daily staking rewards
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {earnings.length === 0 ? (
+                <div className="text-center py-12">
+                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No Earnings Yet</h3>
+                  <p className="text-muted-foreground">Your staking rewards will appear here</p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {earnings.map((earning) => (
+                    <div
+                      key={earning.id}
+                      className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
+                          <TrendingUp className="h-5 w-5 text-white" />
                         </div>
-                        <div className="text-right">
-                          <p className="text-green-400 text-sm md:text-base font-semibold">
-                            +₹{earning.amount?.toFixed(4)}
+                        <div>
+                          <p className="text-foreground font-medium">Daily Reward</p>
+                          <p className="text-muted-foreground text-sm">
+                            {new Date(earning.earned_date).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                      <div className="text-right">
+                        <p className="text-green-600 dark:text-green-400 font-semibold">
+                          +₹{earning.amount?.toFixed(4)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -759,11 +776,11 @@ const USDTStaking = () => {
 
       {/* Stake Dialog */}
       <Dialog open={isStakeDialogOpen} onOpenChange={setIsStakeDialogOpen}>
-        <DialogContent className="bg-slate-900 border-white/10 text-white max-w-lg">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-xl md:text-2xl">Stake USDT</DialogTitle>
-            <DialogDescription className="text-purple-300 text-sm md:text-base">
-              Choose your staking plan and amount
+            <DialogTitle className="text-2xl">Stake USDT</DialogTitle>
+            <DialogDescription>
+              Choose your staking plan and amount to start earning
             </DialogDescription>
           </DialogHeader>
 
@@ -773,7 +790,6 @@ const USDTStaking = () => {
               <Button
                 variant={stakingType === 'flexible' ? 'default' : 'outline'}
                 onClick={() => setStakingType('flexible')}
-                className={stakingType === 'flexible' ? 'bg-gradient-to-r from-green-600 to-emerald-600' : 'border-white/10'}
               >
                 <Unlock className="h-4 w-4 mr-2" />
                 Flexible
@@ -781,7 +797,6 @@ const USDTStaking = () => {
               <Button
                 variant={stakingType === 'locked' ? 'default' : 'outline'}
                 onClick={() => setStakingType('locked')}
-                className={stakingType === 'locked' ? 'bg-gradient-to-r from-blue-600 to-cyan-600' : 'border-white/10'}
               >
                 <Lock className="h-4 w-4 mr-2" />
                 Locked
@@ -791,9 +806,9 @@ const USDTStaking = () => {
             {/* Duration Selection for Locked */}
             {stakingType === 'locked' && (
               <div>
-                <Label className="text-purple-300 text-sm md:text-base">Lock Duration</Label>
+                <Label>Lock Duration</Label>
                 <Select value={selectedDuration} onValueChange={setSelectedDuration}>
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -811,33 +826,33 @@ const USDTStaking = () => {
 
             {/* Amount Input */}
             <div>
-              <Label className="text-purple-300 text-sm md:text-base">Amount (USDT)</Label>
+              <Label>Amount (USDT)</Label>
               <div className="relative">
                 <Input
                   type="number"
                   placeholder={`Min: ${currentPlan?.min_amount || 1} USDT`}
                   value={stakeAmount}
                   onChange={(e) => setStakeAmount(e.target.value)}
-                  className="bg-white/5 border-white/10 text-white pr-20"
+                  className="pr-16"
                 />
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={() => setStakeAmount(walletBalance.toString())}
-                  className="absolute right-1 top-1 text-purple-400 hover:text-purple-300 text-xs"
+                  className="absolute right-1 top-1 text-xs"
                 >
                   MAX
                 </Button>
               </div>
-              <p className="text-xs text-purple-300 mt-1">Available: ₹{walletBalance.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">Available: ₹{walletBalance.toLocaleString()}</p>
             </div>
 
             {/* Auto-Renew for Locked */}
             {stakingType === 'locked' && (
-              <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <RefreshCw className="h-4 w-4 text-purple-400" />
-                  <Label htmlFor="auto-renew-dialog" className="text-white text-sm md:text-base">Auto-Renew</Label>
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="h-4 w-4 text-primary" />
+                  <Label htmlFor="auto-renew-dialog">Auto-Renew</Label>
                 </div>
                 <Switch
                   id="auto-renew-dialog"
@@ -849,26 +864,26 @@ const USDTStaking = () => {
 
             {/* Estimated Earnings */}
             {currentPlan && stakeAmount && parseFloat(stakeAmount) >= currentPlan.min_amount && (
-              <div className="p-4 bg-gradient-to-r from-purple-600/10 to-blue-600/10 rounded-lg border border-purple-500/20">
-                <p className="text-purple-300 text-xs md:text-sm mb-2 flex items-center">
-                  <Info className="h-4 w-4 mr-1" />
+              <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                <p className="text-muted-foreground text-sm mb-3 flex items-center gap-2">
+                  <Info className="h-4 w-4" />
                   Estimated Earnings
                 </p>
-                <div className="space-y-1 text-sm md:text-base">
+                <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">APY:</span>
-                    <span className="text-white font-semibold">{currentPlan.apy}%</span>
+                    <span className="text-muted-foreground">APY:</span>
+                    <span className="text-foreground font-semibold">{currentPlan.apy}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Daily:</span>
-                    <span className="text-white font-semibold">
+                    <span className="text-muted-foreground">Daily:</span>
+                    <span className="text-foreground font-semibold">
                       ₹{calculateDailyEarnings(parseFloat(stakeAmount), currentPlan.apy).toFixed(4)}
                     </span>
                   </div>
                   {stakingType === 'locked' && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Total ({currentPlan.duration_days} days):</span>
-                      <span className="text-green-400 font-semibold">
+                    <div className="flex justify-between pt-2 border-t border-border/50">
+                      <span className="text-muted-foreground">Total ({currentPlan.duration_days} days):</span>
+                      <span className="text-green-600 dark:text-green-400 font-bold">
                         ₹{calculateEstimatedEarnings(parseFloat(stakeAmount), currentPlan.apy, currentPlan.duration_days).toFixed(2)}
                       </span>
                     </div>
@@ -877,14 +892,22 @@ const USDTStaking = () => {
               </div>
             )}
 
-            {/* Stake Button */}
-            <Button
-              onClick={handleStake}
-              disabled={!currentPlan || !stakeAmount || parseFloat(stakeAmount) < (currentPlan?.min_amount || 1)}
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-            >
-              Confirm Stake
-            </Button>
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsStakeDialogOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleStake}
+                disabled={!stakeAmount || parseFloat(stakeAmount) < (currentPlan?.min_amount || 1)}
+                className="flex-1"
+              >
+                Stake Now
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
