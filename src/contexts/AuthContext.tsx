@@ -213,7 +213,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       toast({
-        title: "Welcome to LakToken!",
+        title: "Welcome to WiseMax Trade Bridge!",
         description: "Your account has been created successfully.",
       });
 

@@ -9,7 +9,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useSuperAdmin } from '@/hooks/useSuperAdmin';
 import { supabase } from '@/integrations/supabase/client';
-import logo from '@/assets/laktoken-logo.png';
+import logo from '@/assets/wisemax-logo.png';
 
 interface AppSidebarProps {
   isOpen: boolean;
@@ -89,10 +89,10 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
         {/* Header - Fixed */}
         <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center space-x-2">
-            <img src={logo} alt="LakToken Logo" className="w-8 h-8 rounded-lg object-cover" />
+            <img src={logo} alt="WiseMax Logo" className="w-8 h-8 rounded-lg object-cover" />
             <div>
-              <h2 className="text-white font-bold text-base">LakToken</h2>
-              <p className="text-purple-300 text-xs">Premium Trading</p>
+              <h2 className="text-white font-bold text-base">WiseMax</h2>
+              <p className="text-purple-300 text-xs">Trade Bridge</p>
             </div>
           </div>
           <Button

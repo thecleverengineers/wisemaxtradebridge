@@ -235,8 +235,8 @@ const Referrals = () => {
     const referralLink = `${window.location.origin}/auth?ref=${profile?.referral_code}`;
     if (navigator.share) {
       navigator.share({
-        title: 'Join LakToken',
-        text: 'Start investing with LakToken and earn guaranteed returns!',
+        title: 'Join WiseMax Trade Bridge',
+        text: 'Start investing with WiseMax and earn guaranteed returns!',
         url: referralLink,
       });
     } else {
