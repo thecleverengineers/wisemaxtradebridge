@@ -453,125 +453,146 @@ export default function ROIInvestments() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 pb-20">
+    <div className="min-h-screen bg-background pb-20">
       <AppHeader onMenuClick={() => setIsSidebarOpen(true)} />
       <AppSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
-      <main className="container mx-auto px-4 py-6 pt-20 space-y-6">
+      <main className="container mx-auto px-4 py-6 pt-20 space-y-8">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-            Investment Plans
-          </h1>
-          <p className="text-purple-300">
-            Choose from our premium investment plans and grow your wealth
-          </p>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-2">
+                ROI Investments
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Grow your wealth with our premium investment plans
+              </p>
+            </div>
+            {user && (
+              <Button
+                onClick={() => window.scrollTo({ top: document.getElementById('investment-plans')?.offsetTop, behavior: 'smooth' })}
+                size="lg"
+                className="hidden md:flex"
+              >
+                <Rocket className="h-5 w-5 mr-2" />
+                Invest Now
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-blue-500/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-300 text-sm">Total Invested</p>
-                  <p className="text-2xl font-bold text-white">
-                    ${stats.totalInvested.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-blue-300 mt-1">
-                    {stats.activeInvestments} active plans
-                  </p>
+        {user && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="border-border/50 bg-card/50 backdrop-blur">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Total Invested</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      ${stats.totalInvested.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {stats.activeInvestments} active plans
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-primary/10">
+                    <PiggyBank className="h-6 w-6 text-primary" />
+                  </div>
                 </div>
-                <PiggyBank className="h-8 w-8 text-blue-400" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-300 text-sm">Total Returns</p>
-                  <p className="text-2xl font-bold text-white">
-                    ${stats.totalReturns.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-green-300 mt-1 flex items-center">
-                    <ArrowUpRight className="h-3 w-3 mr-1" />
-                    {stats.averageROI.toFixed(2)}% ROI
-                  </p>
+            <Card className="border-border/50 bg-card/50 backdrop-blur">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Total Returns</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      ${stats.totalReturns.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
+                      <ArrowUpRight className="h-3 w-3 mr-1" />
+                      {stats.averageROI.toFixed(2)}% ROI
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-green-500/10">
+                    <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
                 </div>
-                <TrendingUp className="h-8 w-8 text-green-400" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-500/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-purple-300 text-sm">Today's Earnings</p>
-                  <p className="text-2xl font-bold text-white">
-                    ${stats.todayEarnings.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-purple-300 mt-1">
-                    Daily income
-                  </p>
+            <Card className="border-border/50 bg-card/50 backdrop-blur">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Today's Earnings</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      ${stats.todayEarnings.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Daily income
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-primary/10">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                  </div>
                 </div>
-                <Sparkles className="h-8 w-8 text-purple-400" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-yellow-300 text-sm">Wallet Balance</p>
-                  <p className="text-2xl font-bold text-white">
-                    ${walletData.balance.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-yellow-300 mt-1">
-                    Available funds
-                  </p>
+            <Card className="border-border/50 bg-card/50 backdrop-blur">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Wallet Balance</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      ${walletData.balance.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Available funds
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-primary/10">
+                    <Wallet className="h-6 w-6 text-primary" />
+                  </div>
                 </div>
-                <Wallet className="h-8 w-8 text-yellow-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-        {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 w-full">
-            <TabsTrigger value="plans">Investment Plans</TabsTrigger>
-            <TabsTrigger value="portfolio">My Portfolio</TabsTrigger>
-            <TabsTrigger value="history">ROI History</TabsTrigger>
-          </TabsList>
-
-          {/* Investment Plans Tab */}
-          <TabsContent value="plans" className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+        {/* Investment Plans Section */}
+        <div id="investment-plans" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">Investment Plans</h2>
+              <p className="text-muted-foreground">Choose the plan that fits your goals</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="relative hidden sm:block">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search plans..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-white/5 border-white/10 text-white"
+                  className="pl-9 w-64"
                 />
               </div>
               <Button
                 onClick={fetchData}
                 variant="outline"
-                className="border-white/10"
+                size="icon"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
+                <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPlans.map((plan) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPlans.map((plan) => {
                 const Icon = getPlanIcon(plan.name);
                 const gradient = getPlanGradient(plan.name);
                 const isInvested = userInvestments.some(inv => 
@@ -581,363 +602,321 @@ export default function ROIInvestments() {
                 return (
                   <Card 
                     key={plan.id} 
-                    className="bg-white/5 border-white/10 hover:bg-white/10 transition-all hover:scale-105"
+                    className="group hover:shadow-lg transition-all duration-300"
                   >
                     <CardHeader className="pb-4">
-                      <div className="flex items-start justify-between">
-                        <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient}`}>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-lg`}>
                           <Icon className="h-6 w-6 text-white" />
                         </div>
                         {isInvested && (
-                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                          <Badge variant="default" className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
                             Active
                           </Badge>
                         )}
                       </div>
-                      <CardTitle className="text-white mt-3">{plan.name}</CardTitle>
-                      <CardDescription className="text-purple-300">
+                      <CardTitle className="text-foreground text-xl">{plan.name}</CardTitle>
+                      <CardDescription>
                         {plan.description || 'Premium investment opportunity'}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="space-y-3">
+                      <div className="space-y-3 p-4 rounded-lg bg-muted/50">
                         <div className="flex items-center justify-between">
-                          <span className="text-purple-300 text-sm flex items-center">
-                            <Percent className="h-4 w-4 mr-2" />
+                          <span className="text-muted-foreground text-sm flex items-center gap-2">
+                            <Percent className="h-4 w-4" />
                             Daily ROI
                           </span>
-                          <span className="text-white font-semibold">
+                          <span className="text-foreground font-semibold">
                             {plan.daily_roi}%
                           </span>
                         </div>
                         
                         <div className="flex items-center justify-between">
-                          <span className="text-purple-300 text-sm flex items-center">
-                            <Calendar className="h-4 w-4 mr-2" />
+                          <span className="text-muted-foreground text-sm flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
                             Duration
                           </span>
-                          <span className="text-white font-semibold">
+                          <span className="text-foreground font-semibold">
                             {plan.duration_days} days
                           </span>
                         </div>
                         
                         <div className="flex items-center justify-between">
-                          <span className="text-purple-300 text-sm flex items-center">
-                            <Target className="h-4 w-4 mr-2" />
+                          <span className="text-muted-foreground text-sm flex items-center gap-2">
+                            <Target className="h-4 w-4" />
                             Total Return
                           </span>
-                          <span className="text-green-400 font-semibold">
+                          <span className="text-green-600 dark:text-green-400 font-bold">
                             {plan.total_return_percent}%
                           </span>
                         </div>
                         
-                        <div className="flex items-center justify-between">
-                          <span className="text-purple-300 text-sm flex items-center">
-                            <DollarSign className="h-4 w-4 mr-2" />
-                            Investment Range
+                        <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                          <span className="text-muted-foreground text-sm flex items-center gap-2">
+                            <DollarSign className="h-4 w-4" />
+                            Range
                           </span>
-                          <span className="text-white text-sm">
-                            ${plan.min_amount} - ${plan.max_amount}
+                          <span className="text-foreground text-sm font-medium">
+                            ${plan.min_amount.toLocaleString()} - ${plan.max_amount.toLocaleString()}
                           </span>
                         </div>
                       </div>
                       
-                      <div className="pt-3 border-t border-white/10">
-                        {user ? (
-                          <Button
-                            onClick={() => openInvestDialog(plan)}
-                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                            disabled={walletData.balance < plan.min_amount}
-                          >
-                            {walletData.balance < plan.min_amount ? (
-                              <>
-                                <Lock className="h-4 w-4 mr-2" />
-                                Insufficient Balance
-                              </>
-                            ) : (
-                              <>
-                                <Rocket className="h-4 w-4 mr-2" />
-                                Invest Now
-                              </>
-                            )}
-                          </Button>
-                        ) : (
-                          <Button
-                            onClick={() => window.location.href = '/auth'}
-                            className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800"
-                          >
-                            <Lock className="h-4 w-4 mr-2" />
-                            Login to Invest
-                          </Button>
-                        )}
-                      </div>
+                      {user ? (
+                        <Button
+                          onClick={() => openInvestDialog(plan)}
+                          className="w-full"
+                          size="lg"
+                          disabled={walletData.balance < plan.min_amount}
+                        >
+                          {walletData.balance < plan.min_amount ? (
+                            <>
+                              <Lock className="h-4 w-4 mr-2" />
+                              Insufficient Balance
+                            </>
+                          ) : (
+                            <>
+                              <Rocket className="h-4 w-4 mr-2" />
+                              Invest Now
+                            </>
+                          )}
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => window.location.href = '/auth'}
+                          className="w-full"
+                          variant="secondary"
+                          size="lg"
+                        >
+                          <Lock className="h-4 w-4 mr-2" />
+                          Login to Invest
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 );
               })}
             </div>
-          </TabsContent>
+          </div>
 
-          {/* Portfolio Tab */}
-          <TabsContent value="portfolio" className="space-y-4">
-            {!user ? (
-              <Card className="bg-white/5 border-white/10">
-                <CardContent className="p-12 text-center">
-                  <Lock className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">Login Required</h3>
-                  <p className="text-purple-300 mb-4">Please login to view your investment portfolio</p>
-                  <Button
-                    onClick={() => window.location.href = '/auth'}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600"
-                  >
-                    Login Now
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : userInvestments.length === 0 ? (
-              <Card className="bg-white/5 border-white/10">
-                <CardContent className="p-12 text-center">
-                  <Activity className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">No Active Investments</h3>
-                  <p className="text-purple-300 mb-4">Start your investment journey today</p>
-                  <Button
-                    onClick={() => setActiveTab('plans')}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600"
-                  >
-                    Browse Plans
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <ScrollArea className="h-[600px]">
-                <div className="space-y-4">
-                  {userInvestments.map((investment) => {
-                    const progress = investment.status === 'active' 
-                      ? ((new Date().getTime() - new Date(investment.start_date).getTime()) /
-                         (new Date(investment.end_date).getTime() - new Date(investment.start_date).getTime())) * 100
-                      : 100;
-                    
-                    return (
-                      <Card key={investment.id} className="bg-white/5 border-white/10">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <h3 className="text-white font-semibold text-lg">
-                                {investment.investment_plans?.name}
-                              </h3>
-                              <div className="flex items-center gap-4 mt-1">
-                                <Badge className={`${
-                                  investment.status === 'active' 
-                                    ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                                    : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-                                }`}>
-                                  {investment.status}
-                                </Badge>
-                                <span className="text-purple-300 text-sm">
-                                  Started {formatDistanceToNow(new Date(investment.start_date), { addSuffix: true })}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-2xl font-bold text-white">
-                                ${investment.amount.toFixed(2)}
-                              </p>
-                              <p className="text-sm text-purple-300">Invested</p>
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-3 gap-4 mb-4">
-                            <div>
-                              <p className="text-purple-300 text-xs">Daily ROI</p>
-                              <p className="text-white font-semibold">
-                                ${(investment.amount * (investment.investment_plans?.daily_roi || 0) / 100).toFixed(2)}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-purple-300 text-xs">Earned</p>
-                              <p className="text-green-400 font-semibold">
-                                ${investment.total_roi_earned.toFixed(2)}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-purple-300 text-xs">Expected</p>
-                              <p className="text-white font-semibold">
-                                ${(investment.amount * ((investment.investment_plans?.total_return_percent || 0) / 100)).toFixed(2)}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-purple-300">Progress</span>
-                              <span className="text-purple-300">{Math.min(progress, 100).toFixed(1)}%</span>
-                            </div>
-                            <Progress value={Math.min(progress, 100)} className="h-2" />
-                            <div className="flex justify-between text-xs text-purple-300">
-                              <span>{new Date(investment.start_date).toLocaleDateString()}</span>
-                              <span>{new Date(investment.end_date).toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                          
-                          {investment.last_payout_date && (
-                            <Alert className="mt-4 bg-green-500/10 border-green-500/30">
-                              <CheckCircle2 className="h-4 w-4 text-green-400" />
-                              <AlertDescription className="text-green-400">
-                                Last payout: {formatDistanceToNow(new Date(investment.last_payout_date), { addSuffix: true })}
-                              </AlertDescription>
-                            </Alert>
-                          )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-            )}
-          </TabsContent>
+        {/* My Portfolio Section */}
+        {user && userInvestments.length > 0 && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">My Portfolio</h2>
+                <p className="text-muted-foreground">Track your active investments</p>
+              </div>
+            </div>
 
-          {/* History Tab */}
-          <TabsContent value="history" className="space-y-4">
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <History className="h-5 w-5 text-purple-400" />
-                  Investment History
-                </CardTitle>
-                <CardDescription className="text-purple-300">
-                  Track all your investment activities
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[500px]">
-                  {!user ? (
-                    <div className="text-center py-8">
-                      <Lock className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                      <p className="text-purple-300">Login to view your investment history</p>
-                      <Button
-                        onClick={() => window.location.href = '/auth'}
-                        className="mt-4 bg-gradient-to-r from-purple-600 to-pink-600"
-                      >
-                        Login Now
-                      </Button>
-                    </div>
-                  ) : userInvestments.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Clock className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                      <p className="text-purple-300">No investment history yet</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {userInvestments.map((investment) => (
-                        <div 
-                          key={investment.id}
-                          className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${
-                              investment.status === 'active'
-                                ? 'bg-green-500/20'
-                                : 'bg-blue-500/20'
-                            }`}>
-                              {investment.status === 'active' ? (
-                                <Activity className="h-4 w-4 text-green-400" />
-                              ) : (
-                                <CheckCircle2 className="h-4 w-4 text-blue-400" />
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-white font-medium">
-                                {investment.investment_plans?.name}
-                              </p>
-                              <p className="text-purple-300 text-sm">
-                                {formatDistanceToNow(new Date(investment.created_at), { addSuffix: true })}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-white font-semibold">
-                              ${investment.amount.toFixed(2)}
-                            </p>
-                            <p className={`text-sm ${
-                              investment.total_roi_earned > 0 
-                                ? 'text-green-400' 
-                                : 'text-purple-300'
-                            }`}>
-                              +${investment.total_roi_earned.toFixed(2)} earned
-                            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {userInvestments.map((investment) => {
+                const progress = investment.status === 'active' 
+                  ? ((new Date().getTime() - new Date(investment.start_date).getTime()) /
+                     (new Date(investment.end_date).getTime() - new Date(investment.start_date).getTime())) * 100
+                  : 100;
+                
+                return (
+                  <Card key={investment.id} className="overflow-hidden">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-xl text-foreground">
+                            {investment.investment_plans?.name}
+                          </CardTitle>
+                          <div className="flex items-center gap-3 mt-2">
+                            <Badge variant={investment.status === 'active' ? 'default' : 'secondary'}>
+                              {investment.status}
+                            </Badge>
+                            <span className="text-muted-foreground text-sm">
+                              Started {formatDistanceToNow(new Date(investment.start_date), { addSuffix: true })}
+                            </span>
                           </div>
                         </div>
-                      ))}
+                        <div className="text-right">
+                          <p className="text-3xl font-bold text-foreground">
+                            ${investment.amount.toFixed(2)}
+                          </p>
+                          <p className="text-sm text-muted-foreground">Invested</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-3 gap-4 p-4 rounded-lg bg-muted/50">
+                        <div>
+                          <p className="text-muted-foreground text-xs mb-1">Daily ROI</p>
+                          <p className="text-foreground font-semibold">
+                            ${(investment.amount * (investment.investment_plans?.daily_roi || 0) / 100).toFixed(2)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs mb-1">Earned</p>
+                          <p className="text-green-600 dark:text-green-400 font-semibold">
+                            ${investment.total_roi_earned.toFixed(2)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs mb-1">Expected</p>
+                          <p className="text-foreground font-semibold">
+                            ${(investment.amount * ((investment.investment_plans?.total_return_percent || 0) / 100)).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Progress</span>
+                          <span className="text-foreground font-medium">{Math.min(progress, 100).toFixed(1)}%</span>
+                        </div>
+                        <Progress value={Math.min(progress, 100)} className="h-2" />
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>{new Date(investment.start_date).toLocaleDateString()}</span>
+                          <span>{new Date(investment.end_date).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      
+                      {investment.last_payout_date && (
+                        <Alert className="bg-green-500/10 border-green-500/20">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          <AlertDescription className="text-green-600 dark:text-green-400">
+                            Last payout: {formatDistanceToNow(new Date(investment.last_payout_date), { addSuffix: true })}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Investment History Section */}
+        {user && userInvestments.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5 text-primary" />
+                Investment History
+              </CardTitle>
+              <CardDescription>
+                Track all your investment activities and earnings
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[400px] pr-4">
+                <div className="space-y-3">
+                  {userInvestments.map((investment) => (
+                    <div 
+                      key={investment.id}
+                      className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${
+                          investment.status === 'active'
+                            ? 'bg-green-500/10'
+                            : 'bg-blue-500/10'
+                        }`}>
+                          {investment.status === 'active' ? (
+                            <Activity className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          ) : (
+                            <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-foreground font-medium">
+                            {investment.investment_plans?.name}
+                          </p>
+                          <p className="text-muted-foreground text-sm">
+                            {formatDistanceToNow(new Date(investment.created_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-foreground font-semibold">
+                          ${investment.amount.toFixed(2)}
+                        </p>
+                        <p className="text-green-600 dark:text-green-400 text-sm font-medium">
+                          +${investment.total_roi_earned.toFixed(2)} earned
+                        </p>
+                      </div>
                     </div>
-                  )}
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Investment Dialog */}
         <Dialog open={showInvestDialog} onOpenChange={setShowInvestDialog}>
-          <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-md">
+          <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-xl">Invest in {selectedPlan?.name}</DialogTitle>
-              <DialogDescription className="text-purple-300">
-                Enter the amount you want to invest
+              <DialogTitle className="text-2xl">Invest in {selectedPlan?.name}</DialogTitle>
+              <DialogDescription>
+                Enter the amount you want to invest and start earning returns
               </DialogDescription>
             </DialogHeader>
             
             {selectedPlan && (
               <div className="space-y-4">
-                <div className="p-4 bg-slate-700/50 rounded-lg space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-purple-300">Daily ROI:</span>
-                    <span className="text-white font-semibold">{selectedPlan.daily_roi}%</span>
+                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground text-sm">Daily ROI:</span>
+                    <span className="text-foreground font-semibold text-lg">{selectedPlan.daily_roi}%</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-purple-300">Duration:</span>
-                    <span className="text-white font-semibold">{selectedPlan.duration_days} days</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground text-sm">Duration:</span>
+                    <span className="text-foreground font-semibold">{selectedPlan.duration_days} days</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-purple-300">Total Return:</span>
-                    <span className="text-green-400 font-semibold">{selectedPlan.total_return_percent}%</span>
+                  <div className="flex justify-between items-center pt-2 border-t border-border/50">
+                    <span className="text-muted-foreground text-sm">Total Return:</span>
+                    <span className="text-green-600 dark:text-green-400 font-bold text-lg">{selectedPlan.total_return_percent}%</span>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-purple-300">Investment Amount (USD)</Label>
+                  <Label>Investment Amount (USD)</Label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       type="number"
                       placeholder="Enter amount"
                       value={investmentAmount}
                       onChange={(e) => setInvestmentAmount(e.target.value)}
-                      className="pl-10 bg-slate-700 border-slate-600 text-white"
+                      className="pl-10"
                       min={selectedPlan.min_amount}
                       max={selectedPlan.max_amount}
                     />
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-purple-300">Min: ${selectedPlan.min_amount}</span>
-                    <span className="text-purple-300">Max: ${selectedPlan.max_amount}</span>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Min: ${selectedPlan.min_amount.toLocaleString()}</span>
+                    <span>Max: ${selectedPlan.max_amount.toLocaleString()}</span>
                   </div>
                 </div>
                 
                 {investmentAmount && (
-                  <Alert className="bg-purple-500/10 border-purple-500/30">
-                    <Calculator className="h-4 w-4 text-purple-400" />
-                    <AlertDescription className="text-purple-300">
-                      <div className="space-y-1">
-                        <p>Daily Returns: ${calculateExpectedReturns().daily.toFixed(2)}</p>
-                        <p>Total Returns: ${calculateExpectedReturns().total.toFixed(2)}</p>
+                  <Alert className="bg-primary/5 border-primary/20">
+                    <Calculator className="h-4 w-4 text-primary" />
+                    <AlertDescription>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span>Daily Returns:</span>
+                          <span className="font-semibold">${calculateExpectedReturns().daily.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Total Returns:</span>
+                          <span className="font-semibold text-green-600 dark:text-green-400">${calculateExpectedReturns().total.toFixed(2)}</span>
+                        </div>
                       </div>
                     </AlertDescription>
                   </Alert>
                 )}
                 
-                <div className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
-                  <Label htmlFor="auto-reinvest" className="text-purple-300 cursor-pointer">
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <Label htmlFor="auto-reinvest" className="cursor-pointer font-normal">
                     Auto-reinvest earnings
                   </Label>
                   <Switch
@@ -947,27 +926,25 @@ export default function ROIInvestments() {
                   />
                 </div>
                 
-                <Alert className="bg-yellow-500/10 border-yellow-500/30">
-                  <AlertCircle className="h-4 w-4 text-yellow-400" />
-                  <AlertDescription className="text-yellow-300">
-                    Available balance: ${walletData.balance.toFixed(2)}
+                <Alert>
+                  <Wallet className="h-4 w-4" />
+                  <AlertDescription>
+                    Available balance: <span className="font-semibold">${walletData.balance.toFixed(2)}</span>
                   </AlertDescription>
                 </Alert>
               </div>
             )}
             
-            <DialogFooter className="gap-2">
+            <DialogFooter className="gap-2 sm:gap-0">
               <Button
                 variant="outline"
                 onClick={() => setShowInvestDialog(false)}
-                className="border-slate-600"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleInvest}
                 disabled={isLoading || !investmentAmount || parseFloat(investmentAmount) < (selectedPlan?.min_amount || 0)}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
               >
                 {isLoading ? (
                   <>
