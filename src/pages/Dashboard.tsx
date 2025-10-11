@@ -278,26 +278,26 @@ export function Dashboard() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-              <p className="text-purple-300">Welcome back, {profile?.name || 'User'}</p>
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              <p className="text-muted-foreground">Welcome back, {profile?.name || 'User'}</p>
             </div>
-            <Badge className={profile?.kyc_status === 'verified' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'}>
+            <Badge variant={profile?.kyc_status === 'verified' ? 'default' : 'secondary'}>
               KYC: {profile?.kyc_status || 'Pending'}
             </Badge>
           </div>
 
           {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-card/50 border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-purple-300">Total Balance</CardTitle>
-                <Wallet className="h-4 w-4 text-purple-300" />
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Balance</CardTitle>
+                <Wallet className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">${totalBalance.toFixed(2)}</div>
-                <p className="text-xs text-purple-300">
+                <div className="text-2xl font-bold">${totalBalance.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground">
                   {totalBalance > 0 ? (
-                    <span className="text-green-400 flex items-center">
+                    <span className="text-primary flex items-center">
                       <TrendingUp className="h-3 w-3 mr-1" />
                       Active
                     </span>
@@ -308,42 +308,42 @@ export function Dashboard() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-card/50 border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-purple-300">ROI Income</CardTitle>
-                <DollarSign className="h-4 w-4 text-purple-300" />
+                <CardTitle className="text-sm font-medium text-muted-foreground">ROI Income</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">${totalROI.toFixed(2)}</div>
-                <p className="text-xs text-purple-300">
+                <div className="text-2xl font-bold">${totalROI.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground">
                   {activeInvestments} active investments
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-card/50 border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-purple-300">Referral Income</CardTitle>
-                <Users className="h-4 w-4 text-purple-300" />
+                <CardTitle className="text-sm font-medium text-muted-foreground">Referral Income</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">${totalReferral.toFixed(2)}</div>
-                <p className="text-xs text-purple-300">
+                <div className="text-2xl font-bold">${totalReferral.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground">
                   {referralCount} referrals
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-card/50 border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-purple-300">Win Rate</CardTitle>
-                <Activity className="h-4 w-4 text-purple-300" />
+                <CardTitle className="text-sm font-medium text-muted-foreground">Win Rate</CardTitle>
+                <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold">
                   {analytics?.win_rate ? `${analytics.win_rate.toFixed(1)}%` : '0%'}
                 </div>
-                <p className="text-xs text-purple-300">
+                <p className="text-xs text-muted-foreground">
                   {analytics?.total_trades || 0} total trades
                 </p>
               </CardContent>
@@ -362,30 +362,30 @@ export function Dashboard() {
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             {/* Income Chart */}
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-card/50 border-border/50">
               <CardHeader>
-                <CardTitle className="text-white">Income Overview</CardTitle>
-                <CardDescription className="text-purple-300">Your income over the last 7 days</CardDescription>
+                <CardTitle>Income Overview</CardTitle>
+                <CardDescription>Your income over the last 7 days</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height="300">
                   <AreaChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
-                    <XAxis dataKey="date" stroke="#a78bfa" />
-                    <YAxis stroke="#a78bfa" />
-                    <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #ffffff20' }} />
-                    <Area type="monotone" dataKey="income" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
-                    <Area type="monotone" dataKey="expense" stroke="#ef4444" fill="#ef4444" fillOpacity={0.3} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
+                    <Area type="monotone" dataKey="income" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />
+                    <Area type="monotone" dataKey="expense" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.3} />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
             {/* Portfolio Distribution */}
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-card/50 border-border/50">
               <CardHeader>
-                <CardTitle className="text-white">Portfolio Distribution</CardTitle>
-                <CardDescription className="text-purple-300">Breakdown of your income sources</CardDescription>
+                <CardTitle>Portfolio Distribution</CardTitle>
+                <CardDescription>Breakdown of your income sources</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height="300">
@@ -397,14 +397,14 @@ export function Dashboard() {
                       labelLine={false}
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
-                      fill="#8884d8"
+                      fill="hsl(var(--primary))"
                       dataKey="value"
                     >
                       {pieChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #ffffff20' }} />
+                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -412,26 +412,26 @@ export function Dashboard() {
           </div>
 
           {/* Wallet Balances */}
-          <Card className="bg-white/5 border-white/10">
+          <Card className="bg-card/50 border-border/50">
             <CardHeader>
-              <CardTitle className="text-white">Wallet Balances</CardTitle>
-              <CardDescription className="text-purple-300">Your cryptocurrency holdings</CardDescription>
+              <CardTitle>Wallet Balances</CardTitle>
+              <CardDescription>Your cryptocurrency holdings</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {wallets.map((wallet) => (
-                  <div key={wallet.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
+                  <div key={wallet.id} className="flex items-center justify-between p-4 bg-accent/30 rounded-lg border border-border/50">
                     <div className="flex items-center space-x-4">
-                      <Coins className="h-8 w-8 text-purple-400" />
+                      <Coins className="h-8 w-8 text-primary" />
                       <div>
-                        <p className="font-medium text-white">{wallet.currency}</p>
-                        <p className="text-sm text-purple-300">Available Balance</p>
+                        <p className="font-medium">{wallet.currency}</p>
+                        <p className="text-sm text-muted-foreground">Available Balance</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-white">{wallet.balance.toFixed(4)}</p>
+                      <p className="text-2xl font-bold">{wallet.balance.toFixed(4)}</p>
                       {wallet.locked_balance > 0 && (
-                        <p className="text-sm text-purple-300">
+                        <p className="text-sm text-muted-foreground">
                           Locked: {wallet.locked_balance.toFixed(4)}
                         </p>
                       )}
@@ -444,37 +444,37 @@ export function Dashboard() {
         </TabsContent>
 
         <TabsContent value="transactions" className="space-y-4">
-          <Card className="bg-white/5 border-white/10">
+          <Card className="bg-card/50 border-border/50">
             <CardHeader>
-              <CardTitle className="text-white">Recent Transactions</CardTitle>
-              <CardDescription className="text-purple-300">Your latest financial activities</CardDescription>
+              <CardTitle>Recent Transactions</CardTitle>
+              <CardDescription>Your latest financial activities</CardDescription>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[400px]">
                 <div className="space-y-4">
                   {transactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
+                    <div key={transaction.id} className="flex items-center justify-between p-4 bg-accent/30 rounded-lg border border-border/50">
                       <div className="flex items-center space-x-4">
                         {transaction.type === 'deposit' ? (
-                          <ArrowDownRight className="h-5 w-5 text-green-400" />
+                          <ArrowDownRight className="h-5 w-5 text-primary" />
                         ) : (
-                          <ArrowUpRight className="h-5 w-5 text-red-400" />
+                          <ArrowUpRight className="h-5 w-5 text-destructive" />
                         )}
                         <div>
-                          <p className="font-medium capitalize text-white">{transaction.type}</p>
-                          <p className="text-sm text-purple-300">
+                          <p className="font-medium capitalize">{transaction.type}</p>
+                          <p className="text-sm text-muted-foreground">
                             {formatDistanceToNow(new Date(transaction.created_at), { addSuffix: true })}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-white">
+                        <p className="font-bold">
                           {transaction.type === 'deposit' ? '+' : '-'}
                           {transaction.amount.toFixed(2)} {transaction.currency}
                         </p>
-                        <Badge className={
-                          transaction.status === 'completed' ? 'bg-green-500 text-white' : 
-                          transaction.status === 'pending' ? 'bg-yellow-500 text-white' : 'bg-red-500 text-white'
+                        <Badge variant={
+                          transaction.status === 'completed' ? 'default' : 
+                          transaction.status === 'pending' ? 'secondary' : 'destructive'
                         }>
                           {transaction.status}
                         </Badge>
@@ -488,54 +488,54 @@ export function Dashboard() {
         </TabsContent>
 
         <TabsContent value="investments" className="space-y-4">
-          <Card className="bg-white/5 border-white/10">
+          <Card className="bg-card/50 border-border/50">
             <CardHeader>
-              <CardTitle className="text-white">Active ROI Investments</CardTitle>
-              <CardDescription className="text-purple-300">Your current investment portfolio</CardDescription>
+              <CardTitle>Active ROI Investments</CardTitle>
+              <CardDescription>Your current investment portfolio</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {roiInvestments.filter(inv => inv.status === 'active').map((investment) => (
-                  <div key={investment.id} className="p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
+                  <div key={investment.id} className="p-4 bg-accent/30 rounded-lg border border-border/50">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h4 className="font-semibold text-white">{investment.plan_name}</h4>
-                        <p className="text-sm text-purple-300">
+                        <h4 className="font-semibold">{investment.plan_name}</h4>
+                        <p className="text-sm text-muted-foreground">
                           Started {formatDistanceToNow(new Date(investment.started_at), { addSuffix: true })}
                         </p>
                       </div>
-                      <Badge className="bg-green-500 text-white">Active</Badge>
+                      <Badge>Active</Badge>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                       <div>
-                        <p className="text-sm text-purple-300">Invested</p>
-                        <p className="font-bold text-white">${investment.amount.toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground">Invested</p>
+                        <p className="font-bold">${investment.amount.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-purple-300">Daily Return</p>
-                        <p className="font-bold text-white">{investment.daily_return}%</p>
+                        <p className="text-sm text-muted-foreground">Daily Return</p>
+                        <p className="font-bold">{investment.daily_return}%</p>
                       </div>
                       <div>
-                        <p className="text-sm text-purple-300">Total Paid Out</p>
-                        <p className="font-bold text-green-400">${investment.total_paid_out.toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground">Total Paid Out</p>
+                        <p className="font-bold text-primary">${investment.total_paid_out.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-purple-300">Expires</p>
-                        <p className="font-bold text-white">
+                        <p className="text-sm text-muted-foreground">Expires</p>
+                        <p className="font-bold">
                           {formatDistanceToNow(new Date(investment.expires_at), { addSuffix: true })}
                         </p>
                       </div>
                     </div>
                     <div className="mt-4">
-                      <div className="w-full bg-slate-700 rounded-full h-2">
+                      <div className="w-full bg-secondary rounded-full h-2">
                         <div 
-                          className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-full h-2 transition-all"
+                          className="bg-primary rounded-full h-2 transition-all"
                           style={{ 
                             width: `${Math.min(100, (investment.total_paid_out / investment.total_return) * 100)}%` 
                           }}
                         />
                       </div>
-                      <p className="text-xs text-purple-300 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         {((investment.total_paid_out / investment.total_return) * 100).toFixed(1)}% completed
                       </p>
                     </div>
@@ -547,26 +547,26 @@ export function Dashboard() {
         </TabsContent>
 
         <TabsContent value="market" className="space-y-4">
-          <Card className="bg-white/5 border-white/10">
+          <Card className="bg-card/50 border-border/50">
             <CardHeader>
-              <CardTitle className="text-white">Live Market Data</CardTitle>
-              <CardDescription className="text-purple-300">Real-time cryptocurrency prices</CardDescription>
+              <CardTitle>Live Market Data</CardTitle>
+              <CardDescription>Real-time cryptocurrency prices</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {marketData.map((market) => (
-                  <div key={market.symbol} className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg border border-white/10">
+                  <div key={market.symbol} className="flex items-center justify-between p-4 bg-accent/30 rounded-lg border border-border/50">
                     <div className="flex items-center space-x-4">
-                      <ChartBar className="h-8 w-8 text-purple-400" />
+                      <ChartBar className="h-8 w-8 text-primary" />
                       <div>
-                        <p className="font-medium text-white">{market.symbol}</p>
-                        <p className="text-sm text-purple-300">Volume: {market.volume.toLocaleString()}</p>
+                        <p className="font-medium">{market.symbol}</p>
+                        <p className="text-sm text-muted-foreground">Volume: {market.volume.toLocaleString()}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-white">${market.price.toFixed(2)}</p>
+                      <p className="text-xl font-bold">${market.price.toFixed(2)}</p>
                       <p className={`text-sm flex items-center justify-end ${
-                        market.change_percent >= 0 ? 'text-green-400' : 'text-red-400'
+                        market.change_percent >= 0 ? 'text-primary' : 'text-destructive'
                       }`}>
                         {market.change_percent >= 0 ? (
                           <TrendingUp className="h-3 w-3 mr-1" />

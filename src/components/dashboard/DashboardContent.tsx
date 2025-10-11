@@ -109,19 +109,19 @@ export const DashboardContent = () => {
   return (
     <div className="flex-1 p-4 pt-20 pb-20 space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-r from-primary via-accent to-secondary rounded-2xl p-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold">Welcome back!</h2>
-            <p className="text-blue-100 mt-1">{profile?.name}</p>
+            <p className="text-muted-foreground mt-1">{profile?.name}</p>
             {isAdmin && (
-              <Badge className="mt-2 bg-yellow-500 text-black">
+              <Badge variant="secondary" className="mt-2">
                 Admin Access
               </Badge>
             )}
           </div>
           <div className="text-right">
-            <p className="text-blue-100 text-sm">Total Balance</p>
+            <p className="text-muted-foreground text-sm">Total Balance</p>
             <p className="text-3xl font-bold">₹{wallet?.total_balance?.toLocaleString() || '0'}</p>
           </div>
         </div>
@@ -129,63 +129,63 @@ export const DashboardContent = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4">
-        <Card className="bg-gradient-to-br from-green-500 to-emerald-600 border-0 text-white">
+        <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-100 text-sm">ROI Income</p>
+                <p className="text-muted-foreground text-sm">ROI Income</p>
                 <p className="text-2xl font-bold">₹{wallet?.roi_income?.toLocaleString() || '0'}</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-green-200" />
+              <TrendingUp className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 border-0 text-white">
+        <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-100 text-sm">Referral Income</p>
+                <p className="text-muted-foreground text-sm">Referral Income</p>
                 <p className="text-2xl font-bold">₹{wallet?.referral_income?.toLocaleString() || '0'}</p>
               </div>
-              <Users className="h-8 w-8 text-blue-200" />
+              <Users className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-pink-600 border-0 text-white">
+        <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-100 text-sm">Level Income</p>
+                <p className="text-muted-foreground text-sm">Level Income</p>
                 <p className="text-2xl font-bold">₹{wallet?.level_income?.toLocaleString() || '0'}</p>
               </div>
-              <ArrowUpRight className="h-8 w-8 text-purple-200" />
+              <ArrowUpRight className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500 to-red-600 border-0 text-white">
+        <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-100 text-sm">Bonus Income</p>
+                <p className="text-muted-foreground text-sm">Bonus Income</p>
                 <p className="text-2xl font-bold">₹{wallet?.bonus_income?.toLocaleString() || '0'}</p>
               </div>
-              <Wallet className="h-8 w-8 text-orange-200" />
+              <Wallet className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Investment Plans */}
-      <Card className="bg-white/5 border-white/10">
+      <Card className="bg-card/50 border-border/50">
         <CardHeader>
-          <CardTitle className="text-white flex items-center">
+          <CardTitle className="flex items-center">
             <TrendingUp className="h-5 w-5 mr-2" />
             Investment Plans
           </CardTitle>
-          <CardDescription className="text-purple-300">
+          <CardDescription>
             Choose from our premium investment options
           </CardDescription>
         </CardHeader>
@@ -193,35 +193,35 @@ export const DashboardContent = () => {
           {investmentPlans.map((plan) => (
             <div
               key={plan.id}
-              className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-4 border border-white/10"
+              className="bg-accent/30 rounded-xl p-4 border border-border/50"
             >
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-white font-semibold text-lg">{plan.name}</h3>
-                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+                <h3 className="font-semibold text-lg">{plan.name}</h3>
+                <Badge>
                   {plan.daily_roi}% Daily
                 </Badge>
               </div>
               
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <p className="text-purple-300 text-sm">Min Amount</p>
-                  <p className="text-white font-semibold">₹{plan.min_amount?.toLocaleString()}</p>
+                  <p className="text-muted-foreground text-sm">Min Amount</p>
+                  <p className="font-semibold">₹{plan.min_amount?.toLocaleString()}</p>
                 </div>
                 <div>
-                  <p className="text-purple-300 text-sm">Duration</p>
-                  <p className="text-white font-semibold">{plan.duration_days} Days</p>
+                  <p className="text-muted-foreground text-sm">Duration</p>
+                  <p className="font-semibold">{plan.duration_days} Days</p>
                 </div>
                 <div>
-                  <p className="text-purple-300 text-sm">Max Amount</p>
-                  <p className="text-white font-semibold">₹{plan.max_amount?.toLocaleString() || 'No Limit'}</p>
+                  <p className="text-muted-foreground text-sm">Max Amount</p>
+                  <p className="font-semibold">₹{plan.max_amount?.toLocaleString() || 'No Limit'}</p>
                 </div>
                 <div>
-                  <p className="text-purple-300 text-sm">Total Return</p>
-                  <p className="text-white font-semibold">{plan.total_return_percent}%</p>
+                  <p className="text-muted-foreground text-sm">Total Return</p>
+                  <p className="font-semibold">{plan.total_return_percent}%</p>
                 </div>
               </div>
               
-              <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+              <Button className="w-full">
                 Invest Now
               </Button>
             </div>
@@ -230,31 +230,31 @@ export const DashboardContent = () => {
       </Card>
 
       {/* Referral Section */}
-      <Card className="bg-white/5 border-white/10">
+      <Card className="bg-card/50 border-border/50">
         <CardHeader>
-          <CardTitle className="text-white flex items-center">
+          <CardTitle className="flex items-center">
             <Users className="h-5 w-5 mr-2" />
             Referral Program
           </CardTitle>
-          <CardDescription className="text-purple-300">
+          <CardDescription>
             Share your referral code and earn rewards
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4">
-            <p className="text-black font-medium mb-2 text-center">Your Referral Code</p>
+          <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
+            <p className="font-medium mb-2 text-center">Your Referral Code</p>
             <div className="flex items-center justify-center gap-2 mb-3">
-              <p className="text-black text-3xl font-bold tracking-wider">{profile?.referral_code}</p>
+              <p className="text-3xl font-bold tracking-wider">{profile?.referral_code}</p>
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-8 w-8 bg-white/20 hover:bg-white/30"
+                className="h-8 w-8"
                 onClick={copyReferralCode}
               >
                 {copied ? (
-                  <Check className="h-4 w-4 text-black" />
+                  <Check className="h-4 w-4" />
                 ) : (
-                  <Copy className="h-4 w-4 text-black" />
+                  <Copy className="h-4 w-4" />
                 )}
               </Button>
             </div>
@@ -262,7 +262,7 @@ export const DashboardContent = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex-1 bg-white/20 border-white/30 text-black hover:bg-white/30"
+                className="flex-1"
                 onClick={shareReferralLink}
               >
                 Share Link
@@ -270,13 +270,13 @@ export const DashboardContent = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex-1 bg-white/20 border-white/30 text-black hover:bg-white/30"
+                className="flex-1"
                 onClick={copyReferralCode}
               >
                 Copy Code
               </Button>
             </div>
-            <p className="text-xs text-black/70 mt-3 text-center">
+            <p className="text-xs text-muted-foreground mt-3 text-center">
               Earn rewards when friends sign up with your code!
             </p>
           </div>
