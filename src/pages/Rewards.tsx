@@ -251,7 +251,7 @@ const Rewards = () => {
 
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-background">
       <AppHeader onMenuClick={() => setSidebarOpen(true)} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
@@ -264,63 +264,50 @@ const Rewards = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/')}
-                className="text-white hover:bg-white/10"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-white">Rewards Center</h1>
-                <p className="text-purple-300">Earn bonuses and unlock achievements</p>
+                <h1 className="text-2xl font-bold">Rewards Center</h1>
+                <p className="text-muted-foreground">Earn bonuses and unlock achievements</p>
               </div>
             </div>
           </div>
 
           {/* Total Rewards Earned */}
-          <Card className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 border-0 text-white">
+          <Card className="bg-gradient-to-r from-primary via-accent to-primary border-0 text-primary-foreground shadow-xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm">Total Rewards Earned</p>
+                  <p className="text-primary-foreground/80 text-sm">Total Rewards Earned</p>
                   <p className="text-4xl font-bold">₹{totalRewards.toLocaleString()}</p>
                 </div>
-                <Award className="h-12 w-12 text-blue-200" />
+                <Award className="h-12 w-12 text-primary-foreground/80" />
               </div>
             </CardContent>
           </Card>
 
           {/* Category Tabs */}
-          <Card className="bg-white/5 border-white/10">
+          <Card>
             <CardContent className="p-4">
               <div className="flex space-x-2 overflow-x-auto">
                 <Button
                   onClick={() => setActiveTab('available')}
-                  className={`flex-shrink-0 ${
-                    activeTab === 'available'
-                      ? 'bg-gradient-to-r from-green-600 to-emerald-600'
-                      : 'bg-white/10 hover:bg-white/20'
-                  }`}
+                  variant={activeTab === 'available' ? 'default' : 'outline'}
                 >
                   <Gift className="h-4 w-4 mr-2" />
                   Available ({rewards.filter(r => !r.claimed && r.current_progress >= r.requirement).length})
                 </Button>
                 <Button
                   onClick={() => setActiveTab('progress')}
-                  className={`flex-shrink-0 ${
-                    activeTab === 'progress'
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600'
-                      : 'bg-white/10 hover:bg-white/20'
-                  }`}
+                  variant={activeTab === 'progress' ? 'default' : 'outline'}
                 >
                   <Target className="h-4 w-4 mr-2" />
                   In Progress ({rewards.filter(r => !r.claimed && r.current_progress < r.requirement).length})
                 </Button>
                 <Button
                   onClick={() => setActiveTab('claimed')}
-                  className={`flex-shrink-0 ${
-                    activeTab === 'claimed'
-                      ? 'bg-gradient-to-r from-yellow-600 to-orange-600'
-                      : 'bg-white/10 hover:bg-white/20'
-                  }`}
+                  variant={activeTab === 'claimed' ? 'default' : 'outline'}
                 >
                   <Award className="h-4 w-4 mr-2" />
                   Claimed ({rewards.filter(r => r.claimed).length})
@@ -332,7 +319,7 @@ const Rewards = () => {
           {/* Rewards List */}
           <div className="space-y-4">
             {getFilteredRewards().map((reward) => (
-              <Card key={reward.id} className="bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-200">
+              <Card key={reward.id} className="card-hover">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-4 flex-1">
@@ -341,13 +328,13 @@ const Rewards = () => {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h3 className="text-white font-semibold">{reward.title}</h3>
-                          <Badge className={`${
-                            reward.type === 'daily' ? 'bg-blue-500' :
-                            reward.type === 'milestone' ? 'bg-green-500' :
-                            reward.type === 'achievement' ? 'bg-purple-500' :
-                            'bg-orange-500'
-                          } text-white`}>
+                          <h3 className="font-semibold">{reward.title}</h3>
+                          <Badge variant={
+                            reward.type === 'daily' ? 'default' :
+                            reward.type === 'milestone' ? 'default' :
+                            reward.type === 'achievement' ? 'default' :
+                            'secondary'
+                          }>
                             {reward.type}
                           </Badge>
                         </div>

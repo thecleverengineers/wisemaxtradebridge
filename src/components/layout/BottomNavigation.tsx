@@ -18,7 +18,7 @@ export const BottomNavigation = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[50]">
-      <div className="bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 backdrop-blur-md border-t border-white/10">
+      <div className="bg-gradient-to-r from-card via-background to-card backdrop-blur-md border-t border-border shadow-lg">
         <div className="flex items-center justify-around px-2 py-2">
           {navItems.map((item, index) => {
             const isActive = location.pathname === item.path;
@@ -29,8 +29,8 @@ export const BottomNavigation = () => {
                 className={cn(
                   "flex flex-col items-center space-y-1 px-3 py-2 rounded-xl transition-all duration-200 relative",
                   isActive 
-                    ? "text-white" 
-                    : "text-purple-400 hover:text-white"
+                    ? "text-foreground" 
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <div className="relative">
@@ -39,16 +39,16 @@ export const BottomNavigation = () => {
                     isActive && "drop-shadow-lg"
                   )} />
                   {item.badge && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"></div>
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-primary to-accent rounded-full"></div>
                   )}
                   
                   {isActive && (
-                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full"></div>
+                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full"></div>
                   )}
                 </div>
                 <span className={cn(
                   "text-xs font-medium transition-all duration-200",
-                  isActive ? "text-white" : "text-purple-400"
+                  isActive ? "text-foreground" : "text-muted-foreground"
                 )}>
                   {item.label}
                 </span>
