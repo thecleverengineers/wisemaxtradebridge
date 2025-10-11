@@ -772,10 +772,10 @@ const ForexTrading = () => {
                 </div>
 
                 {/* Order Form */}
-                <div className="space-y-2 sm:space-y-3 w-full">
+                <div className="space-y-2 sm:space-y-3 w-full flex flex-col">
 
                   {/* Place Order */}
-                  <Card>
+                  <Card className="flex-1">
                     <CardHeader className="pb-2 sm:pb-2 px-4 sm:px-6 pt-4 sm:pt-6">
                       <CardTitle className="text-sm sm:text-sm">Place Order</CardTitle>
                       <CardDescription className="text-[11px] sm:text-xs">
