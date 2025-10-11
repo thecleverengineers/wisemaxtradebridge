@@ -177,7 +177,7 @@ export function LiveTradingSignals() {
     setSignals(initialSignals);
   }, []);
 
-  // Update data in real-time (milliseconds)
+  // Update data in real-time (per second)
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -189,13 +189,12 @@ export function LiveTradingSignals() {
         const newData = [...prev];
         const lastCandle = { ...newData[newData.length - 1] };
         
-        // Update last candle with faster micro-movements
-        lastCandle.close = lastCandle.close + (Math.random() - 0.5) * 0.00005;
+        // Update last candle with visible movements per second
+        lastCandle.close = lastCandle.close + (Math.random() - 0.5) * 0.0003;
         lastCandle.high = Math.max(lastCandle.high, lastCandle.close);
         lastCandle.low = Math.min(lastCandle.low, lastCandle.close);
-        lastCandle.volume = lastCandle.volume + Math.random() * 100;
-        lastCandle.time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + 
-                         '.' + String(new Date().getMilliseconds()).padStart(3, '0');
+        lastCandle.volume = lastCandle.volume + Math.random() * 1000;
+        lastCandle.time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
         
         newData[newData.length - 1] = lastCandle;
         
@@ -231,18 +230,18 @@ export function LiveTradingSignals() {
       setSignals(prev => {
         const updated = prev.map(signal => ({
           ...signal,
-          current_price: signal.current_price + (Math.random() - 0.5) * 0.00005,
-          expires_in: signal.expires_in - 0.1
+          current_price: signal.current_price + (Math.random() - 0.5) * 0.0002,
+          expires_in: signal.expires_in - 1
         })).filter(signal => signal.expires_in > 0);
         
         // Add new signal occasionally
-        if (Math.random() > 0.998 && updated.length < 5) {
+        if (Math.random() > 0.95 && updated.length < 5) {
           updated.push(generateSignal());
         }
         
         return updated;
       });
-    }, 100);
+    }, 1000);
 
     return () => clearInterval(timer);
   }, []);
