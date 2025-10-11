@@ -177,7 +177,7 @@ export function LiveTradingSignals() {
     setSignals(initialSignals);
   }, []);
 
-  // Update data in real-time
+  // Update data in real-time (milliseconds)
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -189,12 +189,13 @@ export function LiveTradingSignals() {
         const newData = [...prev];
         const lastCandle = { ...newData[newData.length - 1] };
         
-        // Update last candle
-        lastCandle.close = lastCandle.close + (Math.random() - 0.5) * 0.0002;
+        // Update last candle with faster micro-movements
+        lastCandle.close = lastCandle.close + (Math.random() - 0.5) * 0.00005;
         lastCandle.high = Math.max(lastCandle.high, lastCandle.close);
         lastCandle.low = Math.min(lastCandle.low, lastCandle.close);
-        lastCandle.volume = lastCandle.volume + Math.random() * 1000;
-        lastCandle.time = new Date().toLocaleTimeString('en-US', { hour12: false });
+        lastCandle.volume = lastCandle.volume + Math.random() * 100;
+        lastCandle.time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + 
+                         '.' + String(new Date().getMilliseconds()).padStart(3, '0');
         
         newData[newData.length - 1] = lastCandle;
         
@@ -215,9 +216,9 @@ export function LiveTradingSignals() {
             low: lastCandle.close - Math.random() * 0.001,
             close: lastCandle.close + (Math.random() - 0.5) * 0.002,
             volume: 100000 + Math.random() * 500000,
-            ma20: lastCandle.close + (Math.random() - 0.5) * 0.001,
-            ma50: lastCandle.close + (Math.random() - 0.5) * 0.002,
-            ma200: lastCandle.close + (Math.random() - 0.5) * 0.003
+            ma20: lastCandle.close,
+            ma50: lastCandle.close,
+            ma200: lastCandle.close
           };
           
           newData.push(newCandle);
@@ -230,18 +231,18 @@ export function LiveTradingSignals() {
       setSignals(prev => {
         const updated = prev.map(signal => ({
           ...signal,
-          current_price: signal.current_price + (Math.random() - 0.5) * 0.0002,
-          expires_in: signal.expires_in - 1
+          current_price: signal.current_price + (Math.random() - 0.5) * 0.00005,
+          expires_in: signal.expires_in - 0.1
         })).filter(signal => signal.expires_in > 0);
         
         // Add new signal occasionally
-        if (Math.random() > 0.95 && updated.length < 5) {
+        if (Math.random() > 0.998 && updated.length < 5) {
           updated.push(generateSignal());
         }
         
         return updated;
       });
-    }, 1000);
+    }, 100);
 
     return () => clearInterval(timer);
   }, []);
@@ -429,31 +430,15 @@ export function LiveTradingSignals() {
               opacity={0.3}
             />
             
-            {/* Moving averages */}
+            {/* Single Red Bold Price Line */}
             <Line 
               yAxisId="price"
               type="monotone" 
-              dataKey="ma20" 
-              stroke="#fbbf24" 
-              strokeWidth={1}
+              dataKey="close" 
+              stroke="#ef4444" 
+              strokeWidth={3}
               dot={false}
-              strokeDasharray="2 2"
-            />
-            <Line 
-              yAxisId="price"
-              type="monotone" 
-              dataKey="ma50" 
-              stroke="#3b82f6" 
-              strokeWidth={1}
-              dot={false}
-            />
-            <Line 
-              yAxisId="price"
-              type="monotone" 
-              dataKey="ma200" 
-              stroke="#8b5cf6" 
-              strokeWidth={1}
-              dot={false}
+              isAnimationActive={false}
             />
             
             {/* Candlesticks */}
@@ -490,16 +475,8 @@ export function LiveTradingSignals() {
         {/* Indicator legend */}
         <div className="flex items-center justify-center gap-6 mt-3">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-0.5 bg-secondary"></div>
-            <span className="text-xs text-muted-foreground">MA(20)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-0.5 bg-primary"></div>
-            <span className="text-xs text-muted-foreground">MA(50)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-0.5 bg-accent"></div>
-            <span className="text-xs text-muted-foreground">MA(200)</span>
+            <div className="w-6 h-1 bg-destructive"></div>
+            <span className="text-xs text-muted-foreground font-semibold">Live Price</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-2 bg-primary/30"></div>
