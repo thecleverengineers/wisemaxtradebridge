@@ -21,30 +21,30 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-purple-900 via-blue-900 to-indigo-900 backdrop-blur-md border-b border-white/10">
+    <header className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-primary via-accent to-primary backdrop-blur-md border-b border-border shadow-lg">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center space-x-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={onMenuClick}
-            className="text-white hover:bg-white/10"
+            className="hover:bg-primary-foreground/10"
           >
             <Menu className="h-6 w-6" />
           </Button>
           <div className="flex items-center space-x-2">
             <img src={logo} alt="WiseMax Logo" className="w-8 h-8 rounded-lg object-cover" />
             <div>
-              <span className="text-white font-bold text-lg">WiseMax</span>
+              <span className="text-primary-foreground font-bold text-lg">WiseMax</span>
               {isSuperAdmin ? (
                 <Badge 
-                  className="ml-2 bg-purple-600 text-white text-xs cursor-pointer hover:bg-purple-700 transition-colors"
+                  className="ml-2 bg-destructive text-xs cursor-pointer hover:bg-destructive/90 transition-colors"
                   onClick={() => navigate('/superadmin')}
                 >
                   Super Admin
                 </Badge>
               ) : isAdmin ? (
-                <Badge className="ml-2 bg-yellow-500 text-black text-xs">
+                <Badge variant="secondary" className="ml-2 text-xs">
                   Admin
                 </Badge>
               ) : null}
@@ -56,10 +56,10 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-white/10 relative"
+            className="hover:bg-primary-foreground/10 relative"
           >
             <Bell className="h-5 w-5" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full"></div>
           </Button>
           
           {user ? (
@@ -67,7 +67,7 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
               variant="ghost"
               size="icon"
               onClick={handleSignOut}
-              className="text-white hover:bg-white/10"
+              className="hover:bg-primary-foreground/10"
               title="Sign Out"
             >
               <LogOut className="h-5 w-5" />
@@ -77,7 +77,7 @@ export const AppHeader = ({ onMenuClick }: AppHeaderProps) => {
               variant="ghost"
               size="icon"
               onClick={() => navigate('/auth')}
-              className="text-white hover:bg-white/10"
+              className="hover:bg-primary-foreground/10"
               title="Sign In"
             >
               <User className="h-5 w-5" />

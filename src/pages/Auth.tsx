@@ -163,31 +163,30 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white/10 border-white/20 backdrop-blur-xl">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
           <img src={logo} alt="WiseMax Logo" className="w-16 h-16 rounded-2xl object-cover mx-auto mb-4 shadow-lg" />
-          <CardTitle className="text-2xl font-bold text-white">
+          <CardTitle className="text-2xl font-bold">
             {isLogin ? 'Welcome Back' : 'Join WiseMax'}
           </CardTitle>
-          <CardDescription className="text-purple-300">
+          <CardDescription>
             {isLogin ? 'Sign in to your secure account' : 'Create your premium trading account'}
           </CardDescription>
           <div className="flex items-center justify-center gap-2 mt-2">
-            <Shield className="h-4 w-4 text-green-400" />
-            <span className="text-xs text-green-400">Secured with 256-bit encryption</span>
+            <Shield className="h-4 w-4 text-primary" />
+            <span className="text-xs text-primary">Secured with 256-bit encryption</span>
           </div>
         </CardHeader>
         <CardContent>
           <Tabs value={isLogin ? 'login' : 'signup'} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-white/10">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger 
                 value="login" 
                 onClick={() => {
                   setIsLogin(true);
                   setErrors({});
                 }}
-                className="data-[state=active]:bg-purple-600"
               >
                 Sign In
               </TabsTrigger>
@@ -197,7 +196,6 @@ const Auth = () => {
                   setIsLogin(false);
                   setErrors({});
                 }}
-                className="data-[state=active]:bg-purple-600"
               >
                 Sign Up
               </TabsTrigger>
@@ -206,58 +204,58 @@ const Auth = () => {
             <TabsContent value="login">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="email" className="text-white">Email</Label>
+                  <Label htmlFor="email">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="Enter your email"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/50"
+                      className="pl-10"
                       required
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-red-400 text-xs mt-1">{errors.email}</p>
+                    <p className="text-destructive text-xs mt-1">{errors.email}</p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="password" className="text-white">Password</Label>
+                  <Label htmlFor="password">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
-                      className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/50"
+                      className="pl-10 pr-10"
                       required
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+                      className="absolute right-2 top-1/2 -translate-y-1/2"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                   {errors.password && (
-                    <p className="text-red-400 text-xs mt-1">{errors.password}</p>
+                    <p className="text-destructive text-xs mt-1">{errors.password}</p>
                   )}
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg"
+                  className="w-full"
                   disabled={loading}
                 >
                   {loading ? (
                     <span className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                       Signing In...
                     </span>
                   ) : 'Sign In'}

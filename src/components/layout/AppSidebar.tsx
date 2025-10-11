@@ -83,51 +83,51 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
       
       {/* Sidebar */}
       <div className={cn(
-        "fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 border-r border-white/10 transform transition-transform duration-300 ease-in-out z-[80] flex flex-col overflow-hidden",
+        "fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-gradient-to-b from-card via-background to-card border-r border-border transform transition-transform duration-300 ease-in-out z-[80] flex flex-col overflow-hidden shadow-2xl",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Header - Fixed */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
           <div className="flex items-center space-x-2">
             <img src={logo} alt="WiseMax Logo" className="w-8 h-8 rounded-lg object-cover" />
             <div>
-              <h2 className="text-white font-bold text-base">WiseMax</h2>
-              <p className="text-purple-300 text-xs">Trade Bridge</p>
+              <h2 className="font-bold text-base">WiseMax</h2>
+              <p className="text-muted-foreground text-xs">Trade Bridge</p>
             </div>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="text-white hover:bg-white/10 h-8 w-8"
+            className="h-8 w-8"
           >
             <X className="h-4 w-4" />
           </Button>
         </div>
 
         {/* User Profile - Fixed */}
-        <div className="p-4 border-b border-white/10 flex-shrink-0">
+        <div className="p-4 border-b border-border flex-shrink-0">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold text-sm">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
+              <span className="text-primary-foreground font-semibold text-sm">
                 {profile?.name?.substring(0, 2).toUpperCase() || 'U'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-white font-semibold text-sm truncate">{profile?.name || 'User'}</h3>
+              <h3 className="font-semibold text-sm truncate">{profile?.name || 'User'}</h3>
               <div className="flex items-center space-x-2">
-              <p className="text-purple-300 text-xs">
+              <p className="text-muted-foreground text-xs">
                 {isSuperAdmin ? 'Super Admin' : 'Gold Member'}
               </p>
               {isSuperAdmin && (
-                <Badge className="bg-red-500 text-white text-xs px-1 py-0">
+                <Badge variant="destructive" className="text-xs px-1 py-0">
                   Super Admin
                   </Badge>
                 )}
               </div>
               <div className="flex items-center space-x-1 mt-1">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                <span className="text-green-400 text-xs">
+                <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                <span className="text-primary text-xs">
                   {profile?.is_active ? 'Active' : 'Inactive'}
                 </span>
               </div>
@@ -136,10 +136,10 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
           
           {/* Referral Code Display */}
           {profile?.referral_code && (
-            <div className="mt-2 pt-2 border-t border-white/10">
-              <p className="text-xs text-purple-300 mb-1">Referral Code</p>
+            <div className="mt-2 pt-2 border-t border-border">
+              <p className="text-xs text-muted-foreground mb-1">Referral Code</p>
               <div className="flex items-center gap-2">
-                <code className="text-sm font-mono text-white bg-white/10 px-2 py-1 rounded">
+                <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
                   {profile.referral_code}
                 </code>
                 <button
@@ -150,7 +150,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
                       description: "Referral code copied",
                     });
                   }}
-                  className="text-purple-300 hover:text-white transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Copy className="h-3 w-3" />
                 </button>
@@ -160,7 +160,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
         </div>
 
         {/* Menu Items - Scrollable */}
-        <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-transparent">
+        <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
           <div className="p-3 space-y-1">
             {menuItems.map((item, index) => {
               const isActive = location.pathname === item.path;
@@ -171,8 +171,8 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
                   className={cn(
                     "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200",
                     isActive 
-                      ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/25" 
-                      : "text-purple-200 hover:bg-white/5 hover:text-white"
+                      ? "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25" 
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
                   <div className="flex items-center space-x-3 min-w-0">
@@ -183,8 +183,8 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
                     <span className={cn(
                       "text-xs px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2",
                       item.badgeColor === 'destructive' 
-                        ? "bg-red-500 text-white" 
-                        : "bg-gradient-to-r from-yellow-400 to-orange-500 text-black"
+                        ? "bg-destructive text-destructive-foreground" 
+                        : "bg-secondary text-secondary-foreground"
                     )}>
                       {item.badge}
                     </span>
@@ -196,13 +196,13 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
         </nav>
 
         {/* Support & Logout - Fixed */}
-        <div className="p-3 border-t border-white/10 flex-shrink-0 space-y-1">
+        <div className="p-3 border-t border-border flex-shrink-0 space-y-1">
           {supportLink && (
             <a
               href={supportLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center space-x-3 px-3 py-2.5 text-green-400 hover:bg-green-500/10 rounded-lg transition-all duration-200"
+              className="w-full flex items-center space-x-3 px-3 py-2.5 text-primary hover:bg-primary/10 rounded-lg transition-all duration-200"
             >
               <MessageCircle className="h-4 w-4" />
               <span className="font-medium text-sm">Support</span>
@@ -210,7 +210,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
           )}
           <button 
             onClick={handleSignOut}
-            className="w-full flex items-center space-x-3 px-3 py-2.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
+            className="w-full flex items-center space-x-3 px-3 py-2.5 text-destructive hover:bg-destructive/10 rounded-lg transition-all duration-200"
           >
             <LogOut className="h-4 w-4" />
             <span className="font-medium text-sm">Logout</span>
