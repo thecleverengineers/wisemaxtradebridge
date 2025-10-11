@@ -141,39 +141,32 @@ export default function ROIInvestments() {
 
   const fetchPlans = async () => {
     try {
-      console.log('Fetching ROI plans...');
+      console.log('Fetching investment plans...');
       const { data, error } = await supabase
-        .from('roi_plans')
+        .from('investment_plans')
         .select('*')
-        .eq('is_active', true)
-        .order('priority_order', { ascending: true })
-        .order('name', { ascending: true });
+        .eq('status', 'active')
+        .order('created_at', { ascending: true });
 
       if (error) {
         console.error('Error fetching ROI plans:', error);
         throw error;
       }
       
-      console.log('Fetched ROI plans:', data);
+      console.log('Fetched investment plans:', data);
       
-      // Map roi_plans to match the expected interface
+      // Map investment_plans to match the expected interface
       const mappedPlans = (data || []).map(plan => ({
         id: plan.id,
         name: plan.name,
         description: plan.description,
-        daily_roi: plan.interest_rate, // Using interest_rate as daily ROI
-        min_amount: plan.min_investment,
-        max_amount: plan.max_investment || 1000000,
-        duration_days: plan.duration_value,
-        total_return_percent: plan.interest_rate * plan.duration_value, // Calculate total return
-        status: plan.is_active ? 'active' : 'inactive',
-        created_at: plan.created_at,
-        // Additional properties from roi_plans
-        plan_type: plan.plan_type,
-        plan_category: plan.plan_category,
-        is_compounding: plan.is_compounding,
-        features: plan.features || [],
-        duration_type: plan.duration_type
+        daily_roi: plan.daily_roi,
+        min_amount: plan.min_amount,
+        max_amount: plan.max_amount,
+        duration_days: plan.duration_days,
+        total_return_percent: plan.total_return_percent,
+        status: plan.status,
+        created_at: plan.created_at
       }));
       
       console.log('Mapped plans:', mappedPlans);
