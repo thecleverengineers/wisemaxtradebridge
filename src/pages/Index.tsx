@@ -7,7 +7,7 @@ import { DashboardContent } from '@/components/dashboard/DashboardContent';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import logo from '@/assets/laktoken-logo.png';
+import logo from '@/assets/wisemax-logo.png';
 
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -41,9 +41,9 @@ const Index = () => {
         <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center relative z-10">
           <div className="mb-8">
             <div className="mx-auto mb-6 flex justify-center">
-              <img src={logo} alt="LakToken Logo" className="w-32 h-32 object-contain" />
+              <img src={logo} alt="WiseMax Logo" className="w-32 h-32 object-contain" />
             </div>
-            <h1 className="text-4xl font-bold text-foreground mb-4">Welcome to LakToken</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-4">Welcome to WiseMax</h1>
             <p className="text-muted-foreground text-lg max-w-md mx-auto">
               Your premium trading platform for smart investments and financial growth
             </p>
@@ -57,7 +57,7 @@ const Index = () => {
               Get Started
             </Button>
             <p className="text-muted-foreground text-sm">
-              Join thousands of investors already earning with LakToken
+              Join thousands of investors already earning with WiseMax
             </p>
           </div>
         </div>
