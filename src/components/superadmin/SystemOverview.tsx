@@ -38,10 +38,10 @@ const SystemOverview = () => {
 
   const fetchSystemStats = async () => {
     try {
-      // Fetch user statistics
-      const { data: users } = await supabase
-        .from('users')
-        .select('is_active, kyc_status, total_investment, total_roi_earned, total_referral_earned');
+      // Fetch user count from profiles
+      const { count: userCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
 
       // Fetch wallet balances
       const { data: wallets } = await supabase
@@ -60,14 +60,23 @@ const SystemOverview = () => {
       ).length || 0;
 
       // Calculate statistics
-      const totalUsers = users?.length || 0;
-      const activeUsers = users?.filter(u => u.is_active).length || 0;
-      const verifiedKYC = users?.filter(u => u.kyc_status === 'verified').length || 0;
-      const pendingKYC = users?.filter(u => u.kyc_status === 'pending').length || 0;
+      const totalUsers = userCount || 0;
+      const activeUsers = totalUsers; // Simplified - all registered users
+      const verifiedKYC = 0; // Not tracked in current schema
+      const pendingKYC = 0; // Not tracked in current schema
       
-      const totalInvestment = users?.reduce((sum, u) => sum + (u.total_investment || 0), 0) || 0;
-      const totalROI = users?.reduce((sum, u) => sum + (u.total_roi_earned || 0), 0) || 0;
-      const totalReferralEarnings = users?.reduce((sum, u) => sum + (u.total_referral_earned || 0), 0) || 0;
+      // Get investment totals from investments table
+      const { data: investments } = await supabase
+        .from('investments')
+        .select('amount');
+      const totalInvestment = investments?.reduce((sum, i) => sum + (i.amount || 0), 0) || 0;
+      
+      // Get ROI totals from wallets
+      const { data: walletData } = await supabase
+        .from('wallets')
+        .select('roi_income, referral_income');
+      const totalROI = walletData?.reduce((sum, w) => sum + (w.roi_income || 0), 0) || 0;
+      const totalReferralEarnings = walletData?.reduce((sum, w) => sum + (w.referral_income || 0), 0) || 0;
       
       const totalWalletBalance = wallets?.reduce((sum, w) => sum + (w.balance || 0), 0) || 0;
 

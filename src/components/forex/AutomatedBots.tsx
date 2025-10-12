@@ -146,6 +146,7 @@ export function AutomatedBots() {
     const { data, error } = await supabase
       .from('bot_strategies')
       .insert([{
+        user_id: user?.id,
         name: newBot.name,
         strategy_type: newBot.type,
         risk_level: 'medium',

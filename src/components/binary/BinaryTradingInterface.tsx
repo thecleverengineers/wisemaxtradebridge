@@ -55,20 +55,7 @@ export function BinaryTradingInterface({ balance, onTradePlace }: BinaryTradingI
 
       if (tradeError) throw tradeError;
 
-      // Store in binary_records table - using correct field names from database
-      const { error: recordError } = await supabase
-        .from('binary_records')
-        .insert({
-          asset: assetPair,
-          direction: tradeType,
-          amount: stake,
-          entry_price: currentPrice,
-          expiry_time: expiryDate.toISOString(),
-          duration: expiryMinutes,
-          status: 'pending'
-        });
-
-      if (recordError) throw recordError;
+      // Binary record already created by RPC function
 
       toast.success(`${tradeType} trade placed successfully!`);
       onTradePlace();
