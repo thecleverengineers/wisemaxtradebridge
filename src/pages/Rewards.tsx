@@ -102,6 +102,23 @@ const Rewards = () => {
       .subscribe();
     channels.push(walletChannel);
 
+    // Subscribe to referrals changes (for team deposits)
+    const referralsChannel = supabase
+      .channel('rewards-referrals')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'referrals'
+        },
+        () => {
+          fetchRewards();
+        }
+      )
+      .subscribe();
+    channels.push(referralsChannel);
+
     return () => {
       channels.forEach(channel => supabase.removeChannel(channel));
     };
@@ -120,8 +137,49 @@ const Rewards = () => {
       const userReferrals = referralCount.count || 0;
       const userRoi = totalRoi.data?.roi_income || 0;
 
-      // Define available rewards
-      const availableRewards: Reward[] = [
+      // Fetch team achievements data
+      let totalTeamDeposits = 0;
+      let teamAchievementsData: any[] = [];
+      let userProgressData: any[] = [];
+
+      try {
+        const session = await supabase.auth.getSession();
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+        const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+        const [achievementsRes, progressRes, depositsRes] = await Promise.all([
+          fetch(`${SUPABASE_URL}/rest/v1/team_achievements?order=milestone_amount.asc`, {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${session.data.session?.access_token}`
+            }
+          }),
+          fetch(`${SUPABASE_URL}/rest/v1/user_achievement_progress?user_id=eq.${user?.id}`, {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${session.data.session?.access_token}`
+            }
+          }),
+          fetch(`${SUPABASE_URL}/rest/v1/rpc/calculate_team_deposits`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${session.data.session?.access_token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ referrer_user_id: user?.id })
+          })
+        ]);
+
+        teamAchievementsData = await achievementsRes.json();
+        userProgressData = await progressRes.json();
+        totalTeamDeposits = Number(await depositsRes.text()) || 0;
+      } catch (err) {
+        console.log('Team achievements not yet available:', err);
+      }
+
+      // Define standard rewards
+      const standardRewards: Reward[] = [
         {
           id: '1',
           title: 'Welcome Bonus',
@@ -196,8 +254,28 @@ const Rewards = () => {
         }
       ];
 
-      setRewards(availableRewards);
-      setTotalRewards(availableRewards.filter(r => r.claimed).reduce((sum, r) => sum + r.amount, 0));
+      // Add team achievement rewards
+      const teamRewards: Reward[] = (teamAchievementsData || []).map((achievement: any) => {
+        const progress = userProgressData?.find((p: any) => p.achievement_id === achievement.id);
+        const isClaimed = progress?.reward_credited || false;
+        
+        return {
+          id: `team-${achievement.id}`,
+          title: `Team $${(achievement.milestone_amount / 1000).toFixed(0)}K Milestone`,
+          description: achievement.description,
+          type: 'achievement' as const,
+          amount: Number(achievement.reward_amount || 0),
+          requirement: Number(achievement.milestone_amount || 0),
+          current_progress: totalTeamDeposits,
+          claimed: isClaimed || (achievement.reward_amount === 0 && totalTeamDeposits >= achievement.milestone_amount),
+          icon: Crown,
+          color: achievement.reward_amount > 500 ? 'from-yellow-500 to-orange-600' : 'from-blue-500 to-cyan-600'
+        };
+      });
+
+      const allRewards = [...standardRewards, ...teamRewards];
+      setRewards(allRewards);
+      setTotalRewards(allRewards.filter(r => r.claimed && r.amount > 0).reduce((sum, r) => sum + r.amount, 0));
 
     } catch (error) {
       console.error('Error fetching rewards:', error);
