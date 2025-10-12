@@ -15,24 +15,20 @@ interface ForexRecord {
   position_type: string;
   order_type: string;
   entry_price: number;
-  current_price: number | null;
-  closed_price: number | null;
-  volume: number;
+  exit_price: number | null;
+  lot_size: number;
   leverage: number;
   margin_used: number;
   stop_loss: number | null;
   take_profit: number | null;
   profit_loss: number;
-  profit_loss_percent: number;
   commission: number;
-  swap_fee: number;
+  swap: number;
   status: string;
-  close_reason: string | null;
-  notes: string | null;
-  auto_close: boolean;
+  opened_at: string;
+  closed_at: string | null;
   created_at: string;
   updated_at: string;
-  closed_at: string | null;
   users?: {
     id: string;
     name: string;
@@ -110,7 +106,7 @@ const ForexRecordsManagement = () => {
     total: records.length,
     open: records.filter(r => r.status === 'open').length,
     closed: records.filter(r => r.status === 'closed').length,
-    totalVolume: records.reduce((sum, r) => sum + r.volume, 0),
+    totalVolume: records.reduce((sum, r) => sum + r.lot_size, 0),
     totalPnL: records.reduce((sum, r) => sum + r.profit_loss, 0),
     totalMargin: records.reduce((sum, r) => sum + r.margin_used, 0),
   };
@@ -185,8 +181,8 @@ const ForexRecordsManagement = () => {
                   <TableHead>Pair</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Entry Price</TableHead>
-                  <TableHead>Current/Close</TableHead>
-                  <TableHead>Volume</TableHead>
+                  <TableHead>Exit Price</TableHead>
+                  <TableHead>Lot Size</TableHead>
                   <TableHead>Leverage</TableHead>
                   <TableHead>Margin</TableHead>
                   <TableHead>P&L</TableHead>
@@ -223,34 +219,20 @@ const ForexRecordsManagement = () => {
                       </TableCell>
                       <TableCell className="font-mono">{record.entry_price.toFixed(5)}</TableCell>
                       <TableCell className="font-mono">
-                        {record.closed_price 
-                          ? record.closed_price.toFixed(5) 
-                          : record.current_price 
-                          ? record.current_price.toFixed(5) 
-                          : '-'}
+                        {record.exit_price ? record.exit_price.toFixed(5) : '-'}
                       </TableCell>
-                      <TableCell>{record.volume.toFixed(2)}</TableCell>
+                      <TableCell>{record.lot_size.toFixed(2)}</TableCell>
                       <TableCell>
                         <Badge variant="outline">1:{record.leverage}</Badge>
                       </TableCell>
                       <TableCell>${record.margin_used.toFixed(2)}</TableCell>
                       <TableCell>
-                        <div className="flex flex-col">
-                          <span className={record.profit_loss >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                            ${record.profit_loss.toFixed(2)}
-                          </span>
-                          <span className={`text-xs ${record.profit_loss_percent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {record.profit_loss_percent >= 0 ? '+' : ''}{record.profit_loss_percent.toFixed(2)}%
-                          </span>
-                        </div>
+                        <span className={record.profit_loss >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                          ${record.profit_loss.toFixed(2)}
+                        </span>
                       </TableCell>
                       <TableCell>
                         {getStatusBadge(record.status)}
-                        {record.close_reason && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {record.close_reason}
-                          </div>
-                        )}
                       </TableCell>
                       <TableCell className="text-sm">
                         <div className="flex flex-col">

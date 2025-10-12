@@ -83,14 +83,13 @@ const RoleManagement = () => {
     }
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('user_roles')
-        .upsert({
+        .insert([{
           user_id: selectedUserId,
-          role: selectedRole,
-        }, {
-          onConflict: 'user_id,role'
-        });
+          role: selectedRole as 'admin' | 'superadmin' | 'user',
+        }])
+        .select();
 
       if (error) throw error;
 

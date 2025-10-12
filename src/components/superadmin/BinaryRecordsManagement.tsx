@@ -12,14 +12,15 @@ import { format } from 'date-fns';
 interface BinaryRecord {
   id: string;
   user_id: string;
-  asset_pair: string;
-  trade_type: string;
-  stake_amount: number;
+  asset: string;
+  direction: string;
+  amount: number;
   entry_price: number;
   exit_price: number | null;
   profit_loss: number;
   status: string;
-  admin_forced_result: string | null;
+  duration: number;
+  expiry_time: string;
   created_at: string;
   settled_at: string | null;
   users?: {
@@ -85,18 +86,28 @@ const BinaryRecordsManagement = () => {
     }
   };
 
-  const handleForceResult = async (recordId: string, result: 'WIN' | 'LOSE') => {
+  const handleForceResult = async (recordId: string, result: 'win' | 'loss') => {
     try {
+      const record = records.find(r => r.id === recordId);
+      if (!record) return;
+
+      const profitLoss = result === 'win' ? record.amount * 0.8 : -record.amount;
+
       const { error } = await supabase
         .from('binary_records')
-        .update({ admin_forced_result: result })
+        .update({ 
+          status: result === 'win' ? 'won' : 'lost',
+          exit_price: record.entry_price * (result === 'win' ? 1.01 : 0.99),
+          profit_loss: profitLoss,
+          settled_at: new Date().toISOString()
+        })
         .eq('id', recordId);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: `Trade result forced to ${result}`,
+        description: `Trade forced to ${result}`,
       });
 
       fetchRecords();
@@ -124,7 +135,7 @@ const BinaryRecordsManagement = () => {
     pending: records.filter(r => r.status === 'pending').length,
     won: records.filter(r => r.status === 'won').length,
     lost: records.filter(r => r.status === 'lost').length,
-    totalVolume: records.reduce((sum, r) => sum + r.stake_amount, 0),
+    totalVolume: records.reduce((sum, r) => sum + r.amount, 0),
     totalProfit: records.reduce((sum, r) => sum + r.profit_loss, 0),
   };
 
@@ -225,18 +236,18 @@ const BinaryRecordsManagement = () => {
                           <span className="text-xs text-muted-foreground">{record.users?.email}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-mono">{record.asset_pair}</TableCell>
+                      <TableCell className="font-mono">{record.asset}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          {record.trade_type === 'CALL' ? (
+                          {record.direction === 'up' ? (
                             <TrendingUp className="h-4 w-4 text-green-600" />
                           ) : (
                             <TrendingDown className="h-4 w-4 text-red-600" />
                           )}
-                          <span>{record.trade_type}</span>
+                          <span className="uppercase">{record.direction}</span>
                         </div>
                       </TableCell>
-                      <TableCell>${record.stake_amount.toFixed(2)}</TableCell>
+                      <TableCell>${record.amount.toFixed(2)}</TableCell>
                       <TableCell className="font-mono">{record.entry_price.toFixed(4)}</TableCell>
                       <TableCell className="font-mono">
                         {record.exit_price ? record.exit_price.toFixed(4) : '-'}
@@ -248,23 +259,18 @@ const BinaryRecordsManagement = () => {
                       </TableCell>
                       <TableCell>
                         {getStatusBadge(record.status)}
-                        {record.admin_forced_result && (
-                          <Badge variant="outline" className="ml-1">
-                            Forced
-                          </Badge>
-                        )}
                       </TableCell>
                       <TableCell className="text-sm">
                         {format(new Date(record.created_at), 'MMM dd, HH:mm')}
                       </TableCell>
                       <TableCell>
-                        {record.status === 'pending' && !record.admin_forced_result && (
+                        {record.status === 'pending' && (
                           <div className="flex gap-1">
                             <Button
                               size="sm"
                               variant="outline"
                               className="text-green-600"
-                              onClick={() => handleForceResult(record.id, 'WIN')}
+                              onClick={() => handleForceResult(record.id, 'win')}
                             >
                               Win
                             </Button>
@@ -272,7 +278,7 @@ const BinaryRecordsManagement = () => {
                               size="sm"
                               variant="outline"
                               className="text-red-600"
-                              onClick={() => handleForceResult(record.id, 'LOSE')}
+                              onClick={() => handleForceResult(record.id, 'loss')}
                             >
                               Lose
                             </Button>

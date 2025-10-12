@@ -29,8 +29,13 @@ const AppSettings = () => {
         throw error;
       }
 
-      if (data?.setting_value && typeof data.setting_value === 'object' && 'url' in data.setting_value) {
-        setSupportLink((data.setting_value.url as string) || '');
+      if (data?.setting_value) {
+        const settingValue = data.setting_value;
+        if (typeof settingValue === 'object' && settingValue && 'url' in settingValue) {
+          setSupportLink((settingValue as {url: string}).url || '');
+        } else if (typeof settingValue === 'string') {
+          setSupportLink(settingValue);
+        }
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -68,14 +73,31 @@ const AppSettings = () => {
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      // Check if the setting exists
+      const { data: existing } = await supabase
         .from('admin_settings')
-        .upsert({
-          setting_key: 'support_link',
-          setting_value: { url: supportLink },
-        }, {
-          onConflict: 'setting_key'
-        });
+        .select('id')
+        .eq('setting_key', 'support_link')
+        .maybeSingle();
+
+      let error;
+      if (existing) {
+        // Update existing
+        const result = await supabase
+          .from('admin_settings')
+          .update({ setting_value: supportLink })
+          .eq('setting_key', 'support_link');
+        error = result.error;
+      } else {
+        // Insert new
+        const result = await supabase
+          .from('admin_settings')
+          .insert({
+            setting_key: 'support_link',
+            setting_value: supportLink,
+          });
+        error = result.error;
+      }
 
       if (error) throw error;
 

@@ -148,8 +148,9 @@ export function AutomatedBots() {
       .insert({
         user_id: user?.id,
         name: newBot.name,
-        type: newBot.type,
-        config,
+        strategy_type: newBot.type,
+        risk_level: 'medium',
+        allocated_amount: parseFloat(newBot.tradeAmount),
         status: 'inactive'
       })
       .select()
@@ -163,7 +164,7 @@ export function AutomatedBots() {
     const createdBot: TradingBot = {
       id: data.id,
       name: data.name,
-      type: data.type as any,
+      type: data.strategy_type as any,
       status: 'stopped',
       pairs: config.pairs,
       winRate: 0,
