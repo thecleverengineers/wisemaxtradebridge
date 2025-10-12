@@ -14,13 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      team_achievements: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          milestone_amount: number
+          name: string
+          reward_amount: number
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          milestone_amount: number
+          name: string
+          reward_amount: number
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          milestone_amount?: number
+          name?: string
+          reward_amount?: number
+        }
+        Relationships: []
+      }
+      user_achievement_progress: {
+        Row: {
+          achievement_id: string
+          claimed_at: string | null
+          created_at: string | null
+          id: string
+          is_claimed: boolean | null
+          progress: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string
+          is_claimed?: boolean | null
+          progress?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string
+          is_claimed?: boolean | null
+          progress?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievement_progress_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "team_achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_team_deposits: {
+        Args: { referrer_user_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
