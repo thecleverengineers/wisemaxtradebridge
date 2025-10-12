@@ -159,6 +159,29 @@ const Wallet = () => {
     try {
       const amount = parseFloat(withdrawAmount);
       
+      // Get current wallet
+      const { data: currentWallet } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('currency', 'USDT')
+        .single();
+
+      if (!currentWallet) {
+        throw new Error('Wallet not found');
+      }
+
+      // Update wallet balance
+      const { error: walletError } = await supabase
+        .from('wallets')
+        .update({
+          balance: currentWallet.balance - amount,
+          locked_balance: (currentWallet.locked_balance || 0) + amount
+        })
+        .eq('id', currentWallet.id);
+
+      if (walletError) throw walletError;
+
       // Create withdrawal transaction
       const { error: txError } = await supabase
         .from('transactions')
@@ -166,47 +189,16 @@ const Wallet = () => {
           user_id: user?.id,
           type: 'withdrawal',
           amount: amount,
-          balance_after: walletBalance - amount,
+          balance_after: currentWallet.balance - amount,
           reason: `USDT withdrawal to ${withdrawAddress}`
         }]);
 
       if (txError) throw txError;
 
       toast({
-          amount: amount,
-          currency: 'USDT',
-          wallet_address: withdrawAddress,
-          network: 'BEP20',
-          status: 'pending',
-          payment_method: 'USDT BEP20',
-          fee: amount * 0.02, // 2% withdrawal fee example
-          metadata: {
-            requested_at: new Date().toISOString(),
-            withdrawal_address: withdrawAddress
-          }
-        });
-
-      if (recordError) throw recordError;
-
-      // Update wallet balance
-      const { data: walletData, error: walletError } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', user?.id)
-        .eq('currency', 'USDT')
-        .single();
-
-      if (!walletError && walletData) {
-        const { error: updateError } = await supabase
-          .from('wallets')
-          .update({
-            balance: walletData.balance - amount,
-            locked_balance: (walletData.locked_balance || 0) + amount
-          })
-          .eq('id', walletData.id);
-
-        if (updateError) throw updateError;
-      }
+        title: "Withdrawal Requested",
+        description: `Withdrawal of ${amount} USDT has been submitted for processing.`,
+      });
 
       toast({
         title: "Withdrawal Request Submitted",

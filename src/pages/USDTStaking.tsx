@@ -198,7 +198,7 @@ const USDTStaking = () => {
     const totalStaked = activePositions.reduce((sum, p) => sum + (p.amount || 0), 0);
     const totalEarned = positions.reduce((sum, p) => sum + (p.total_earned || 0), 0);
     const dailyEarnings = activePositions.reduce((sum, p) => {
-      return sum + calculateDailyEarnings(p.amount || 0, p.apy || 0);
+      return sum + (p.daily_return_amount || 0);
     }, 0);
 
     setTotalStats({
@@ -308,8 +308,9 @@ const USDTStaking = () => {
     }
   };
 
-  const handleWithdraw = async (position: StakingPosition) => {
-    if (position.type === 'locked' && position.end_date && new Date(position.end_date) > new Date()) {
+  const handleWithdraw = async (position: StakingRecord) => {
+    const isEarlyWithdrawal = position.end_date && new Date(position.end_date) > new Date();
+    if (isEarlyWithdrawal) {
       const confirmed = window.confirm(
         "Early withdrawal will forfeit all earned interest. Are you sure you want to proceed?"
       );
@@ -317,36 +318,16 @@ const USDTStaking = () => {
     }
 
     try {
-      const isEarlyWithdrawal = position.type === 'locked' && 
-        position.end_date && new Date(position.end_date) > new Date();
-      
       const returnAmount = !isEarlyWithdrawal
-        ? position.amount + position.total_earned
+        ? position.amount + (position.total_earned || 0)
         : position.amount;
       
-      const penaltyAmount = isEarlyWithdrawal ? position.total_earned : 0;
-
-      const { error: positionError } = await supabase
-        .from('staking_positions')
-        .update({ status: 'withdrawn' })
-        .eq('id', position.id);
-
-      if (positionError) throw positionError;
-
       const { error: recordError } = await supabase
-        .from('usdtstaking_records')
+        .from('staking_records')
         .update({ 
-          status: 'withdrawn',
-          withdrawn_amount: returnAmount,
-          withdrawn_at: new Date().toISOString(),
-          early_withdrawal: isEarlyWithdrawal,
-          penalty_amount: penaltyAmount
+          status: 'completed'
         })
-        .eq('user_id', user?.id)
-        .eq('amount', position.amount)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .eq('id', position.id);
 
       if (recordError) throw recordError;
 
@@ -517,46 +498,38 @@ const USDTStaking = () => {
                   key={plan.id}
                   className="group hover:shadow-lg transition-all duration-300"
                 >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-foreground mb-2">{plan.name}</h3>
-                        <p className="text-sm text-muted-foreground">{plan.description}</p>
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-foreground mb-2">{plan.name}</h3>
+                          <p className="text-sm text-muted-foreground">{plan.description}</p>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg bg-gradient-to-br from-green-500 to-emerald-500">
+                          <Unlock className="h-6 w-6 text-white" />
+                        </div>
                       </div>
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
-                        plan.type === 'flexible' 
-                          ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
-                          : 'bg-gradient-to-br from-blue-500 to-cyan-500'
-                      }`}>
-                        {plan.type === 'flexible' ? <Unlock className="h-6 w-6 text-white" /> : <Lock className="h-6 w-6 text-white" />}
+                      
+                      <div className="space-y-3 mb-4 p-4 rounded-lg bg-muted/50">
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground text-sm">Daily Return</span>
+                          <span className="text-2xl font-bold text-green-600 dark:text-green-400">{plan.daily_return}%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground text-sm">Duration</span>
+                          <span className="text-foreground font-medium">{plan.duration_days} Days</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-2 border-t border-border/50">
+                          <span className="text-muted-foreground text-sm">Min. Stake</span>
+                          <span className="text-foreground font-medium">₹{plan.min_amount.toLocaleString()}</span>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="space-y-3 mb-4 p-4 rounded-lg bg-muted/50">
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground text-sm">APY</span>
-                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">{plan.apy}%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground text-sm">Duration</span>
-                        <span className="text-foreground font-medium">
-                          {plan.type === 'flexible' ? 'Flexible' : `${plan.duration_days} Days`}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center pt-2 border-t border-border/50">
-                        <span className="text-muted-foreground text-sm">Min. Stake</span>
-                        <span className="text-foreground font-medium">₹{plan.min_amount.toLocaleString()}</span>
-                      </div>
-                    </div>
 
-                    {plan.bonus_text && (
                       <div className="mb-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
                         <p className="text-primary text-sm flex items-center gap-2">
                           <Gift className="h-4 w-4" />
-                          {plan.bonus_text}
+                          Earn {plan.total_return_percent}% total return
                         </p>
                       </div>
-                    )}
 
                     <Button
                       onClick={() => handleOpenStakeDialog(plan)}
@@ -605,16 +578,12 @@ const USDTStaking = () => {
                     <CardContent className="p-6">
                       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
-                            position.type === 'flexible' 
-                              ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
-                              : 'bg-gradient-to-br from-blue-500 to-cyan-500'
-                          }`}>
-                            {position.type === 'flexible' ? <Unlock className="h-6 w-6 text-white" /> : <Lock className="h-6 w-6 text-white" />}
+                          <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg bg-gradient-to-br from-green-500 to-emerald-500">
+                            <Unlock className="h-6 w-6 text-white" />
                           </div>
                           <div>
                             <h3 className="text-foreground text-lg font-semibold">
-                              {position.staking_plans?.name || (position.type === 'flexible' ? 'Flexible Staking' : `${position.duration_days} Days Locked`)}
+                              {position.staking_plans?.name || 'Staking Position'}
                             </h3>
                             <p className="text-muted-foreground text-sm">
                               Started: {new Date(position.start_date).toLocaleDateString()}
@@ -626,14 +595,10 @@ const USDTStaking = () => {
                         </Badge>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 rounded-lg bg-muted/50">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 p-4 rounded-lg bg-muted/50">
                         <div>
                           <p className="text-muted-foreground text-sm mb-1">Staked Amount</p>
                           <p className="text-foreground font-semibold">₹{position.amount?.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground text-sm mb-1">APY</p>
-                          <p className="text-foreground font-semibold">{position.apy}%</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground text-sm mb-1">Total Earned</p>
@@ -641,11 +606,11 @@ const USDTStaking = () => {
                         </div>
                         <div>
                           <p className="text-muted-foreground text-sm mb-1">Daily Earnings</p>
-                          <p className="text-foreground font-semibold">₹{calculateDailyEarnings(position.amount, position.apy).toFixed(4)}</p>
+                          <p className="text-foreground font-semibold">₹{(position.daily_return_amount || 0).toFixed(4)}</p>
                         </div>
                       </div>
 
-                      {position.type === 'locked' && position.end_date && (
+                      {position.end_date && (
                         <div className="mb-4">
                           <div className="flex justify-between text-sm mb-2">
                             <span className="text-muted-foreground">Time Remaining</span>
@@ -655,26 +620,19 @@ const USDTStaking = () => {
                             <div 
                               className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-300"
                               style={{ 
-                                width: `${((position.duration_days - getRemainingDays(position.end_date)) / position.duration_days) * 100}%` 
+                                width: `${Math.min(100, ((position.days_credited || 0) / (position.staking_plans?.duration_days || 1)) * 100)}%` 
                               }}
                             />
                           </div>
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between">
-                        {position.auto_renew && (
-                          <div className="flex items-center gap-2 text-primary">
-                            <RefreshCw className="h-4 w-4" />
-                            <span className="text-sm font-medium">Auto-Renew ON</span>
-                          </div>
-                        )}
+                      <div className="flex items-center justify-end">
                         <Button
                           variant="outline"
                           onClick={() => handleWithdraw(position)}
-                          className="ml-auto"
                         >
-                          {position.type === 'flexible' ? 'Withdraw' : 'Redeem'}
+                          Withdraw
                         </Button>
                       </div>
                     </CardContent>
