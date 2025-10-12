@@ -66,23 +66,23 @@ const Rewards = () => {
       .subscribe();
     channels.push(investmentChannel);
 
-    // Subscribe to user changes (for referral count)
-    const userChannel = supabase
-      .channel('rewards-users')
+    // Subscribe to profiles changes (for referral count)
+    const profileChannel = supabase
+      .channel('rewards-profiles')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'users',
-          filter: `parent_id=eq.${user.id}`
+          table: 'profiles',
+          filter: `referred_by=eq.${user.id}`
         },
         () => {
           fetchRewards();
         }
       )
       .subscribe();
-    channels.push(userChannel);
+    channels.push(profileChannel);
 
     // Subscribe to wallet changes (for ROI income)
     const walletChannel = supabase
@@ -127,15 +127,17 @@ const Rewards = () => {
   const fetchRewards = async () => {
     try {
       // Get user statistics for reward calculations
-      const [investmentCount, referralCount, totalRoi] = await Promise.all([
+      const [investmentCount, referralCount, totalRoi, stakingCount] = await Promise.all([
         supabase.from('investments').select('*', { count: 'exact', head: true }).eq('user_id', user?.id),
-        supabase.from('users').select('*', { count: 'exact', head: true }).eq('parent_id', user?.id),
-        supabase.from('wallets').select('roi_income').eq('user_id', user?.id).single()
+        supabase.from('referrals').select('*', { count: 'exact', head: true }).eq('user_id', user?.id).eq('level', 1),
+        supabase.from('wallets').select('roi_income').eq('user_id', user?.id).maybeSingle(),
+        supabase.from('staking_records').select('*', { count: 'exact', head: true }).eq('user_id', user?.id)
       ]);
 
       const userInvestments = investmentCount.count || 0;
       const userReferrals = referralCount.count || 0;
       const userRoi = totalRoi.data?.roi_income || 0;
+      const userStaking = stakingCount.count || 0;
 
       // Fetch team achievements data
       let totalTeamDeposits = 0;
@@ -212,25 +214,37 @@ const Rewards = () => {
           claimed: false,
           icon: Calendar,
           color: 'from-teal-500 to-cyan-600'
+        },
+        {
+          id: '7',
+          title: 'Staking Champion',
+          description: 'Create 5 staking positions to earn ₹1000 bonus',
+          type: 'milestone',
+          amount: 1000,
+          requirement: 5,
+          current_progress: userStaking,
+          claimed: userStaking >= 5,
+          icon: TrendingUp,
+          color: 'from-purple-500 to-pink-600'
         }
       ];
 
-      // Add team achievement rewards
+      // Add team achievement rewards with real-time progress
       const teamRewards: Reward[] = (teamAchievementsData || []).map((achievement: any) => {
         const progress = userProgressData?.find((p: any) => p.achievement_id === achievement.id);
-        const isClaimed = progress?.reward_credited || false;
+        const isClaimed = progress?.is_claimed || false;
         
         return {
           id: `team-${achievement.id}`,
-          title: `Team $${(achievement.milestone_amount / 1000).toFixed(0)}K Milestone`,
-          description: achievement.description,
+          title: achievement.name || `Team $${(achievement.milestone_amount / 1000).toFixed(0)}K Milestone`,
+          description: achievement.description || `Reach ${achievement.milestone_amount} in team deposits`,
           type: 'achievement' as const,
           amount: Number(achievement.reward_amount || 0),
           requirement: Number(achievement.milestone_amount || 0),
           current_progress: totalTeamDeposits,
-          claimed: isClaimed || (achievement.reward_amount === 0 && totalTeamDeposits >= achievement.milestone_amount),
+          claimed: isClaimed,
           icon: Crown,
-          color: achievement.reward_amount > 500 ? 'from-yellow-500 to-orange-600' : 'from-blue-500 to-cyan-600'
+          color: achievement.color ? `from-${achievement.color}-500 to-${achievement.color}-600` : 'from-blue-500 to-cyan-600'
         };
       });
 

@@ -57,7 +57,7 @@ const DepositManagement = () => {
       const depositsWithUsers = await Promise.all(
         (data || []).map(async (deposit) => {
           const { data: userData } = await supabase
-            .from('users')
+            .from('profiles')
             .select('email, name')
             .eq('id', deposit.user_id)
             .maybeSingle();

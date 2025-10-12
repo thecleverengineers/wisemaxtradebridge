@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          setting_key: string
+          setting_value: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          setting_key: string
+          setting_value: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       binary_records: {
         Row: {
           amount: number
@@ -568,9 +592,12 @@ export type Database = {
         Row: {
           amount: number
           balance_after: number
+          category: string | null
           created_at: string | null
+          currency: string | null
           id: string
           income_type: string | null
+          notes: string | null
           reason: string | null
           status: string | null
           type: string
@@ -579,9 +606,12 @@ export type Database = {
         Insert: {
           amount: number
           balance_after: number
+          category?: string | null
           created_at?: string | null
+          currency?: string | null
           id?: string
           income_type?: string | null
+          notes?: string | null
           reason?: string | null
           status?: string | null
           type: string
@@ -590,9 +620,12 @@ export type Database = {
         Update: {
           amount?: number
           balance_after?: number
+          category?: string | null
           created_at?: string | null
+          currency?: string | null
           id?: string
           income_type?: string | null
+          notes?: string | null
           reason?: string | null
           status?: string | null
           type?: string
@@ -802,6 +835,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_withdrawal: {
+        Args: { withdrawal_id: string }
+        Returns: Json
+      }
       build_referral_tree: {
         Args: { new_user_id: string; referrer_id: string }
         Returns: undefined
@@ -820,6 +857,20 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      place_binary_trade: {
+        Args: {
+          p_amount: number
+          p_asset: string
+          p_direction: string
+          p_duration: number
+          p_entry_price: number
+        }
+        Returns: Json
+      }
+      reject_withdrawal: {
+        Args: { note?: string; withdrawal_id: string }
+        Returns: Json
       }
     }
     Enums: {

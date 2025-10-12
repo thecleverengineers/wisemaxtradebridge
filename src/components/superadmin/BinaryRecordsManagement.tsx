@@ -58,7 +58,7 @@ const BinaryRecordsManagement = () => {
       if (data && data.length > 0) {
         const userIds = [...new Set(data.map(r => r.user_id))];
         const { data: usersData } = await supabase
-          .from('users')
+          .from('profiles')
           .select('id, name, email')
           .in('id', userIds);
 
