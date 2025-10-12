@@ -403,7 +403,7 @@ const Referrals = () => {
           {/* Tabs for Different Views */}
           <Tabs defaultValue="matrix" className="space-y-4">
             <TabsList className="grid grid-cols-4 w-full">
-              <TabsTrigger value="matrix">Matrix Structure</TabsTrigger>
+              <TabsTrigger value="matrix">Structure</TabsTrigger>
               <TabsTrigger value="performance">Performance</TabsTrigger>
               <TabsTrigger value="team">My Team</TabsTrigger>
               <TabsTrigger value="earnings">Earnings</TabsTrigger>
