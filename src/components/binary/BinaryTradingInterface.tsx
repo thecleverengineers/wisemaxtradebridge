@@ -45,34 +45,15 @@ export function BinaryTradingInterface({ balance, onTradePlace }: BinaryTradingI
       const expiryDate = new Date(Date.now() + expiryMinutes * 60 * 1000);
       
       // Place trade using RPC function
-      const { data: tradeId, error: tradeError } = await supabase.rpc('place_binary_trade', {
-        p_user_id: user.id,
-        p_asset_pair: assetPair,
-        p_trade_type: tradeType,
-        p_stake_amount: stake,
-        p_expiry_minutes: expiryMinutes
+      const { data: tradeResult, error: tradeError } = await supabase.rpc('place_binary_trade', {
+        p_asset: assetPair,
+        p_direction: tradeType,
+        p_amount: stake,
+        p_entry_price: currentPrice,
+        p_duration: expiryMinutes
       });
 
       if (tradeError) throw tradeError;
-
-      // Store in binary_records table
-      const { error: recordError } = await supabase
-        .from('binary_records')
-        .insert({
-          user_id: user.id,
-          asset_pair: assetPair,
-          trade_type: tradeType,
-          stake_amount: stake,
-          entry_price: currentPrice,
-          expiry_time: expiryDate.toISOString(),
-          expiry_seconds: expiryMinutes * 60,
-          payout_rate: 0.80,
-          status: 'pending',
-          is_demo: false,
-          notes: `Trade placed via trading interface`
-        });
-
-      if (recordError) throw recordError;
 
       toast.success(`${tradeType} trade placed successfully!`);
       onTradePlace();

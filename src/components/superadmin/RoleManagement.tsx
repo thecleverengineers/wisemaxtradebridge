@@ -37,7 +37,7 @@ const RoleManagement = () => {
         .from('user_roles')
         .select(`
           *,
-          user:users!user_roles_user_id_fkey (
+          user:profiles!user_roles_user_id_fkey (
             email,
             name
           )
@@ -61,7 +61,7 @@ const RoleManagement = () => {
   const fetchAvailableUsers = async () => {
     try {
       const { data: users, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id, email, name')
         .order('email');
 

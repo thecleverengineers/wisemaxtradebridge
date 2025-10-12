@@ -141,7 +141,7 @@ const WithdrawManagement = () => {
     
     try {
       const { data, error } = await supabase.rpc('approve_withdrawal', {
-        p_transaction_id: withdrawal.id
+        withdrawal_id: withdrawal.id
       });
       
       if (error) throw error;
@@ -174,7 +174,8 @@ const WithdrawManagement = () => {
     
     try {
       const { data, error } = await supabase.rpc('reject_withdrawal', {
-        p_transaction_id: withdrawal.id
+        withdrawal_id: withdrawal.id,
+        note: 'Rejected by admin'
       });
       
       if (error) throw error;
