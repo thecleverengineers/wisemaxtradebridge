@@ -5,3 +5,9 @@ verify_jwt = true
 
 [functions.settle-expired-trades]
 verify_jwt = false
+
+[functions.calculate-daily-roi]
+verify_jwt = false
+
+[functions.process-level-income]
+verify_jwt = false
