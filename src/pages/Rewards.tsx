@@ -26,12 +26,24 @@ interface Reward {
   color: string;
 }
 
+interface SalaryPayment {
+  id: string;
+  achievement_tier: string;
+  amount: number;
+  payment_month: number;
+  paid_at: string;
+}
+
 const Rewards = () => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [rewards, setRewards] = useState<Reward[]>([]);
+  const [salaryPayments, setSalaryPayments] = useState<SalaryPayment[]>([]);
+  const [currentTier, setCurrentTier] = useState<string>('None');
+  const [tierReachedAt, setTierReachedAt] = useState<Date | null>(null);
+  const [nextSalaryDate, setNextSalaryDate] = useState<Date | null>(null);
   
   const [activeTab, setActiveTab] = useState('available');
   const [totalRewards, setTotalRewards] = useState(0);
@@ -39,6 +51,7 @@ const Rewards = () => {
   useEffect(() => {
     if (user) {
       fetchRewards();
+      fetchSalaryInfo();
     }
   }, [user]);
 
@@ -248,6 +261,67 @@ const Rewards = () => {
     }
   };
 
+  const fetchSalaryInfo = async () => {
+    try {
+      // Get user's salary payments
+      const { data: payments } = await supabase
+        .from('salary_payments')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('payment_month', { ascending: true });
+
+      setSalaryPayments(payments || []);
+
+      // Get current achievement tier
+      const { data: tierData } = await supabase
+        .rpc('get_user_achievement_tier', { p_user_id: user?.id });
+
+      setCurrentTier(tierData || 'None');
+
+      // Get tier reached date from achievement progress
+      const { data: progress } = await supabase
+        .from('user_achievement_progress')
+        .select('tier_reached_at')
+        .eq('user_id', user?.id)
+        .not('tier_reached_at', 'is', null)
+        .order('tier_reached_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (progress?.tier_reached_at) {
+        const reachedDate = new Date(progress.tier_reached_at);
+        setTierReachedAt(reachedDate);
+
+        // Calculate next salary date (30 days from last payment or tier reached date)
+        const lastPayment = payments && payments.length > 0 
+          ? new Date(payments[payments.length - 1].paid_at)
+          : reachedDate;
+        
+        const nextDate = new Date(lastPayment);
+        nextDate.setDate(nextDate.getDate() + 30);
+        setNextSalaryDate(nextDate);
+      }
+    } catch (error) {
+      console.error('Error fetching salary info:', error);
+    }
+  };
+
+  const getTierSalaryAmount = (tier: string): number => {
+    const salaries: Record<string, number> = {
+      'Bronze': 50,
+      'Silver': 75,
+      'Gold': 100,
+      'Platinum': 120,
+      'Diamond': 130,
+      'Master': 150,
+      'Grandmaster': 200,
+      'Elite': 300,
+      'Legend': 400,
+      'Mythic': 500
+    };
+    return salaries[tier] || 0;
+  };
+
   const claimReward = async (rewardId: string) => {
     const reward = rewards.find(r => r.id === rewardId);
     if (!reward || reward.claimed || reward.current_progress < reward.requirement) return;
@@ -331,6 +405,111 @@ const Rewards = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Monthly Salary Status */}
+          {currentTier !== 'None' && getTierSalaryAmount(currentTier) > 0 && (
+            <Card className="relative overflow-hidden border-2 border-primary/20 shadow-xl animate-fade-in">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full blur-3xl" />
+              <CardHeader className="relative">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-6 w-6 text-primary" />
+                      Monthly Salary Program
+                    </CardTitle>
+                    <CardDescription className="mt-2">
+                      You're enrolled in the {currentTier} tier salary program
+                    </CardDescription>
+                  </div>
+                  <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0 px-4 py-2 text-lg">
+                    ${getTierSalaryAmount(currentTier)}/month
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="relative space-y-6">
+                {/* Salary Progress */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-background/50 rounded-lg p-4 border border-border/50">
+                    <p className="text-sm text-muted-foreground mb-1">Payments Received</p>
+                    <p className="text-2xl font-bold text-primary">{salaryPayments.length}/6</p>
+                  </div>
+                  <div className="bg-background/50 rounded-lg p-4 border border-border/50">
+                    <p className="text-sm text-muted-foreground mb-1">Total Earned</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      ${salaryPayments.reduce((sum, p) => sum + Number(p.amount), 0)}
+                    </p>
+                  </div>
+                  <div className="bg-background/50 rounded-lg p-4 border border-border/50">
+                    <p className="text-sm text-muted-foreground mb-1">Next Payment</p>
+                    <p className="text-2xl font-bold">
+                      {salaryPayments.length < 6 && nextSalaryDate
+                        ? nextSalaryDate.toLocaleDateString()
+                        : salaryPayments.length >= 6
+                        ? 'Completed'
+                        : 'TBD'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Payment Timeline */}
+                {salaryPayments.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Payment History
+                    </h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {salaryPayments.map((payment, index) => (
+                        <div
+                          key={payment.id}
+                          className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-border/50"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-sm font-bold text-primary">{payment.payment_month}</span>
+                            </div>
+                            <div>
+                              <p className="font-medium">Month {payment.payment_month}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(payment.paid_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="bg-green-500/10 border-green-500/30 text-green-700">
+                            +${payment.amount}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Remaining Payments */}
+                {salaryPayments.length < 6 && (
+                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                    <p className="text-sm font-medium mb-2">Remaining Salary Payments</p>
+                    <div className="flex items-center gap-2">
+                      <Progress value={(salaryPayments.length / 6) * 100} className="flex-1" />
+                      <span className="text-sm font-bold">{6 - salaryPayments.length} left</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      You'll receive ${getTierSalaryAmount(currentTier)} every 30 days for {6 - salaryPayments.length} more months
+                    </p>
+                  </div>
+                )}
+
+                {salaryPayments.length >= 6 && (
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 text-center">
+                    <Award className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                    <p className="font-bold text-green-700">Salary Program Completed!</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      You've received all 6 monthly payments for the {currentTier} tier
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Category Tabs */}
           <Card className="border-border/50 shadow-lg">
