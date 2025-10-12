@@ -451,6 +451,62 @@ const Rewards = () => {
                   </div>
                 </div>
 
+                {/* Salary Chart - Visualize monthly payments */}
+                <div className="mt-6 p-6 bg-background/50 rounded-lg border border-border/50">
+                  <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    Salary Payment Schedule
+                  </h4>
+                  <div className="grid grid-cols-6 gap-2">
+                    {[1, 2, 3, 4, 5, 6].map((month) => {
+                      const isPaid = salaryPayments.some(p => p.payment_month === month);
+                      const isNext = !isPaid && month === (salaryPayments.length + 1);
+                      return (
+                        <div
+                          key={month}
+                          className={`
+                            relative p-4 rounded-lg text-center transition-all duration-300
+                            ${isPaid 
+                              ? 'bg-green-500/20 border-2 border-green-500' 
+                              : isNext
+                              ? 'bg-primary/20 border-2 border-primary animate-pulse'
+                              : 'bg-muted border-2 border-border'}
+                          `}
+                        >
+                          <div className="text-xs text-muted-foreground mb-1">Month {month}</div>
+                          <div className={`text-sm font-bold ${isPaid ? 'text-green-600' : isNext ? 'text-primary' : 'text-muted-foreground'}`}>
+                            ${getTierSalaryAmount(currentTier)}
+                          </div>
+                          {isPaid && (
+                            <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1">
+                              <Award className="h-3 w-3 text-white" />
+                            </div>
+                          )}
+                          {isNext && (
+                            <div className="absolute -top-2 -right-2 bg-primary rounded-full p-1">
+                              <Calendar className="h-3 w-3 text-primary-foreground" />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-between mt-4 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 bg-green-500/20 border border-green-500 rounded"></div>
+                      <span>Paid</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 bg-primary/20 border border-primary rounded"></div>
+                      <span>Next</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 bg-muted border border-border rounded"></div>
+                      <span>Pending</span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Payment Timeline */}
                 {salaryPayments.length > 0 && (
                   <div className="space-y-3">

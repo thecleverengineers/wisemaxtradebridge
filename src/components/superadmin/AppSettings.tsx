@@ -29,8 +29,12 @@ const AppSettings = () => {
         throw error;
       }
 
-      if (data?.setting_value && typeof data.setting_value === 'object' && 'url' in data.setting_value) {
-        setSupportLink((data.setting_value.url as string) || '');
+      if (data && data.setting_value) {
+        if (typeof data.setting_value === 'object' && 'url' in data.setting_value) {
+          setSupportLink((data.setting_value.url as string) || '');
+        } else if (typeof data.setting_value === 'string') {
+          setSupportLink(data.setting_value);
+        }
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -72,9 +76,7 @@ const AppSettings = () => {
         .from('admin_settings')
         .upsert({
           setting_key: 'support_link',
-          setting_value: { url: supportLink },
-        }, {
-          onConflict: 'setting_key'
+          setting_value: supportLink
         });
 
       if (error) throw error;

@@ -60,7 +60,14 @@ const StakingPlansManagement = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPlans(data || []);
+      const plansWithTypes = (data || []).map(plan => ({
+        ...plan,
+        type: 'flexible',
+        apy: plan.daily_return * 365,
+        bonus_text: '',
+        is_active: plan.status === 'active'
+      }));
+      setPlans(plansWithTypes as any);
     } catch (error) {
       console.error('Error fetching staking plans:', error);
       toast({

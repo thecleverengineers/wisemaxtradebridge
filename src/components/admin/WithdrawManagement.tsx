@@ -47,12 +47,12 @@ const WithdrawManagement = () => {
 
       console.log('Current user ID:', user.id);
 
-      // Check if user has admin or super_admin role
+      // Check if user has admin or superadmin role
       const { data: roleData, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .in('role', ['admin', 'super_admin']);
+        .in('role', ['admin', 'superadmin']);
 
       console.log('User roles:', roleData);
 
@@ -105,7 +105,7 @@ const WithdrawManagement = () => {
       const withdrawalsWithUsers = await Promise.all(
         (data || []).map(async (withdrawal) => {
           const { data: userData } = await supabase
-            .from('users')
+            .from('profiles')
             .select('email, name')
             .eq('id', withdrawal.user_id)
             .maybeSingle();
@@ -141,7 +141,7 @@ const WithdrawManagement = () => {
     
     try {
       const { data, error } = await supabase.rpc('approve_withdrawal', {
-        p_transaction_id: withdrawal.id
+        withdrawal_id: withdrawal.id
       });
       
       if (error) throw error;
@@ -174,7 +174,7 @@ const WithdrawManagement = () => {
     
     try {
       const { data, error } = await supabase.rpc('reject_withdrawal', {
-        p_transaction_id: withdrawal.id
+        withdrawal_id: withdrawal.id
       });
       
       if (error) throw error;

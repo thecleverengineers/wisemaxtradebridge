@@ -58,7 +58,7 @@ const BinaryRecordsManagement = () => {
       if (data && data.length > 0) {
         const userIds = [...new Set(data.map(r => r.user_id))];
         const { data: usersData } = await supabase
-          .from('users')
+          .from('profiles')
           .select('id, name, email')
           .in('id', userIds);
 
@@ -66,12 +66,16 @@ const BinaryRecordsManagement = () => {
         
         const recordsWithUsers = data.map(record => ({
           ...record,
+          asset_pair: record.asset || 'N/A',
+          trade_type: record.direction || 'N/A',
+          stake_amount: record.amount || 0,
+          admin_forced_result: null,
           users: usersMap.get(record.user_id) || undefined
         }));
 
-        setRecords(recordsWithUsers);
+        setRecords(recordsWithUsers as any);
       } else {
-        setRecords(data || []);
+        setRecords([]);
       }
     } catch (error) {
       console.error('Error fetching binary records:', error);
@@ -87,9 +91,10 @@ const BinaryRecordsManagement = () => {
 
   const handleForceResult = async (recordId: string, result: 'WIN' | 'LOSE') => {
     try {
+      const status = result === 'WIN' ? 'won' : 'lost';
       const { error } = await supabase
         .from('binary_records')
-        .update({ admin_forced_result: result })
+        .update({ status })
         .eq('id', recordId);
 
       if (error) throw error;

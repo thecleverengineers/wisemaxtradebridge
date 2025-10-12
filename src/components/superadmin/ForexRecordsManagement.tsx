@@ -70,7 +70,7 @@ const ForexRecordsManagement = () => {
       if (data && data.length > 0) {
         const userIds = [...new Set(data.map(r => r.user_id))];
         const { data: usersData } = await supabase
-          .from('users')
+          .from('profiles')
           .select('id, name, email')
           .in('id', userIds);
 
@@ -78,12 +78,20 @@ const ForexRecordsManagement = () => {
 
         const recordsWithUsers = data.map(record => ({
           ...record,
+          current_price: record.entry_price,
+          closed_price: record.exit_price,
+          volume: record.lot_size,
+          profit_loss_percent: 0,
+          trade_direction: record.position_type,
+          trade_duration_minutes: 0,
+          entry_time: record.opened_at,
+          exit_time: record.closed_at,
           users: usersMap.get(record.user_id)
         }));
 
-        setRecords(recordsWithUsers);
+        setRecords(recordsWithUsers as any);
       } else {
-        setRecords(data || []);
+        setRecords([]);
       }
     } catch (error) {
       console.error('Error fetching forex records:', error);

@@ -33,19 +33,29 @@ const RoleManagement = () => {
 
   const fetchUserRoles = async () => {
     try {
-      const { data: roles, error } = await supabase
+      // Fetch roles and profile data separately
+      const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
-        .select(`
-          *,
-          user:users!user_roles_user_id_fkey (
-            email,
-            name
-          )
-        `)
-        .order('created_at', { ascending: false });
+        .select('*')
+        .order('created_at', { ascending: false});
 
-      if (error) throw error;
-      setUserRoles(roles || []);
+      if (rolesError) throw rolesError;
+
+      // Fetch user profiles separately
+      const userIds = [...new Set(roles?.map(r => r.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, email, name')
+        .in('id', userIds);
+
+      const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      const rolesWithProfiles = roles?.map(role => ({
+        ...role,
+        user: profilesMap.get(role.user_id)
+      })) || [];
+
+      setUserRoles(rolesWithProfiles as any);
     } catch (error) {
       console.error('Error fetching user roles:', error);
       toast({
@@ -61,7 +71,7 @@ const RoleManagement = () => {
   const fetchAvailableUsers = async () => {
     try {
       const { data: users, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id, email, name')
         .order('email');
 
@@ -85,12 +95,10 @@ const RoleManagement = () => {
     try {
       const { error } = await supabase
         .from('user_roles')
-        .upsert({
+        .insert([{
           user_id: selectedUserId,
-          role: selectedRole,
-        }, {
-          onConflict: 'user_id,role'
-        });
+          role: selectedRole
+        }]);
 
       if (error) throw error;
 

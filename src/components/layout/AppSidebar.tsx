@@ -31,8 +31,12 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
         .eq('setting_key', 'support_link')
         .single();
 
-      if (data?.setting_value && typeof data.setting_value === 'object' && 'url' in data.setting_value) {
-        setSupportLink(data.setting_value.url as string);
+      if (data && data.setting_value) {
+        if (typeof data.setting_value === 'object' && 'url' in data.setting_value) {
+          setSupportLink(data.setting_value.url as string);
+        } else if (typeof data.setting_value === 'string') {
+          setSupportLink(data.setting_value);
+        }
       }
     };
 
