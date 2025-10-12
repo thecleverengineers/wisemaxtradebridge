@@ -150,6 +150,83 @@ export type Database = {
           },
         ]
       }
+      forex_records: {
+        Row: {
+          closed_at: string | null
+          commission: number | null
+          created_at: string | null
+          entry_price: number
+          exit_price: number | null
+          id: string
+          leverage: number | null
+          lot_size: number
+          margin_used: number
+          opened_at: string | null
+          order_type: string
+          pair_symbol: string
+          position_type: string
+          profit_loss: number | null
+          status: string | null
+          stop_loss: number | null
+          swap: number | null
+          take_profit: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          commission?: number | null
+          created_at?: string | null
+          entry_price: number
+          exit_price?: number | null
+          id?: string
+          leverage?: number | null
+          lot_size: number
+          margin_used: number
+          opened_at?: string | null
+          order_type: string
+          pair_symbol: string
+          position_type: string
+          profit_loss?: number | null
+          status?: string | null
+          stop_loss?: number | null
+          swap?: number | null
+          take_profit?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          commission?: number | null
+          created_at?: string | null
+          entry_price?: number
+          exit_price?: number | null
+          id?: string
+          leverage?: number | null
+          lot_size?: number
+          margin_used?: number
+          opened_at?: string | null
+          order_type?: string
+          pair_symbol?: string
+          position_type?: string
+          profit_loss?: number | null
+          status?: string | null
+          stop_loss?: number | null
+          swap?: number | null
+          take_profit?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forex_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_plans: {
         Row: {
           created_at: string | null
@@ -597,9 +674,12 @@ export type Database = {
           currency: string | null
           id: string
           income_type: string | null
+          network: string | null
           notes: string | null
           reason: string | null
+          reference_id: string | null
           status: string | null
+          to_address: string | null
           type: string
           user_id: string
         }
@@ -611,9 +691,12 @@ export type Database = {
           currency?: string | null
           id?: string
           income_type?: string | null
+          network?: string | null
           notes?: string | null
           reason?: string | null
+          reference_id?: string | null
           status?: string | null
+          to_address?: string | null
           type: string
           user_id: string
         }
@@ -625,9 +708,12 @@ export type Database = {
           currency?: string | null
           id?: string
           income_type?: string | null
+          network?: string | null
           notes?: string | null
           reason?: string | null
+          reference_id?: string | null
           status?: string | null
+          to_address?: string | null
           type?: string
           user_id?: string
         }

@@ -64,7 +64,7 @@ const ROIInvestmentManagement = () => {
         const planIds = [...new Set(data.map(i => i.plan_id))];
 
         const [usersResult, plansResult] = await Promise.all([
-          supabase.from('users').select('id, name, email').in('id', userIds),
+          supabase.from('profiles').select('id, name, email').in('id', userIds),
           supabase.from('investment_plans').select('id, name, daily_roi, duration_days').in('id', planIds)
         ]);
 

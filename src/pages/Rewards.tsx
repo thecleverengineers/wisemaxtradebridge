@@ -473,6 +473,121 @@ const Rewards = () => {
             </Card>
           )}
 
+          {/* Team Deposit Achievement Tiers - Separate Progress Bars */}
+          {rewards.filter(r => r.id.startsWith('team-')).length > 0 && (
+            <Card className="border-border/50 shadow-xl overflow-hidden animate-fade-in">
+              <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 p-6 border-b border-border/50">
+                <div className="flex items-center space-x-3">
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-primary to-accent shadow-lg">
+                    <TrendingUp className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl font-bold">Achievement Tier Progress</CardTitle>
+                    <CardDescription className="mt-1">
+                      Track your progress towards each team deposit milestone
+                    </CardDescription>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6 space-y-6">
+                {rewards
+                  .filter(r => r.id.startsWith('team-'))
+                  .sort((a, b) => a.requirement - b.requirement)
+                  .map((reward, index) => {
+                    const progressPercent = Math.min((reward.current_progress / reward.requirement) * 100, 100);
+                    const isCompleted = reward.claimed || progressPercent >= 100;
+                    
+                    return (
+                      <div key={reward.id} className="relative group">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <div className={`relative p-3 rounded-xl bg-gradient-to-br ${reward.color} shadow-lg transition-transform group-hover:scale-110`}>
+                              <div className="absolute inset-0 bg-white/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <Crown className="relative h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-lg flex items-center gap-2">
+                                {reward.title}
+                                {isCompleted && (
+                                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0">
+                                    <Award className="h-3 w-3 mr-1" />
+                                    {reward.claimed ? 'Claimed' : 'Ready'}
+                                  </Badge>
+                                )}
+                              </h3>
+                              <p className="text-sm text-muted-foreground mt-1">{reward.description}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="bg-gradient-to-br from-primary/10 to-accent/10 px-3 py-1.5 rounded-lg border border-primary/20">
+                              <p className="text-xs text-muted-foreground">Reward</p>
+                              <p className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                                ${reward.amount.toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Progress Bar with Real-time Updates */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-muted-foreground">
+                              Progress: ${Math.min(reward.current_progress, reward.requirement).toLocaleString()} / ${reward.requirement.toLocaleString()}
+                            </span>
+                            <span className={`font-bold ${isCompleted ? 'text-green-600 dark:text-green-400' : 'text-primary'}`}>
+                              {progressPercent.toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="relative h-4 bg-muted rounded-full overflow-hidden border border-border/50">
+                            {/* Animated background */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
+                            
+                            {/* Progress fill with gradient */}
+                            <div 
+                              className={`absolute inset-y-0 left-0 transition-all duration-1000 ease-out bg-gradient-to-r ${
+                                isCompleted 
+                                  ? 'from-green-500 to-emerald-600' 
+                                  : reward.color.replace('from-', 'from-').replace('to-', 'to-')
+                              }`}
+                              style={{ width: `${progressPercent}%` }}
+                            >
+                              {/* Shine effect */}
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+                            </div>
+                            
+                            {/* Progress indicator */}
+                            {progressPercent > 0 && progressPercent < 100 && (
+                              <div 
+                                className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-lg animate-pulse"
+                                style={{ left: `${progressPercent}%`, transform: 'translate(-50%, -50%)' }}
+                              />
+                            )}
+                          </div>
+                          
+                          {!isCompleted && (
+                            <p className="text-xs text-muted-foreground text-right">
+                              ${(reward.requirement - reward.current_progress).toLocaleString()} more needed
+                            </p>
+                          )}
+                          
+                          {isCompleted && !reward.claimed && (
+                            <Button
+                              onClick={() => claimReward(reward.id)}
+                              size="sm"
+                              className="w-full mt-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg"
+                            >
+                              <Gift className="h-4 w-4 mr-2" />
+                              Claim ${reward.amount} Reward
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Team Deposit Reward Chart */}
           <Card className="border-border/50 shadow-xl overflow-hidden animate-fade-in">
             <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 p-6 border-b border-border/50">
