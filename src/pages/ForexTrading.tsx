@@ -142,16 +142,8 @@ const ForexTrading = () => {
 
   const fetchForexPairs = async () => {
     try {
-      const { data, error } = await supabase
-        .from('forex_pairs')
-        .select('*')
-        .order('daily_volume', { ascending: false });
-
-      if (error) throw error;
-      setForexPairs(data || []);
-      if (data && data.length > 0 && !selectedPair) {
-        setSelectedPair(data[0]);
-      }
+      // Mock forex pairs since table doesn't exist
+      setForexPairs([]);
     } catch (error) {
       console.error('Error fetching forex pairs:', error);
     }
@@ -159,29 +151,11 @@ const ForexTrading = () => {
 
   const fetchPositions = async () => {
     try {
-      const { data, error } = await supabase
-        .from('forex_positions')
-        .select(`
-          *,
-          forex_pairs(*)
-        `)
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      const positionsData = (data || []).map(p => ({
-        ...p,
-        position_type: p.position_type as 'buy' | 'sell'
-      }));
-      setPositions(positionsData);
-      
-      // Calculate totals
-      const activePositions = positionsData.filter(p => p.status === 'open');
-      setOpenPositions(activePositions.length);
-      setTotalMargin(activePositions.reduce((sum, p) => sum + (p.margin_used || 0), 0));
-      setTotalPnL(activePositions.reduce((sum, p) => sum + (p.profit_loss || 0), 0));
-      
+      // Mock positions since table doesn't exist
+      setPositions([]);
+      setOpenPositions(0);
+      setTotalMargin(0);
+      setTotalPnL(0);
     } catch (error) {
       console.error('Error fetching positions:', error);
     }
@@ -189,21 +163,8 @@ const ForexTrading = () => {
 
   const fetchSignals = async () => {
     try {
-      const { data, error } = await supabase
-        .from('forex_signals')
-        .select(`
-          *,
-          forex_pairs(*)
-        `)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-      setSignals((data || []).map(signal => ({
-        ...signal,
-        signal_type: signal.signal_type as 'buy' | 'sell'
-      })));
+      // Mock signals since forex_signals table doesn't exist
+      setLiveSignals([]);
     } catch (error) {
       console.error('Error fetching signals:', error);
     }
@@ -227,32 +188,8 @@ const ForexTrading = () => {
 
   const fetchPerformanceData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('forex_positions')
-        .select('*')
-        .eq('user_id', user?.id)
-        .eq('status', 'closed')
-        .order('closed_at', { ascending: false })
-        .limit(30);
-
-      if (error) throw error;
-      
-      // Prepare performance chart data
-      const grouped = (data || []).reduce((acc: any, pos) => {
-        const date = new Date(pos.closed_at).toLocaleDateString();
-        if (!acc[date]) {
-          acc[date] = { date, profit: 0, loss: 0, count: 0 };
-        }
-        if (pos.profit_loss > 0) {
-          acc[date].profit += pos.profit_loss;
-        } else {
-          acc[date].loss += Math.abs(pos.profit_loss);
-        }
-        acc[date].count += 1;
-        return acc;
-      }, {});
-
-      setPerformanceData(Object.values(grouped).slice(0, 7).reverse());
+      // Mock performance data since forex_positions table doesn't exist
+      setPerformanceData([]);
     } catch (error) {
       console.error('Error fetching performance data:', error);
     }

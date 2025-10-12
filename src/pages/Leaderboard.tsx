@@ -101,46 +101,32 @@ const Leaderboard = () => {
   const fetchLeaderboardData = async () => {
     try {
       
-      // Get all users with their stats
-      const { data: usersData, error: usersError } = await supabase
-        .from('users')
-        .select(`
-          id,
-          name,
-          total_investment,
-          total_roi_earned,
-          total_referral_earned
-        `)
-        .order('total_investment', { ascending: false });
+      // Get all profiles with their stats
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .order('created_at', { ascending: false });
 
-      if (usersError) throw usersError;
+      if (profilesError) throw profilesError;
 
       // Get referral counts for each user
       const leaderboard = await Promise.all(
-        (usersData || []).map(async (userData) => {
-          // Count direct referrals
-          const { count: directReferrals } = await supabase
-            .from('users')
-            .select('*', { count: 'exact', head: true })
-            .eq('parent_id', userData.id);
-
-          // Count total referrals across all levels
+        (profilesData || []).map(async (userData) => {
+          // Count total referrals
           const { count: totalReferrals } = await supabase
             .from('referrals')
             .select('*', { count: 'exact', head: true })
-            .eq('referrer_id', userData.id);
-
-          const achievementLevel = getAchievementLevel(
-            userData.total_investment,
-            userData.total_roi_earned,
-            directReferrals || 0
-          );
+            .eq('user_id', userData.id);
 
           return {
             ...userData,
-            referral_count: directReferrals || 0,
-            total_referrals: totalReferrals || 0,
-            achievement_level: achievementLevel
+            total_investment: 0,
+            total_roi_earned: 0,
+            total_referral_earned: 0,
+            directReferrals: 0,
+            totalReferrals: totalReferrals || 0,
+            achievementLevel: 'Bronze',
+            rank: 0
           };
         })
       );

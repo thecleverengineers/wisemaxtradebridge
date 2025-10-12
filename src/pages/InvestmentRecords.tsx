@@ -125,7 +125,7 @@ const InvestmentRecords = () => {
 
       // Fetch active staking positions count
       const { data: stakingData } = await supabase
-        .from('staking_positions')
+        .from('staking_records')
         .select('id, amount, status')
         .eq('user_id', user?.id)
         .eq('status', 'active');

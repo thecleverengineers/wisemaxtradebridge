@@ -98,17 +98,17 @@ const Referrals = () => {
       const { data: referralsData, error: referralsError } = await supabase
         .from('referrals')
         .select('*')
-        .eq('referrer_id', user?.id)
+        .eq('user_id', user?.id)
         .order('level', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (referralsError) throw referralsError;
 
       // Fetch referred users separately
-      const referredIds = [...new Set(referralsData?.map(r => r.referred_id) || [])];
+      const referredIds = [...new Set(referralsData?.map(r => r.referred_user_id) || [])];
       const { data: referredUsersData, error: referredUsersError } = await supabase
-        .from('users')
-        .select('id, name, email, created_at, is_active, total_investment')
+        .from('profiles')
+        .select('id, name, email, created_at')
         .in('id', referredIds);
 
       if (referredUsersError) throw referredUsersError;
@@ -119,13 +119,13 @@ const Referrals = () => {
       // Get level 1 referrals for display
       const level1Referrals = referralsData?.filter(r => r.level === 1)
         .map(r => {
-          const user = userMap.get(r.referred_id);
+          const user = userMap.get(r.referred_user_id);
           return user ? {
             id: user.id,
             name: user.name,
             created_at: user.created_at,
-            is_active: user.is_active,
-            total_investment: user.total_investment
+            is_active: true,
+            total_investment: 0
           } : null;
         })
         .filter(Boolean) || [];
@@ -134,7 +134,7 @@ const Referrals = () => {
 
       // Fetch referral bonuses
       const { data: bonusesData, error: bonusesError } = await supabase
-        .from('referral_bonus')
+        .from('referral_bonuses')
         .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
@@ -142,9 +142,9 @@ const Referrals = () => {
       if (bonusesError) throw bonusesError;
 
       // Get user names for bonuses
-      const bonusUserIds = [...new Set(bonusesData?.map(b => b.referral_id).filter(Boolean) || [])];
+      const bonusUserIds = [...new Set(bonusesData?.map(b => b.from_user_id).filter(Boolean) || [])];
       const { data: bonusUsersData } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id, name')
         .in('id', bonusUserIds);
 

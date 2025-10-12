@@ -78,7 +78,7 @@ const Settings = () => {
   const handleProfileUpdate = async () => {
     try {
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({
           name: profileData.name,
           phone: profileData.phone

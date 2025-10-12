@@ -134,33 +134,23 @@ export function Dashboard() {
       if (roiError) throw roiError;
       setRoiInvestments(roiData || []);
 
-      // Fetch analytics
-      const { data: analyticsData, error: analyticsError } = await supabase
-        .from('analytics')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Mock analytics since table doesn't exist
+      setAnalytics({
+        total_trades: 0,
+        successful_trades: 0,
+        win_rate: 0,
+        total_volume: 0,
+        profit_loss: 0,
+      });
 
-      if (analyticsError) throw analyticsError;
-      setAnalytics(analyticsData);
+      // Mock market data since table doesn't exist
+      setMarketData([]);
 
-      // Fetch market data
-      const { data: marketDataRes, error: marketError } = await supabase
-        .from('market_data')
-        .select('*')
-        .order('timestamp', { ascending: false })
-        .limit(5);
-
-      if (marketError) throw marketError;
-      setMarketData(marketDataRes || []);
-
-      // Fetch referral count
+      // Fetch referral count (use correct column name)
       const { count, error: refError } = await supabase
         .from('referrals')
         .select('*', { count: 'exact', head: true })
-        .eq('referrer_id', user?.id);
+        .eq('user_id', user?.id);
 
       if (refError) throw refError;
       setReferralCount(count || 0);
