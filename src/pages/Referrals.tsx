@@ -44,28 +44,28 @@ interface LevelStats {
   totalDeposits: number;
 }
 
-// 20 Level Matrix Commission Structure - NEW RATES (Updated System)
+// 20 Level Matrix Commission Structure
 const COMMISSION_RATES = [
-  { level: 1, rate: 15.0, directReferralsNeeded: 1, color: 'from-purple-500 to-pink-500' },
-  { level: 2, rate: 12.0, directReferralsNeeded: 2, color: 'from-blue-500 to-purple-500' },
-  { level: 3, rate: 10.0, directReferralsNeeded: 3, color: 'from-green-500 to-blue-500' },
-  { level: 4, rate: 8.0, directReferralsNeeded: 4, color: 'from-yellow-500 to-green-500' },
-  { level: 5, rate: 5.0, directReferralsNeeded: 5, color: 'from-orange-500 to-yellow-500' },
-  { level: 6, rate: 5.0, directReferralsNeeded: 5, color: 'from-red-500 to-orange-500' },
-  { level: 7, rate: 5.0, directReferralsNeeded: 5, color: 'from-pink-500 to-red-500' },
-  { level: 8, rate: 3.0, directReferralsNeeded: 6, color: 'from-indigo-500 to-purple-500' },
-  { level: 9, rate: 3.0, directReferralsNeeded: 6, color: 'from-cyan-500 to-blue-500' },
-  { level: 10, rate: 3.0, directReferralsNeeded: 6, color: 'from-teal-500 to-green-500' },
-  { level: 11, rate: 2.0, directReferralsNeeded: 7, color: 'from-lime-500 to-green-500' },
-  { level: 12, rate: 2.0, directReferralsNeeded: 7, color: 'from-amber-500 to-orange-500' },
-  { level: 13, rate: 2.0, directReferralsNeeded: 7, color: 'from-rose-500 to-pink-500' },
-  { level: 14, rate: 2.0, directReferralsNeeded: 7, color: 'from-violet-500 to-purple-500' },
-  { level: 15, rate: 2.0, directReferralsNeeded: 7, color: 'from-sky-500 to-blue-500' },
-  { level: 16, rate: 1.0, directReferralsNeeded: 8, color: 'from-emerald-500 to-teal-500' },
-  { level: 17, rate: 1.0, directReferralsNeeded: 8, color: 'from-fuchsia-500 to-pink-500' },
-  { level: 18, rate: 1.0, directReferralsNeeded: 8, color: 'from-indigo-500 to-blue-500' },
-  { level: 19, rate: 1.0, directReferralsNeeded: 8, color: 'from-orange-500 to-red-500' },
-  { level: 20, rate: 1.0, directReferralsNeeded: 8, color: 'from-purple-500 to-fuchsia-500' },
+  { level: 1, rate: 5.0, color: 'from-yellow-500 to-orange-500' },
+  { level: 2, rate: 2.5, color: 'from-blue-500 to-indigo-500' },
+  { level: 3, rate: 1.5, color: 'from-purple-500 to-pink-500' },
+  { level: 4, rate: 1.0, color: 'from-green-500 to-teal-500' },
+  { level: 5, rate: 0.8, color: 'from-red-500 to-rose-500' },
+  { level: 6, rate: 0.6, color: 'from-cyan-500 to-blue-500' },
+  { level: 7, rate: 0.5, color: 'from-amber-500 to-yellow-600' },
+  { level: 8, rate: 0.4, color: 'from-indigo-500 to-purple-600' },
+  { level: 9, rate: 0.3, color: 'from-pink-500 to-purple-500' },
+  { level: 10, rate: 0.25, color: 'from-gray-500 to-slate-600' },
+  { level: 11, rate: 0.2, color: 'from-emerald-500 to-green-600' },
+  { level: 12, rate: 0.15, color: 'from-violet-500 to-purple-600' },
+  { level: 13, rate: 0.12, color: 'from-orange-500 to-red-600' },
+  { level: 14, rate: 0.1, color: 'from-teal-500 to-cyan-600' },
+  { level: 15, rate: 0.08, color: 'from-fuchsia-500 to-pink-600' },
+  { level: 16, rate: 0.06, color: 'from-lime-500 to-green-600' },
+  { level: 17, rate: 0.05, color: 'from-sky-500 to-blue-600' },
+  { level: 18, rate: 0.04, color: 'from-rose-500 to-pink-600' },
+  { level: 19, rate: 0.03, color: 'from-indigo-400 to-blue-500' },
+  { level: 20, rate: 0.02, color: 'from-purple-400 to-indigo-500' },
 ];
 
 const Referrals = () => {

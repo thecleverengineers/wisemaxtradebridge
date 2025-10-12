@@ -12,10 +12,6 @@ export interface WalletData {
   referral_income: number;
   bonus_income: number;
   level_income: number;
-  daily_task_income: number;
-  daily_staking_income: number;
-  monthly_salary: number;
-  ultimate_bonoza: number;
   total_balance: number;
   wallet_address?: string;
   network?: string;
@@ -33,7 +29,6 @@ export interface InvestmentPlan {
   daily_roi: number;
   duration_days: number;
   total_return_percent: number;
-  max_return_multiplier: number;
   status?: string;
   created_at?: string;
 }
@@ -47,9 +42,6 @@ export interface UserInvestment {
   end_date: string;
   status: string;
   total_roi_earned: number;
-  total_roi_cap: number;
-  roi_completed: boolean;
-  roi_completion_date?: string;
   daily_roi_amount?: number;
   total_roi_expected?: number;
   roi_credited_days?: number;

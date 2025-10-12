@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Users, Wallet, Eye, Copy, Check, Trophy } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Users, Wallet, Eye, Copy, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -20,10 +20,6 @@ interface WalletData {
   referral_income: number;
   bonus_income: number;
   level_income: number;
-  daily_task_income: number;
-  daily_staking_income: number;
-  monthly_salary: number;
-  ultimate_bonoza: number;
   total_balance: number;
   wallet_address?: string;
   network?: string;
@@ -68,25 +64,12 @@ export const DashboardContent = () => {
 
       if (walletError) throw walletError;
       
-      // Add total_balance calculation with new income types
+      // Add total_balance calculation
       const walletWithTotal = {
         ...walletData,
-        daily_task_income: (walletData as any).daily_task_income || 0,
-        daily_staking_income: (walletData as any).daily_staking_income || 0,
-        monthly_salary: (walletData as any).monthly_salary || 0,
-        ultimate_bonoza: (walletData as any).ultimate_bonoza || 0,
-        total_balance: 
-          walletData.balance + 
-          walletData.roi_income + 
-          walletData.referral_income + 
-          walletData.bonus_income + 
-          walletData.level_income +
-          ((walletData as any).daily_task_income || 0) +
-          ((walletData as any).daily_staking_income || 0) +
-          ((walletData as any).monthly_salary || 0) +
-          ((walletData as any).ultimate_bonoza || 0)
+        total_balance: walletData.balance + walletData.roi_income + walletData.referral_income + walletData.bonus_income + walletData.level_income
       };
-      setWallet(walletWithTotal as WalletData);
+      setWallet(walletWithTotal);
 
       // Fetch investment plans
       const { data: plansData, error: plansError } = await supabase
@@ -190,54 +173,6 @@ export const DashboardContent = () => {
                 <p className="text-2xl font-bold">₹{wallet?.bonus_income?.toLocaleString() || '0'}</p>
               </div>
               <Wallet className="h-8 w-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-border">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm">Daily Staking</p>
-                <p className="text-2xl font-bold">₹{wallet?.daily_staking_income?.toLocaleString() || '0'}</p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-border">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm">Monthly Salary</p>
-                <p className="text-2xl font-bold">₹{wallet?.monthly_salary?.toLocaleString() || '0'}</p>
-              </div>
-              <ArrowUpRight className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-border">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm">Daily Task Income</p>
-                <p className="text-2xl font-bold">₹{wallet?.daily_task_income?.toLocaleString() || '0'}</p>
-              </div>
-              <Check className="h-8 w-8 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-border">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm">Ultimate Bonoza</p>
-                <p className="text-2xl font-bold">₹{wallet?.ultimate_bonoza?.toLocaleString() || '0'}</p>
-              </div>
-              <Trophy className="h-8 w-8 text-yellow-500" />
             </div>
           </CardContent>
         </Card>
