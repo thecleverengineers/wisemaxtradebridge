@@ -479,7 +479,7 @@ const Rewards = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-muted/50 border-b border-border">
-                      <th className="text-left py-4 px-6 font-bold text-sm uppercase tracking-wide">Level</th>
+                      <th className="text-left py-4 px-6 font-bold text-sm uppercase tracking-wide">Achievement Tier</th>
                       <th className="text-left py-4 px-6 font-bold text-sm uppercase tracking-wide">Total Team Deposit</th>
                       <th className="text-left py-4 px-6 font-bold text-sm uppercase tracking-wide">Reward</th>
                     </tr>
@@ -487,7 +487,7 @@ const Rewards = () => {
                   <tbody>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
-                        <Badge variant="outline" className="font-semibold">Level 1</Badge>
+                        <Badge variant="outline" className="font-semibold bg-gradient-to-r from-orange-600/20 to-orange-500/20 text-orange-700 dark:text-orange-400 border-orange-500/30">🥉 Bronze</Badge>
                       </td>
                       <td className="py-4 px-6 font-medium">$5,000 USDT</td>
                       <td className="py-4 px-6">
@@ -496,7 +496,7 @@ const Rewards = () => {
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
-                        <Badge variant="outline" className="font-semibold">Level 2</Badge>
+                        <Badge variant="outline" className="font-semibold bg-gradient-to-r from-gray-400/20 to-gray-300/20 text-gray-700 dark:text-gray-300 border-gray-400/30">🥈 Silver</Badge>
                       </td>
                       <td className="py-4 px-6 font-medium">$10,000 USDT</td>
                       <td className="py-4 px-6">
@@ -505,7 +505,7 @@ const Rewards = () => {
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
-                        <Badge variant="outline" className="font-semibold">Level 3</Badge>
+                        <Badge variant="outline" className="font-semibold bg-gradient-to-r from-yellow-500/20 to-yellow-400/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30">🥇 Gold</Badge>
                       </td>
                       <td className="py-4 px-6 font-medium">$20,000 USDT</td>
                       <td className="py-4 px-6">
@@ -514,7 +514,7 @@ const Rewards = () => {
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
-                        <Badge variant="outline" className="font-semibold">Level 4</Badge>
+                        <Badge variant="outline" className="font-semibold bg-gradient-to-r from-cyan-500/20 to-cyan-400/20 text-cyan-700 dark:text-cyan-400 border-cyan-500/30">💎 Platinum</Badge>
                       </td>
                       <td className="py-4 px-6 font-medium">$90,000 USDT</td>
                       <td className="py-4 px-6">
@@ -523,7 +523,7 @@ const Rewards = () => {
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group bg-primary/5">
                       <td className="py-4 px-6">
-                        <Badge className="font-semibold bg-gradient-to-r from-primary to-accent">Level 5</Badge>
+                        <Badge className="font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">💠 Diamond</Badge>
                       </td>
                       <td className="py-4 px-6 font-bold">$150,000 USDT</td>
                       <td className="py-4 px-6">
@@ -532,7 +532,7 @@ const Rewards = () => {
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
-                        <Badge variant="outline" className="font-semibold">Level 6</Badge>
+                        <Badge variant="outline" className="font-semibold bg-gradient-to-r from-purple-600/20 to-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-500/30">👑 Master</Badge>
                       </td>
                       <td className="py-4 px-6 font-medium">$250,000 USDT</td>
                       <td className="py-4 px-6">
@@ -541,7 +541,7 @@ const Rewards = () => {
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
-                        <Badge variant="outline" className="font-semibold">Level 7</Badge>
+                        <Badge variant="outline" className="font-semibold bg-gradient-to-r from-red-600/20 to-red-500/20 text-red-700 dark:text-red-400 border-red-500/30">⚔️ Grandmaster</Badge>
                       </td>
                       <td className="py-4 px-6 font-medium">$500,000 USDT</td>
                       <td className="py-4 px-6">
@@ -550,7 +550,7 @@ const Rewards = () => {
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group bg-accent/5">
                       <td className="py-4 px-6">
-                        <Badge className="font-semibold bg-gradient-to-r from-accent to-primary">Level 8</Badge>
+                        <Badge className="font-semibold bg-gradient-to-r from-yellow-500 to-orange-600 text-white border-0">🏆 Elite</Badge>
                       </td>
                       <td className="py-4 px-6 font-bold">$1,000,000 USDT</td>
                       <td className="py-4 px-6">
@@ -559,7 +559,7 @@ const Rewards = () => {
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
-                        <Badge variant="secondary" className="font-semibold">Level 9</Badge>
+                        <Badge variant="secondary" className="font-semibold bg-gradient-to-r from-pink-600/20 to-pink-500/20 text-pink-700 dark:text-pink-400 border-pink-500/30">⭐ Legend</Badge>
                       </td>
                       <td className="py-4 px-6 font-medium">$1,300,000 USDT</td>
                       <td className="py-4 px-6">
@@ -568,7 +568,7 @@ const Rewards = () => {
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
-                        <Badge variant="secondary" className="font-semibold">Level 10</Badge>
+                        <Badge variant="secondary" className="font-semibold bg-gradient-to-r from-indigo-600/20 to-indigo-500/20 text-indigo-700 dark:text-indigo-400 border-indigo-500/30">🌟 Mythic</Badge>
                       </td>
                       <td className="py-4 px-6 font-medium">$2,000,000 USDT</td>
                       <td className="py-4 px-6">
@@ -577,9 +577,9 @@ const Rewards = () => {
                     </tr>
                     <tr className="hover:bg-muted/50 transition-colors bg-muted/30">
                       <td className="py-4 px-6">
-                        <Badge variant="outline" className="font-semibold">Level 11-20</Badge>
+                        <Badge variant="outline" className="font-semibold bg-gradient-to-r from-primary/20 to-accent/20">✨ Champion+</Badge>
                       </td>
-                      <td className="py-4 px-6 text-muted-foreground italic">Higher levels available</td>
+                      <td className="py-4 px-6 text-muted-foreground italic">Higher tiers available</td>
                       <td className="py-4 px-6 text-muted-foreground italic">Contact support</td>
                     </tr>
                   </tbody>
