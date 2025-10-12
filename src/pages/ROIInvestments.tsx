@@ -376,13 +376,16 @@ export default function ROIInvestments() {
       // Create transaction record
       const { error: txError } = await supabase
         .from('transactions')
-        .insert([{
+        .insert({
           user_id: user?.id,
           type: 'investment',
+          category: 'investment',
+          currency: 'USDT',
           amount: amount,
-          balance_after: (walletData?.balance || 0) - amount,
-          reason: `Investment in ${selectedPlan.name} plan`
-        }]);
+          status: 'completed',
+          reference_id: investment.id,
+          notes: `Investment in ${selectedPlan.name} plan`
+        });
 
       if (txError) throw txError;
 

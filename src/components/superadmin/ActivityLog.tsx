@@ -58,7 +58,7 @@ const ActivityLog = () => {
       // Fetch user data separately
       const userIds = [...new Set(transactionData?.map(t => t.user_id) || [])];
       const { data: userData } = await supabase
-        .from('profiles')
+        .from('users')
         .select('id, email, name')
         .in('id', userIds);
 

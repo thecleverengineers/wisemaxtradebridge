@@ -37,7 +37,7 @@ const RoleManagement = () => {
         .from('user_roles')
         .select(`
           *,
-          user:profiles!user_roles_user_id_fkey (
+          user:users!user_roles_user_id_fkey (
             email,
             name
           )
@@ -61,7 +61,7 @@ const RoleManagement = () => {
   const fetchAvailableUsers = async () => {
     try {
       const { data: users, error } = await supabase
-        .from('profiles')
+        .from('users')
         .select('id, email, name')
         .order('email');
 
@@ -83,13 +83,14 @@ const RoleManagement = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('user_roles')
-        .insert([{
+        .upsert({
           user_id: selectedUserId,
-          role: selectedRole as 'admin' | 'superadmin' | 'user',
-        }])
-        .select();
+          role: selectedRole,
+        }, {
+          onConflict: 'user_id,role'
+        });
 
       if (error) throw error;
 

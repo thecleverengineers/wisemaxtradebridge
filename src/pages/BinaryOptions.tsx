@@ -41,8 +41,17 @@ export default function BinaryOptions() {
 
   // Fetch active signals
   const fetchSignals = async () => {
-    // binary_signals table doesn't exist, using mock data
-    setSignals([]);
+    const { data, error } = await supabase
+      .from('binary_signals')
+      .select('*')
+      .eq('is_active', true)
+      .gte('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    if (!error && data) {
+      setSignals(data);
+    }
   };
 
   // Fetch active trades

@@ -16,12 +16,13 @@ interface StakingPlan {
   id: string;
   name: string;
   description: string | null;
+  type: string;
   min_amount: number;
   max_amount: number;
-  daily_return: number;
+  apy: number;
   duration_days: number;
-  total_return_percent: number;
-  status: string;
+  bonus_text: string | null;
+  is_active: boolean;
   created_at: string;
 }
 
@@ -37,12 +38,13 @@ const StakingPlansManagement = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    type: 'flexible',
     min_amount: '',
     max_amount: '',
-    daily_return: '',
+    apy: '',
     duration_days: '',
-    total_return_percent: '',
-    status: 'active',
+    bonus_text: '',
+    is_active: true,
   });
 
   useEffect(() => {
@@ -77,24 +79,26 @@ const StakingPlansManagement = () => {
       setFormData({
         name: plan.name,
         description: plan.description || '',
+        type: plan.type,
         min_amount: plan.min_amount.toString(),
         max_amount: plan.max_amount.toString(),
-        daily_return: plan.daily_return.toString(),
+        apy: plan.apy.toString(),
         duration_days: plan.duration_days.toString(),
-        total_return_percent: plan.total_return_percent.toString(),
-        status: plan.status,
+        bonus_text: plan.bonus_text || '',
+        is_active: plan.is_active,
       });
     } else {
       setEditingPlan(null);
       setFormData({
         name: '',
         description: '',
+        type: 'flexible',
         min_amount: '',
         max_amount: '',
-        daily_return: '',
+        apy: '',
         duration_days: '',
-        total_return_percent: '',
-        status: 'active',
+        bonus_text: '',
+        is_active: true,
       });
     }
     setIsDialogOpen(true);
@@ -106,7 +110,7 @@ const StakingPlansManagement = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.min_amount || !formData.max_amount || !formData.daily_return || !formData.duration_days) {
+    if (!formData.name || !formData.min_amount || !formData.max_amount || !formData.apy || !formData.duration_days) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields",
@@ -120,12 +124,13 @@ const StakingPlansManagement = () => {
       const planData = {
         name: formData.name,
         description: formData.description || null,
+        type: formData.type,
         min_amount: parseFloat(formData.min_amount),
         max_amount: parseFloat(formData.max_amount),
-        daily_return: parseFloat(formData.daily_return),
+        apy: parseFloat(formData.apy),
         duration_days: parseInt(formData.duration_days),
-        total_return_percent: parseFloat(formData.total_return_percent || '0'),
-        status: formData.status,
+        bonus_text: formData.bonus_text || null,
+        is_active: formData.is_active,
       };
 
       if (editingPlan) {
@@ -230,10 +235,11 @@ const StakingPlansManagement = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Plan Name</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Min - Max Stake</TableHead>
-                  <TableHead>Daily Return</TableHead>
-                  <TableHead>Total Return</TableHead>
+                  <TableHead>APY</TableHead>
                   <TableHead>Duration</TableHead>
+                  <TableHead>Bonus Text</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -257,20 +263,25 @@ const StakingPlansManagement = () => {
                         </div>
                       </TableCell>
                       <TableCell>
+                        <Badge variant={plan.type === 'flexible' ? 'default' : 'secondary'}>
+                          {plan.type.toUpperCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         ${plan.min_amount.toLocaleString()} - ${plan.max_amount.toLocaleString()}
                       </TableCell>
                       <TableCell className="text-green-600 font-semibold">
-                        {plan.daily_return}%
-                      </TableCell>
-                      <TableCell className="text-blue-600 font-semibold">
-                        {plan.total_return_percent}%
+                        {plan.apy}%
                       </TableCell>
                       <TableCell>
                         {plan.duration_days} days
                       </TableCell>
                       <TableCell>
-                        <Badge variant={plan.status === 'active' ? 'default' : 'secondary'}>
-                          {plan.status.toUpperCase()}
+                        {plan.bonus_text || '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={plan.is_active ? 'default' : 'secondary'}>
+                          {plan.is_active ? 'ACTIVE' : 'INACTIVE'}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -330,6 +341,18 @@ const StakingPlansManagement = () => {
                 rows={3}
               />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="type">Plan Type *</Label>
+              <select
+                id="type"
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+              >
+                <option value="flexible">Flexible</option>
+                <option value="locked">Locked</option>
+              </select>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="min_amount">Minimum Stake *</Label>
@@ -352,27 +375,16 @@ const StakingPlansManagement = () => {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="daily_return">Daily Return (%) *</Label>
+                <Label htmlFor="apy">APY (%) *</Label>
                 <Input
-                  id="daily_return"
+                  id="apy"
                   type="number"
                   step="0.01"
-                  value={formData.daily_return}
-                  onChange={(e) => setFormData({ ...formData, daily_return: e.target.value })}
-                  placeholder="0.5"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="total_return_percent">Total Return (%) *</Label>
-                <Input
-                  id="total_return_percent"
-                  type="number"
-                  step="0.01"
-                  value={formData.total_return_percent}
-                  onChange={(e) => setFormData({ ...formData, total_return_percent: e.target.value })}
-                  placeholder="15"
+                  value={formData.apy}
+                  onChange={(e) => setFormData({ ...formData, apy: e.target.value })}
+                  placeholder="12.5"
                 />
               </div>
               <div className="grid gap-2">
@@ -387,15 +399,27 @@ const StakingPlansManagement = () => {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="bonus_text">Bonus Text</Label>
+              <Input
+                id="bonus_text"
+                value={formData.bonus_text}
+                onChange={(e) => setFormData({ ...formData, bonus_text: e.target.value })}
+                placeholder="e.g., +5% APY bonus"
+              />
+              <p className="text-xs text-muted-foreground">
+                Optional promotional text to display with this plan
+              </p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="is_active">Status</Label>
               <select
-                id="status"
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                id="is_active"
+                value={formData.is_active ? 'true' : 'false'}
+                onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'true' })}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
               >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
               </select>
             </div>
           </div>

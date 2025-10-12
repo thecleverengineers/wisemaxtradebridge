@@ -142,8 +142,16 @@ const ForexTrading = () => {
 
   const fetchForexPairs = async () => {
     try {
-      // Mock forex pairs since table doesn't exist
-      setForexPairs([]);
+      const { data, error } = await supabase
+        .from('forex_pairs')
+        .select('*')
+        .order('daily_volume', { ascending: false });
+
+      if (error) throw error;
+      setForexPairs(data || []);
+      if (data && data.length > 0 && !selectedPair) {
+        setSelectedPair(data[0]);
+      }
     } catch (error) {
       console.error('Error fetching forex pairs:', error);
     }
@@ -151,11 +159,29 @@ const ForexTrading = () => {
 
   const fetchPositions = async () => {
     try {
-      // Mock positions since table doesn't exist
-      setPositions([]);
-      setOpenPositions(0);
-      setTotalMargin(0);
-      setTotalPnL(0);
+      const { data, error } = await supabase
+        .from('forex_positions')
+        .select(`
+          *,
+          forex_pairs(*)
+        `)
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      const positionsData = (data || []).map(p => ({
+        ...p,
+        position_type: p.position_type as 'buy' | 'sell'
+      }));
+      setPositions(positionsData);
+      
+      // Calculate totals
+      const activePositions = positionsData.filter(p => p.status === 'open');
+      setOpenPositions(activePositions.length);
+      setTotalMargin(activePositions.reduce((sum, p) => sum + (p.margin_used || 0), 0));
+      setTotalPnL(activePositions.reduce((sum, p) => sum + (p.profit_loss || 0), 0));
+      
     } catch (error) {
       console.error('Error fetching positions:', error);
     }
@@ -163,8 +189,21 @@ const ForexTrading = () => {
 
   const fetchSignals = async () => {
     try {
-      // Mock signals since forex_signals table doesn't exist
-      setSignals([]);
+      const { data, error } = await supabase
+        .from('forex_signals')
+        .select(`
+          *,
+          forex_pairs(*)
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setSignals((data || []).map(signal => ({
+        ...signal,
+        signal_type: signal.signal_type as 'buy' | 'sell'
+      })));
     } catch (error) {
       console.error('Error fetching signals:', error);
     }
@@ -188,8 +227,32 @@ const ForexTrading = () => {
 
   const fetchPerformanceData = async () => {
     try {
-      // Mock performance data since forex_positions table doesn't exist
-      setPerformanceData([]);
+      const { data, error } = await supabase
+        .from('forex_positions')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('status', 'closed')
+        .order('closed_at', { ascending: false })
+        .limit(30);
+
+      if (error) throw error;
+      
+      // Prepare performance chart data
+      const grouped = (data || []).reduce((acc: any, pos) => {
+        const date = new Date(pos.closed_at).toLocaleDateString();
+        if (!acc[date]) {
+          acc[date] = { date, profit: 0, loss: 0, count: 0 };
+        }
+        if (pos.profit_loss > 0) {
+          acc[date].profit += pos.profit_loss;
+        } else {
+          acc[date].loss += Math.abs(pos.profit_loss);
+        }
+        acc[date].count += 1;
+        return acc;
+      }, {});
+
+      setPerformanceData(Object.values(grouped).slice(0, 7).reverse());
     } catch (error) {
       console.error('Error fetching performance data:', error);
     }
@@ -282,22 +345,43 @@ const ForexTrading = () => {
     }
 
     try {
+      // Create position in forex_positions table
+      const { error: positionError } = await supabase
+        .from('forex_positions')
+        .insert({
+          user_id: user.id,
+          pair_id: selectedPair.id,
+          position_type: positionType,
+          entry_price: selectedPair.current_price,
+          current_price: selectedPair.current_price,
+          volume: orderVolume,
+          margin_used: marginRequired,
+          leverage: leverageValue,
+          take_profit: takeProfit ? parseFloat(takeProfit) : null,
+          stop_loss: stopLoss ? parseFloat(stopLoss) : null,
+          status: 'open'
+        });
+
+      if (positionError) throw positionError;
+
       // Create record in forex_records table
       const { error: recordError } = await supabase
         .from('forex_records')
-        .insert([{
+        .insert({
           user_id: user.id,
           pair_symbol: selectedPair.symbol,
           order_type: orderType,
           position_type: positionType,
-          lot_size: orderVolume,
+          volume: orderVolume,
           entry_price: selectedPair.current_price,
+          current_price: selectedPair.current_price,
           leverage: leverageValue,
           margin_used: marginRequired,
           take_profit: takeProfit ? parseFloat(takeProfit) : null,
           stop_loss: stopLoss ? parseFloat(stopLoss) : null,
-          status: 'open'
-        }]);
+          status: 'open',
+          notes: `${orderType.toUpperCase()} order placed via trading interface`
+        });
 
       if (recordError) throw recordError;
 
@@ -316,13 +400,15 @@ const ForexTrading = () => {
       // Create transaction record
       const { error: txError } = await supabase
         .from('transactions')
-        .insert([{
+        .insert({
           user_id: user.id,
           type: 'forex_trade',
+          category: 'trading',
+          currency: 'USDT',
           amount: marginRequired,
-          balance_after: walletBalance - marginRequired,
-          reason: `${positionType.toUpperCase()} ${orderVolume} ${selectedPair.symbol} @ ${selectedPair.current_price}`
-        }]);
+          status: 'completed',
+          notes: `${positionType.toUpperCase()} ${orderVolume} ${selectedPair.symbol} @ ${selectedPair.current_price}`
+        });
 
       if (txError) throw txError;
 
@@ -353,16 +439,34 @@ const ForexTrading = () => {
       const position = positions.find(p => p.id === positionId);
       if (!position) return;
 
+      const { error: positionError } = await supabase
+        .from('forex_positions')
+        .update({
+          status: 'closed',
+          closed_price: position.current_price,
+          closed_at: new Date().toISOString()
+        })
+        .eq('id', positionId);
+
+      if (positionError) throw positionError;
+
       // Update forex_records table
       const { error: recordError } = await supabase
         .from('forex_records')
         .update({
           status: 'closed',
-          exit_price: position.current_price,
+          closed_price: position.current_price,
           closed_at: new Date().toISOString(),
-          profit_loss: position.profit_loss
+          close_reason: 'Manual close',
+          profit_loss: position.profit_loss,
+          profit_loss_percent: position.profit_loss_percent
         })
-        .eq('id', positionId);
+        .eq('user_id', user?.id)
+        .eq('entry_price', position.entry_price)
+        .eq('volume', position.volume)
+        .eq('status', 'open')
+        .order('created_at', { ascending: false })
+        .limit(1);
 
       if (recordError) throw recordError;
 
@@ -381,13 +485,15 @@ const ForexTrading = () => {
       // Create transaction record
       const { error: txError } = await supabase
         .from('transactions')
-        .insert([{
+        .insert({
           user_id: user?.id,
           type: 'forex_close',
+          category: 'trading',
+          currency: 'USDT',
           amount: position.margin_used + position.profit_loss,
-          balance_after: walletBalance + position.margin_used + position.profit_loss,
-          reason: `Closed ${position.position_type} position with P&L: ${position.profit_loss > 0 ? '+' : ''}${position.profit_loss.toFixed(2)}`
-        }]);
+          status: 'completed',
+          notes: `Closed ${position.position_type} position for ${position.forex_pairs?.symbol || 'Forex pair'} with P&L: ${position.profit_loss > 0 ? '+' : ''}${position.profit_loss.toFixed(2)}`
+        });
 
       if (txError) throw txError;
 

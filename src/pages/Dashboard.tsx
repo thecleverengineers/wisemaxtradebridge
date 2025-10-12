@@ -132,39 +132,35 @@ export function Dashboard() {
         .order('created_at', { ascending: false });
 
       if (roiError) throw roiError;
-      // Map to ROIInvestment type with required fields
-      const mappedRoiData = (roiData || []).map(roi => ({
-        ...roi,
-        plan_name: 'Investment',
-        daily_return: 0,
-        total_return: 0,
-        status: 'active' as const,
-        started_at: roi.roi_date,
-        expires_at: roi.roi_date,
-        total_paid_out: roi.amount,
-        start_date: roi.roi_date,
-        end_date: roi.roi_date,
-        days_remaining: 0
-      }));
-      setRoiInvestments(mappedRoiData);
+      setRoiInvestments(roiData || []);
 
-      // Mock analytics since table doesn't exist
-      setAnalytics({
-        total_trades: 0,
-        successful_trades: 0,
-        win_rate: 0,
-        total_volume: 0,
-        profit_loss: 0,
-      });
+      // Fetch analytics
+      const { data: analyticsData, error: analyticsError } = await supabase
+        .from('analytics')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      // Mock market data since table doesn't exist
-      setMarketData([]);
+      if (analyticsError) throw analyticsError;
+      setAnalytics(analyticsData);
 
-      // Fetch referral count (use correct column name)
+      // Fetch market data
+      const { data: marketDataRes, error: marketError } = await supabase
+        .from('market_data')
+        .select('*')
+        .order('timestamp', { ascending: false })
+        .limit(5);
+
+      if (marketError) throw marketError;
+      setMarketData(marketDataRes || []);
+
+      // Fetch referral count
       const { count, error: refError } = await supabase
         .from('referrals')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id);
+        .eq('referrer_id', user?.id);
 
       if (refError) throw refError;
       setReferralCount(count || 0);

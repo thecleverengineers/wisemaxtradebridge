@@ -101,32 +101,46 @@ const Leaderboard = () => {
   const fetchLeaderboardData = async () => {
     try {
       
-      // Get all profiles with their stats
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, name, email')
-        .order('created_at', { ascending: false });
+      // Get all users with their stats
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select(`
+          id,
+          name,
+          total_investment,
+          total_roi_earned,
+          total_referral_earned
+        `)
+        .order('total_investment', { ascending: false });
 
-      if (profilesError) throw profilesError;
+      if (usersError) throw usersError;
 
       // Get referral counts for each user
       const leaderboard = await Promise.all(
-        (profilesData || []).map(async (userData) => {
-          // Count total referrals
+        (usersData || []).map(async (userData) => {
+          // Count direct referrals
+          const { count: directReferrals } = await supabase
+            .from('users')
+            .select('*', { count: 'exact', head: true })
+            .eq('parent_id', userData.id);
+
+          // Count total referrals across all levels
           const { count: totalReferrals } = await supabase
             .from('referrals')
             .select('*', { count: 'exact', head: true })
-            .eq('user_id', userData.id);
+            .eq('referrer_id', userData.id);
+
+          const achievementLevel = getAchievementLevel(
+            userData.total_investment,
+            userData.total_roi_earned,
+            directReferrals || 0
+          );
 
           return {
             ...userData,
-            total_investment: 0,
-            total_roi_earned: 0,
-            total_referral_earned: 0,
-            directReferrals: 0,
-            totalReferrals: totalReferrals || 0,
-            achievementLevel: 'Bronze',
-            rank: 0
+            referral_count: directReferrals || 0,
+            total_referrals: totalReferrals || 0,
+            achievement_level: achievementLevel
           };
         })
       );
@@ -148,8 +162,7 @@ const Leaderboard = () => {
       // Add ranks
       const rankedData = sortedData.map((userData, index) => ({
         ...userData,
-        rank: index + 1,
-        referral_count: userData.totalReferrals
+        rank: index + 1
       }));
 
       setLeaderboardData(rankedData);

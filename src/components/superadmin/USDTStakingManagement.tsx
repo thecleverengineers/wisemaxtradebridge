@@ -42,7 +42,7 @@ const USDTStakingManagement = () => {
     setLoading(true);
     try {
       let query = supabase
-        .from('staking_records')
+        .from('usdtstaking_records')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
@@ -59,7 +59,7 @@ const USDTStakingManagement = () => {
       if (data && data.length > 0) {
         const userIds = [...new Set(data.map(s => s.user_id))];
         const { data: usersData } = await supabase
-          .from('profiles')
+          .from('users')
           .select('id, name, email')
           .in('id', userIds);
 
@@ -67,20 +67,12 @@ const USDTStakingManagement = () => {
 
         const recordsWithUsers = data.map(record => ({
           ...record,
-          users: usersMap.get(record.user_id),
-          plan_type: 'flexible',
-          apy: 12,
-          duration_days: null,
-          stake_date: record.start_date || record.created_at,
-          maturity_date: record.end_date,
-          last_interest_date: record.last_payout_date || record.created_at,
-          total_earned: record.total_earned || 0,
-          auto_renew: false,
+          users: usersMap.get(record.user_id)
         }));
 
-        setStakingRecords(recordsWithUsers as any);
+        setStakingRecords(recordsWithUsers);
       } else {
-        setStakingRecords([]);
+        setStakingRecords(data || []);
       }
     } catch (error) {
       console.error('Error fetching USDT staking records:', error);
