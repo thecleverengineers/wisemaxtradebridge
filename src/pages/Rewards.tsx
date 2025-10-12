@@ -168,9 +168,9 @@ const Rewards = () => {
         {
           id: '1',
           title: 'Welcome Bonus',
-          description: 'Complete your first investment to get ₹500 bonus',
+          description: 'Complete your first investment to get ₹5 bonus',
           type: 'milestone',
-          amount: 500,
+          amount: 5,
           requirement: 1,
           current_progress: userInvestments,
           claimed: userInvestments >= 1,
@@ -180,9 +180,9 @@ const Rewards = () => {
         {
           id: '2',
           title: 'Referral Master',
-          description: 'Refer 5 friends and earn ₹1000 bonus',
+          description: 'Refer 5 friends and earn ₹5 bonus',
           type: 'achievement',
-          amount: 1000,
+          amount: 5,
           requirement: 5,
           current_progress: userReferrals,
           claimed: userReferrals >= 5,
@@ -202,35 +202,11 @@ const Rewards = () => {
           color: 'from-yellow-500 to-orange-600'
         },
         {
-          id: '4',
-          title: 'ROI Champion',
-          description: 'Earn ₹10,000 in ROI to get ₹1500 bonus',
-          type: 'achievement',
-          amount: 1500,
-          requirement: 10000,
-          current_progress: userRoi,
-          claimed: userRoi >= 10000,
-          icon: Zap,
-          color: 'from-purple-500 to-pink-600'
-        },
-        {
-          id: '5',
-          title: 'Super Referrer',
-          description: 'Refer 20 friends for ₹5000 mega bonus',
-          type: 'achievement',
-          amount: 5000,
-          requirement: 20,
-          current_progress: userReferrals,
-          claimed: userReferrals >= 20,
-          icon: Target,
-          color: 'from-red-500 to-pink-600'
-        },
-        {
           id: '6',
           title: 'Daily Login',
-          description: 'Login daily for 30 days - ₹50/day',
+          description: 'Login daily for 30 days - ₹0.5/day',
           type: 'daily',
-          amount: 50,
+          amount: 0.5,
           requirement: 30,
           current_progress: 15, // Mock progress
           claimed: false,
