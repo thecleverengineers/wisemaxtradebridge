@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Gift, Star, Crown, Zap, Target, Award, ArrowLeft, Calendar } from 'lucide-react';
+import { Gift, Star, Crown, Zap, Target, Award, ArrowLeft, Calendar, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -452,6 +452,97 @@ const Rewards = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Team Deposit Reward Chart */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <div className="flex items-center space-x-3">
+                <TrendingUp className="h-6 w-6 text-primary" />
+                <div>
+                  <CardTitle className="text-white">Team Deposit Reward Levels</CardTitle>
+                  <CardDescription className="text-purple-300">
+                    Earn rewards as your team's total deposits grow
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th className="text-left py-3 px-4 text-white font-semibold">Level</th>
+                      <th className="text-left py-3 px-4 text-white font-semibold">Total Team Deposit (USDT)</th>
+                      <th className="text-left py-3 px-4 text-white font-semibold">Referrer Reward (USDT)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-purple-300">1</td>
+                      <td className="py-3 px-4 text-white font-medium">5,000</td>
+                      <td className="py-3 px-4 text-green-400 font-semibold">50</td>
+                    </tr>
+                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-purple-300">2</td>
+                      <td className="py-3 px-4 text-white font-medium">10,000</td>
+                      <td className="py-3 px-4 text-green-400 font-semibold">100</td>
+                    </tr>
+                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-purple-300">3</td>
+                      <td className="py-3 px-4 text-white font-medium">20,000</td>
+                      <td className="py-3 px-4 text-green-400 font-semibold">200</td>
+                    </tr>
+                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-purple-300">4</td>
+                      <td className="py-3 px-4 text-white font-medium">90,000</td>
+                      <td className="py-3 px-4 text-green-400 font-semibold">600</td>
+                    </tr>
+                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-purple-300">5</td>
+                      <td className="py-3 px-4 text-white font-medium">150,000</td>
+                      <td className="py-3 px-4 text-green-400 font-semibold">700</td>
+                    </tr>
+                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-purple-300">6</td>
+                      <td className="py-3 px-4 text-white font-medium">250,000</td>
+                      <td className="py-3 px-4 text-green-400 font-semibold">800</td>
+                    </tr>
+                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-purple-300">7</td>
+                      <td className="py-3 px-4 text-white font-medium">500,000</td>
+                      <td className="py-3 px-4 text-green-400 font-semibold">900</td>
+                    </tr>
+                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-purple-300">8</td>
+                      <td className="py-3 px-4 text-white font-medium">1,000,000</td>
+                      <td className="py-3 px-4 text-green-400 font-semibold">1,000</td>
+                    </tr>
+                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-purple-300">9</td>
+                      <td className="py-3 px-4 text-white font-medium">1,300,000</td>
+                      <td className="py-3 px-4 text-yellow-400 font-semibold">TBD</td>
+                    </tr>
+                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-purple-300">10</td>
+                      <td className="py-3 px-4 text-white font-medium">2,000,000</td>
+                      <td className="py-3 px-4 text-yellow-400 font-semibold">TBD</td>
+                    </tr>
+                    <tr className="hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-purple-300">... up to 20</td>
+                      <td className="py-3 px-4 text-purple-300 italic">Higher levels available</td>
+                      <td className="py-3 px-4 text-purple-300 italic">Contact support</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4 p-4 bg-primary/10 rounded-lg border border-primary/20">
+                <p className="text-sm text-purple-300">
+                  <strong className="text-white">💡 Tip:</strong> Build your team to unlock higher reward levels. 
+                  The more your team deposits, the bigger your rewards!
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Reward Tips */}
           <Card className="bg-white/5 border-white/10">
