@@ -143,37 +143,22 @@ const Rewards = () => {
       let userProgressData: any[] = [];
 
       try {
-        const session = await supabase.auth.getSession();
-        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-        const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
         const [achievementsRes, progressRes, depositsRes] = await Promise.all([
-          fetch(`${SUPABASE_URL}/rest/v1/team_achievements?order=milestone_amount.asc`, {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${session.data.session?.access_token}`
-            }
-          }),
-          fetch(`${SUPABASE_URL}/rest/v1/user_achievement_progress?user_id=eq.${user?.id}`, {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${session.data.session?.access_token}`
-            }
-          }),
-          fetch(`${SUPABASE_URL}/rest/v1/rpc/calculate_team_deposits`, {
-            method: 'POST',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ referrer_user_id: user?.id })
-          })
+          supabase
+            .from('team_achievements')
+            .select('*')
+            .order('milestone_amount', { ascending: true }),
+          supabase
+            .from('user_achievement_progress')
+            .select('*')
+            .eq('user_id', user?.id),
+          supabase
+            .rpc('calculate_team_deposits', { referrer_user_id: user?.id })
         ]);
 
-        teamAchievementsData = await achievementsRes.json();
-        userProgressData = await progressRes.json();
-        totalTeamDeposits = Number(await depositsRes.text()) || 0;
+        teamAchievementsData = achievementsRes.data || [];
+        userProgressData = progressRes.data || [];
+        totalTeamDeposits = Number(depositsRes.data) || 0;
       } catch (err) {
         console.log('Team achievements not yet available:', err);
       }
