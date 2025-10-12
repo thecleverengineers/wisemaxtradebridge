@@ -380,7 +380,7 @@ export default function ROIInvestments() {
           user_id: user?.id,
           type: 'investment',
           amount: amount,
-          balance_after: (wallet?.balance || 0) - amount,
+          balance_after: (walletData?.balance || 0) - amount,
           reason: `Investment in ${selectedPlan.name} plan`
         }]);
 

@@ -164,7 +164,7 @@ const ForexTrading = () => {
   const fetchSignals = async () => {
     try {
       // Mock signals since forex_signals table doesn't exist
-      setLiveSignals([]);
+      setSignals([]);
     } catch (error) {
       console.error('Error fetching signals:', error);
     }
@@ -282,43 +282,22 @@ const ForexTrading = () => {
     }
 
     try {
-      // Create position in forex_positions table
-      const { error: positionError } = await supabase
-        .from('forex_positions')
-        .insert({
-          user_id: user.id,
-          pair_id: selectedPair.id,
-          position_type: positionType,
-          entry_price: selectedPair.current_price,
-          current_price: selectedPair.current_price,
-          volume: orderVolume,
-          margin_used: marginRequired,
-          leverage: leverageValue,
-          take_profit: takeProfit ? parseFloat(takeProfit) : null,
-          stop_loss: stopLoss ? parseFloat(stopLoss) : null,
-          status: 'open'
-        });
-
-      if (positionError) throw positionError;
-
       // Create record in forex_records table
       const { error: recordError } = await supabase
         .from('forex_records')
-        .insert({
+        .insert([{
           user_id: user.id,
           pair_symbol: selectedPair.symbol,
           order_type: orderType,
           position_type: positionType,
-          volume: orderVolume,
+          lot_size: orderVolume,
           entry_price: selectedPair.current_price,
-          current_price: selectedPair.current_price,
           leverage: leverageValue,
           margin_used: marginRequired,
           take_profit: takeProfit ? parseFloat(takeProfit) : null,
           stop_loss: stopLoss ? parseFloat(stopLoss) : null,
-          status: 'open',
-          notes: `${orderType.toUpperCase()} order placed via trading interface`
-        });
+          status: 'open'
+        }]);
 
       if (recordError) throw recordError;
 
@@ -337,15 +316,13 @@ const ForexTrading = () => {
       // Create transaction record
       const { error: txError } = await supabase
         .from('transactions')
-        .insert({
+        .insert([{
           user_id: user.id,
           type: 'forex_trade',
-          category: 'trading',
-          currency: 'USDT',
           amount: marginRequired,
-          status: 'completed',
-          notes: `${positionType.toUpperCase()} ${orderVolume} ${selectedPair.symbol} @ ${selectedPair.current_price}`
-        });
+          balance_after: walletBalance - marginRequired,
+          reason: `${positionType.toUpperCase()} ${orderVolume} ${selectedPair.symbol} @ ${selectedPair.current_price}`
+        }]);
 
       if (txError) throw txError;
 
@@ -376,34 +353,16 @@ const ForexTrading = () => {
       const position = positions.find(p => p.id === positionId);
       if (!position) return;
 
-      const { error: positionError } = await supabase
-        .from('forex_positions')
-        .update({
-          status: 'closed',
-          closed_price: position.current_price,
-          closed_at: new Date().toISOString()
-        })
-        .eq('id', positionId);
-
-      if (positionError) throw positionError;
-
       // Update forex_records table
       const { error: recordError } = await supabase
         .from('forex_records')
         .update({
           status: 'closed',
-          closed_price: position.current_price,
+          exit_price: position.current_price,
           closed_at: new Date().toISOString(),
-          close_reason: 'Manual close',
-          profit_loss: position.profit_loss,
-          profit_loss_percent: position.profit_loss_percent
+          profit_loss: position.profit_loss
         })
-        .eq('user_id', user?.id)
-        .eq('entry_price', position.entry_price)
-        .eq('volume', position.volume)
-        .eq('status', 'open')
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .eq('id', positionId);
 
       if (recordError) throw recordError;
 
@@ -422,15 +381,13 @@ const ForexTrading = () => {
       // Create transaction record
       const { error: txError } = await supabase
         .from('transactions')
-        .insert({
+        .insert([{
           user_id: user?.id,
           type: 'forex_close',
-          category: 'trading',
-          currency: 'USDT',
           amount: position.margin_used + position.profit_loss,
-          status: 'completed',
-          notes: `Closed ${position.position_type} position for ${position.forex_pairs?.symbol || 'Forex pair'} with P&L: ${position.profit_loss > 0 ? '+' : ''}${position.profit_loss.toFixed(2)}`
-        });
+          balance_after: walletBalance + position.margin_used + position.profit_loss,
+          reason: `Closed ${position.position_type} position with P&L: ${position.profit_loss > 0 ? '+' : ''}${position.profit_loss.toFixed(2)}`
+        }]);
 
       if (txError) throw txError;
 

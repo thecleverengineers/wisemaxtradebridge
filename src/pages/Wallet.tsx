@@ -165,24 +165,14 @@ const Wallet = () => {
         .insert([{
           user_id: user?.id,
           type: 'withdrawal',
-          category: 'withdrawal',
-          currency: 'USDT',
           amount: amount,
-          status: 'pending',
-          to_address: withdrawAddress,
-          network: 'BEP20',
-          notes: `USDT withdrawal to ${withdrawAddress}`,
-          created_at: new Date().toISOString()
+          balance_after: walletBalance - amount,
+          reason: `USDT withdrawal to ${withdrawAddress}`
         }]);
 
       if (txError) throw txError;
 
-      // Create record in transactions_records table
-      const { error: recordError } = await supabase
-        .from('transactions_records')
-        .insert({
-          user_id: user?.id,
-          order_type: 'withdraw',
+      toast({
           amount: amount,
           currency: 'USDT',
           wallet_address: withdrawAddress,

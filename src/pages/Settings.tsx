@@ -157,15 +157,13 @@ const Settings = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({
-          kyc_documents: kycData,
-          kyc_status: 'pending'
-        })
-        .eq('id', user?.id);
-
-      if (error) throw error;
+      // KYC not supported in current schema - profiles table doesn't have kyc fields
+      toast({
+        title: "KYC Not Available",
+        description: "KYC verification is not configured in this system.",
+        variant: "destructive",
+      });
+      return;
 
       toast({
         title: "KYC Submitted",

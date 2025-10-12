@@ -30,10 +30,9 @@ import { AppSidebar } from '@/components/layout/AppSidebar';
 import type { Database } from '@/integrations/supabase/types';
 
 type StakingPlan = Database['public']['Tables']['staking_plans']['Row'];
-type StakingPosition = Database['public']['Tables']['staking_positions']['Row'] & {
+type StakingRecord = Database['public']['Tables']['staking_records']['Row'] & {
   staking_plans?: StakingPlan;
 };
-type StakingEarning = Database['public']['Tables']['staking_earnings']['Row'];
 
 const USDTStaking = () => {
   const { user } = useAuth();
@@ -49,8 +48,8 @@ const USDTStaking = () => {
   const [walletBalance, setWalletBalance] = useState(0);
   
   const [plans, setPlans] = useState<StakingPlan[]>([]);
-  const [positions, setPositions] = useState<StakingPosition[]>([]);
-  const [earnings, setEarnings] = useState<StakingEarning[]>([]);
+  const [positions, setPositions] = useState<StakingRecord[]>([]);
+  const [earnings, setEarnings] = useState<any[]>([]);
   const [totalStats, setTotalStats] = useState({
     totalStaked: 0,
     totalEarned: 0,
@@ -140,7 +139,7 @@ const USDTStaking = () => {
       const { data, error } = await supabase
         .from('staking_plans')
         .select('*')
-        .eq('is_active', true)
+        .eq('status', 'active')
         .order('duration_days', { ascending: true });
 
       if (error) throw error;
@@ -153,7 +152,7 @@ const USDTStaking = () => {
   const fetchPositions = async () => {
     try {
       const { data, error } = await supabase
-        .from('staking_positions')
+        .from('staking_records')
         .select(`
           *,
           staking_plans(*)
@@ -170,15 +169,8 @@ const USDTStaking = () => {
 
   const fetchEarnings = async () => {
     try {
-      const { data, error } = await supabase
-        .from('staking_earnings')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('earned_date', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-      setEarnings(data || []);
+      // Mock earnings since staking_earnings table doesn't exist
+      setEarnings([]);
     } catch (error) {
       console.error('Error fetching earnings:', error);
     }
@@ -226,10 +218,8 @@ const USDTStaking = () => {
   };
 
   const getCurrentPlan = () => {
-    if (stakingType === 'flexible') {
-      return plans.find(p => p.type === 'flexible');
-    }
-    return plans.find(p => p.type === 'locked' && p.duration_days === parseInt(selectedDuration));
+    // Just return first plan since staking_plans doesn't have type field
+    return plans[0];
   };
 
   const handleStake = async () => {
@@ -264,39 +254,17 @@ const USDTStaking = () => {
     }
 
     try {
-      const endDate = currentPlan.type === 'locked' 
-        ? new Date(Date.now() + currentPlan.duration_days * 24 * 60 * 60 * 1000).toISOString()
-        : null;
+      const endDate = new Date(Date.now() + currentPlan.duration_days * 24 * 60 * 60 * 1000).toISOString();
 
-      const { error: positionError } = await supabase
-        .from('staking_positions')
-        .insert({
+      const { error: recordError } = await supabase
+        .from('staking_records')
+        .insert([{
           user_id: user?.id,
           plan_id: currentPlan.id,
           amount,
-          apy: currentPlan.apy,
-          duration_days: currentPlan.duration_days,
-          type: currentPlan.type,
           end_date: endDate,
-          auto_renew: currentPlan.type === 'locked' ? autoRenew : false,
           status: 'active'
-        });
-
-      if (positionError) throw positionError;
-
-      const { error: recordError } = await supabase
-        .from('usdtstaking_records')
-        .insert({
-          user_id: user?.id,
-          plan_name: currentPlan.name,
-          plan_type: currentPlan.type,
-          amount,
-          apy: currentPlan.apy,
-          duration_days: currentPlan.duration_days,
-          maturity_date: endDate,
-          auto_renew: currentPlan.type === 'locked' ? autoRenew : false,
-          status: 'active'
-        });
+        }]);
 
       if (recordError) throw recordError;
 
@@ -313,15 +281,13 @@ const USDTStaking = () => {
 
       const { error: txError } = await supabase
         .from('transactions')
-        .insert({
+        .insert([{
           user_id: user?.id,
           type: 'stake',
-          category: 'investment',
-          currency: 'USDT',
-          amount,
-          status: 'completed',
-          notes: `Staked in ${currentPlan.name}`
-        });
+          amount: amount,
+          balance_after: walletBalance - amount,
+          reason: `Staked in ${currentPlan.name}`
+        }]);
 
       if (txError) throw txError;
 
@@ -397,15 +363,13 @@ const USDTStaking = () => {
 
       const { error: txError } = await supabase
         .from('transactions')
-        .insert({
+        .insert([{
           user_id: user?.id,
           type: 'withdraw',
-          category: 'investment',
-          currency: 'USDT',
           amount: returnAmount,
-          status: 'completed',
-          notes: `Withdrawn from ${position.staking_plans?.name || 'staking'}${isEarlyWithdrawal ? ' (Early withdrawal - forfeited interest)' : ''}`
-        });
+          balance_after: walletBalance + returnAmount,
+          reason: `Withdrawn from staking${isEarlyWithdrawal ? ' (Early withdrawal - forfeited interest)' : ''}`
+        }]);
 
       if (txError) throw txError;
 
@@ -433,10 +397,8 @@ const USDTStaking = () => {
   const handleOpenStakeDialog = (plan?: StakingPlan) => {
     if (plan) {
       setSelectedPlanForStaking(plan);
-      setStakingType(plan.type as 'flexible' | 'locked');
-      if (plan.type === 'locked') {
-        setSelectedDuration(plan.duration_days.toString());
-      }
+      setStakingType('flexible');
+      setSelectedDuration(plan.duration_days.toString());
     }
     setIsStakeDialogOpen(true);
   };
@@ -812,13 +774,11 @@ const USDTStaking = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {plans
-                      .filter(p => p.type === 'locked')
-                      .map(plan => (
-                        <SelectItem key={plan.id} value={plan.duration_days.toString()}>
-                          {plan.duration_days} Days - {plan.apy}% APY
-                        </SelectItem>
-                      ))}
+                    {plans.map(plan => (
+                      <SelectItem key={plan.id} value={plan.duration_days.toString()}>
+                        {plan.duration_days} Days - {plan.daily_return}% Daily
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -871,23 +831,21 @@ const USDTStaking = () => {
                 </p>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">APY:</span>
-                    <span className="text-foreground font-semibold">{currentPlan.apy}%</span>
+                    <span className="text-muted-foreground">Daily Return:</span>
+                    <span className="text-foreground font-semibold">{currentPlan.daily_return}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Daily:</span>
+                    <span className="text-muted-foreground">Daily Earnings:</span>
                     <span className="text-foreground font-semibold">
-                      ₹{calculateDailyEarnings(parseFloat(stakeAmount), currentPlan.apy).toFixed(4)}
+                      ₹{(parseFloat(stakeAmount) * currentPlan.daily_return / 100).toFixed(4)}
                     </span>
                   </div>
-                  {stakingType === 'locked' && (
-                    <div className="flex justify-between pt-2 border-t border-border/50">
-                      <span className="text-muted-foreground">Total ({currentPlan.duration_days} days):</span>
-                      <span className="text-green-600 dark:text-green-400 font-bold">
-                        ₹{calculateEstimatedEarnings(parseFloat(stakeAmount), currentPlan.apy, currentPlan.duration_days).toFixed(2)}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex justify-between pt-2 border-t border-border/50">
+                    <span className="text-muted-foreground">Total ({currentPlan.duration_days} days):</span>
+                    <span className="text-green-600 dark:text-green-400 font-bold">
+                      ₹{(parseFloat(stakeAmount) * currentPlan.daily_return / 100 * currentPlan.duration_days).toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}

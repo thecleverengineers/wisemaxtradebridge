@@ -132,7 +132,21 @@ export function Dashboard() {
         .order('created_at', { ascending: false });
 
       if (roiError) throw roiError;
-      setRoiInvestments(roiData || []);
+      // Map to ROIInvestment type with required fields
+      const mappedRoiData = (roiData || []).map(roi => ({
+        ...roi,
+        plan_name: 'Investment',
+        daily_return: 0,
+        total_return: 0,
+        status: 'active' as const,
+        started_at: roi.roi_date,
+        expires_at: roi.roi_date,
+        total_paid_out: roi.amount,
+        start_date: roi.roi_date,
+        end_date: roi.roi_date,
+        days_remaining: 0
+      }));
+      setRoiInvestments(mappedRoiData);
 
       // Mock analytics since table doesn't exist
       setAnalytics({

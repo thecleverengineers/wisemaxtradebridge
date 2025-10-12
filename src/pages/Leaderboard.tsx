@@ -148,7 +148,8 @@ const Leaderboard = () => {
       // Add ranks
       const rankedData = sortedData.map((userData, index) => ({
         ...userData,
-        rank: index + 1
+        rank: index + 1,
+        referral_count: userData.totalReferrals
       }));
 
       setLeaderboardData(rankedData);

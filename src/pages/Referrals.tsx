@@ -166,15 +166,15 @@ const Referrals = () => {
           level,
           count: levelReferrals.length,
           totalEarnings: levelBonuses.reduce((sum, b) => sum + (b.amount || 0), 0),
-          totalDeposits: levelReferrals.reduce((sum, r) => sum + (r.total_deposits || 0), 0)
+          totalDeposits: 0 // Not tracked in current schema
         };
       });
 
       // Calculate overall stats
       const totalReferrals = referralsData?.length || 0;
       const activeCount = referralsData?.filter(r => {
-        const user = userMap.get(r.referred_id);
-        return user?.is_active;
+        const user = userMap.get(r.referred_user_id);
+        return user !== undefined;
       }).length || 0;
       const totalEarnings = bonusesData?.reduce((sum, bonus) => sum + (bonus.amount || 0), 0) || 0;
       
