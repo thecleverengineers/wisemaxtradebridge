@@ -44,16 +44,28 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
 
   const fetchDepositWallets = async () => {
     try {
-      const { data, error } = await supabase
-        .from('deposit_wallets')
-        .select('*')
-        .eq('is_active', true)
-        .order('currency', { ascending: true });
+      // For now, use a static deposit wallet from admin settings
+      const { data: settingData } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_key', 'deposit_wallet_address')
+        .single();
 
-      if (error) throw error;
-      setDepositWallets(data || []);
-      if (data && data.length > 0) {
-        setSelectedWallet(data[0]);
+      if (settingData?.setting_value) {
+        const walletAddress = JSON.parse(settingData.setting_value);
+        const staticWallet: DepositWallet = {
+          id: '1',
+          currency: 'USDT',
+          network: 'TRC20',
+          wallet_address: walletAddress,
+          wallet_label: 'Main Deposit Wallet',
+          min_deposit_amount: 10,
+          network_fee_notice: 'Network fees apply. Please ensure you send TRC20 USDT only.',
+          qr_code_url: null,
+          show_qr_code: false,
+        };
+        setDepositWallets([staticWallet]);
+        setSelectedWallet(staticWallet);
       }
     } catch (error) {
       console.error('Error fetching deposit wallets:', error);
@@ -122,26 +134,36 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
 
     setLoading(true);
     try {
-      // Create deposit transaction record
-      const { error } = await supabase
-        .from('deposit_transactions')
+      // Get current wallet balance
+      const { data: wallet } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', userId)
+        .single();
+
+      const currentBalance = wallet?.balance || 0;
+
+      // Create transaction record
+      const { error: txError } = await supabase
+        .from('transactions')
         .insert({
           user_id: userId,
+          type: 'deposit',
+          amount: depositAmount,
+          balance_after: currentBalance + depositAmount,
           currency: selectedWallet.currency,
           network: selectedWallet.network,
-          amount: depositAmount,
           to_address: selectedWallet.wallet_address,
-          transaction_hash: transactionHash,
+          reference_id: transactionHash,
           status: 'pending',
-          confirmations: 0,
-          required_confirmations: 1,
+          notes: `Deposit via ${selectedWallet.network}`,
         });
 
-      if (error) throw error;
+      if (txError) throw txError;
 
       toast({
         title: 'Deposit Request Submitted',
-        description: 'Your deposit is pending confirmation',
+        description: 'Your deposit is pending admin approval',
       });
 
       setAmount('');

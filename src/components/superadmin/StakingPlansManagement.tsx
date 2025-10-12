@@ -128,16 +128,18 @@ const StakingPlansManagement = () => {
 
     setSaving(true);
     try {
+      const apy = parseFloat(formData.apy);
+      const dailyReturn = apy / 365;
+      
       const planData = {
         name: formData.name,
         description: formData.description || null,
-        type: formData.type,
         min_amount: parseFloat(formData.min_amount),
         max_amount: parseFloat(formData.max_amount),
-        apy: parseFloat(formData.apy),
+        daily_return: dailyReturn,
+        total_return_percent: apy,
         duration_days: parseInt(formData.duration_days),
-        bonus_text: formData.bonus_text || null,
-        is_active: formData.is_active,
+        status: formData.is_active ? 'active' : 'inactive',
       };
 
       if (editingPlan) {
@@ -155,7 +157,7 @@ const StakingPlansManagement = () => {
       } else {
         const { error } = await supabase
           .from('staking_plans')
-          .insert(planData);
+          .insert([planData]);
 
         if (error) throw error;
 

@@ -29,7 +29,7 @@ const AppSettings = () => {
         throw error;
       }
 
-      if (data?.setting_value !== null) {
+      if (data?.setting_value) {
         if (typeof data.setting_value === 'object' && 'url' in data.setting_value) {
           setSupportLink(((data.setting_value as any).url as string) || '');
         } else if (typeof data.setting_value === 'string') {
