@@ -303,8 +303,6 @@ const Rewards = () => {
     switch (activeTab) {
       case 'available':
         return rewards.filter(r => !r.claimed && r.current_progress >= r.requirement);
-      case 'progress':
-        return rewards.filter(r => !r.claimed && r.current_progress < r.requirement);
       case 'claimed':
         return rewards.filter(r => r.claimed);
       default:
@@ -360,13 +358,6 @@ const Rewards = () => {
                 >
                   <Gift className="h-4 w-4 mr-2" />
                   Available ({rewards.filter(r => !r.claimed && r.current_progress >= r.requirement).length})
-                </Button>
-                <Button
-                  onClick={() => setActiveTab('progress')}
-                  variant={activeTab === 'progress' ? 'default' : 'outline'}
-                >
-                  <Target className="h-4 w-4 mr-2" />
-                  In Progress ({rewards.filter(r => !r.claimed && r.current_progress < r.requirement).length})
                 </Button>
                 <Button
                   onClick={() => setActiveTab('claimed')}
@@ -456,7 +447,6 @@ const Rewards = () => {
                 <h3 className="text-white text-xl font-semibold mb-2">No Rewards Found</h3>
                 <p className="text-purple-300">
                   {activeTab === 'available' && "No rewards are ready to claim right now."}
-                  {activeTab === 'progress' && "All rewards are either completed or claimed."}
                   {activeTab === 'claimed' && "You haven't claimed any rewards yet."}
                 </p>
               </CardContent>
