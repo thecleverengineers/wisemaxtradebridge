@@ -312,49 +312,59 @@ const Rewards = () => {
 
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <AppHeader onMenuClick={() => setSidebarOpen(true)} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <div className="p-4 pt-20 pb-20">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-6xl mx-auto space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between mb-8 animate-fade-in">
+            <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/')}
+                className="hover-scale"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">Rewards Center</h1>
-                <p className="text-muted-foreground">Earn bonuses and unlock achievements</p>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  Rewards Center
+                </h1>
+                <p className="text-muted-foreground mt-1">Earn bonuses and unlock achievements</p>
               </div>
             </div>
           </div>
 
           {/* Total Rewards Earned */}
-          <Card className="bg-gradient-to-r from-primary via-accent to-primary border-0 text-primary-foreground shadow-xl">
-            <CardContent className="p-6">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-accent border-0 text-primary-foreground shadow-2xl animate-scale-in">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <CardContent className="relative p-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-primary-foreground/80 text-sm">Total Rewards Earned</p>
-                  <p className="text-4xl font-bold">₹{totalRewards.toLocaleString()}</p>
+                  <p className="text-primary-foreground/80 text-sm uppercase tracking-wide mb-2">Total Rewards Earned</p>
+                  <p className="text-5xl font-bold mb-1">₹{totalRewards.toLocaleString()}</p>
+                  <p className="text-primary-foreground/60 text-sm">Keep earning to unlock more!</p>
                 </div>
-                <Award className="h-12 w-12 text-primary-foreground/80" />
+                <div className="relative">
+                  <div className="absolute inset-0 bg-white/20 rounded-full blur-xl animate-pulse" />
+                  <Award className="relative h-16 w-16 text-primary-foreground" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Category Tabs */}
-          <Card>
+          <Card className="border-border/50 shadow-lg">
             <CardContent className="p-4">
-              <div className="flex space-x-2 overflow-x-auto">
+              <div className="flex space-x-3 overflow-x-auto">
                 <Button
                   onClick={() => setActiveTab('available')}
                   variant={activeTab === 'available' ? 'default' : 'outline'}
+                  className="hover-scale transition-all"
+                  size="lg"
                 >
                   <Gift className="h-4 w-4 mr-2" />
                   Available ({rewards.filter(r => !r.claimed && r.current_progress >= r.requirement).length})
@@ -362,6 +372,8 @@ const Rewards = () => {
                 <Button
                   onClick={() => setActiveTab('claimed')}
                   variant={activeTab === 'claimed' ? 'default' : 'outline'}
+                  className="hover-scale transition-all"
+                  size="lg"
                 >
                   <Award className="h-4 w-4 mr-2" />
                   Claimed ({rewards.filter(r => r.claimed).length})
@@ -372,66 +384,81 @@ const Rewards = () => {
 
           {/* Rewards List */}
           <div className="space-y-4">
-            {getFilteredRewards().map((reward) => (
-              <Card key={reward.id} className="card-hover">
+            {getFilteredRewards().map((reward, index) => (
+              <Card 
+                key={reward.id} 
+                className="group hover:shadow-xl transition-all duration-300 border-border/50 animate-fade-in hover-scale"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
                 <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-6">
                     <div className="flex items-start space-x-4 flex-1">
-                      <div className={`p-3 rounded-lg bg-gradient-to-r ${reward.color}`}>
-                        <reward.icon className="h-6 w-6 text-white" />
+                      <div className={`relative p-4 rounded-xl bg-gradient-to-br ${reward.color} shadow-lg group-hover:scale-110 transition-transform`}>
+                        <div className="absolute inset-0 bg-white/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <reward.icon className="relative h-7 w-7 text-white" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h3 className="font-semibold">{reward.title}</h3>
-                          <Badge variant={
-                            reward.type === 'daily' ? 'default' :
-                            reward.type === 'milestone' ? 'default' :
-                            reward.type === 'achievement' ? 'default' :
-                            'secondary'
-                          }>
+                          <h3 className="font-bold text-lg">{reward.title}</h3>
+                          <Badge 
+                            variant="outline"
+                            className="capitalize border-primary/30 bg-primary/10"
+                          >
                             {reward.type}
                           </Badge>
                         </div>
-                        <p className="text-purple-300 text-sm mb-3">{reward.description}</p>
+                        <p className="text-muted-foreground text-sm mb-4">{reward.description}</p>
                         
                         {!reward.claimed && (
                           <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-purple-300">Progress</span>
-                              <span className="text-white">
-                                {Math.min(reward.current_progress, reward.requirement)}/{reward.requirement}
+                            <div className="flex justify-between text-sm font-medium">
+                              <span className="text-muted-foreground">Progress</span>
+                              <span className="text-primary">
+                                {Math.min(reward.current_progress, reward.requirement).toLocaleString()}/{reward.requirement.toLocaleString()}
                               </span>
                             </div>
-                            <Progress 
-                              value={(reward.current_progress / reward.requirement) * 100} 
-                              className="h-2 bg-white/10"
-                            />
+                            <div className="relative">
+                              <Progress 
+                                value={(reward.current_progress / reward.requirement) * 100} 
+                                className="h-3"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+                            </div>
                           </div>
                         )}
                         
                         {reward.claimed && (
-                          <Badge className="bg-green-500 text-white">
+                          <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-lg">
                             <Award className="h-3 w-3 mr-1" />
-                            Claimed
+                            Claimed Successfully
                           </Badge>
                         )}
                       </div>
                     </div>
                     
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-white mb-2">₹{reward.amount}</p>
+                    <div className="text-right flex flex-col items-end gap-3">
+                      <div className="bg-gradient-to-br from-primary/10 to-accent/10 px-4 py-2 rounded-lg border border-primary/20">
+                        <p className="text-xs text-muted-foreground mb-1">Reward</p>
+                        <p className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                          ₹{reward.amount.toLocaleString()}
+                        </p>
+                      </div>
                       {!reward.claimed && reward.current_progress >= reward.requirement && (
                         <Button
                           onClick={() => claimReward(reward.id)}
-                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                          size="lg"
+                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all hover-scale"
                         >
+                          <Gift className="h-4 w-4 mr-2" />
                           Claim Now
                         </Button>
                       )}
                       {!reward.claimed && reward.current_progress < reward.requirement && (
-                        <p className="text-purple-300 text-sm">
-                          {reward.requirement - reward.current_progress} more needed
-                        </p>
+                        <div className="text-center bg-muted/50 px-4 py-2 rounded-lg">
+                          <p className="text-sm font-medium text-muted-foreground">
+                            {(reward.requirement - reward.current_progress).toLocaleString()} more needed
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -441,118 +468,179 @@ const Rewards = () => {
           </div>
 
           {getFilteredRewards().length === 0 && (
-            <Card className="bg-white/5 border-white/10">
-              <CardContent className="p-12 text-center">
-                <Gift className="h-16 w-16 text-purple-400 mx-auto mb-4" />
-                <h3 className="text-white text-xl font-semibold mb-2">No Rewards Found</h3>
-                <p className="text-purple-300">
-                  {activeTab === 'available' && "No rewards are ready to claim right now."}
-                  {activeTab === 'claimed' && "You haven't claimed any rewards yet."}
+            <Card className="border-dashed border-2 border-border/50 bg-muted/20 animate-fade-in">
+              <CardContent className="p-16 text-center">
+                <div className="relative inline-block mb-4">
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
+                  <Gift className="relative h-20 w-20 text-primary mx-auto" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">No Rewards Found</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  {activeTab === 'available' && "Complete more activities to unlock rewards that are ready to claim!"}
+                  {activeTab === 'claimed' && "Start earning rewards by completing challenges and milestones."}
                 </p>
               </CardContent>
             </Card>
           )}
 
           {/* Team Deposit Reward Chart */}
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
+          <Card className="border-border/50 shadow-xl overflow-hidden animate-fade-in">
+            <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 p-6 border-b border-border/50">
               <div className="flex items-center space-x-3">
-                <TrendingUp className="h-6 w-6 text-primary" />
+                <div className="p-3 rounded-lg bg-gradient-to-br from-primary to-accent shadow-lg">
+                  <TrendingUp className="h-6 w-6 text-primary-foreground" />
+                </div>
                 <div>
-                  <CardTitle className="text-white">Team Deposit Reward Levels</CardTitle>
-                  <CardDescription className="text-purple-300">
-                    Earn rewards as your team's total deposits grow
+                  <CardTitle className="text-xl font-bold">Team Deposit Reward Levels</CardTitle>
+                  <CardDescription className="mt-1">
+                    Earn exponential rewards as your team's total deposits grow
                   </CardDescription>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
+            </div>
+            <CardContent className="p-6">
+              <div className="overflow-x-auto rounded-lg border border-border/50">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-white/10">
-                      <th className="text-left py-3 px-4 text-white font-semibold">Level</th>
-                      <th className="text-left py-3 px-4 text-white font-semibold">Total Team Deposit (USDT)</th>
-                      <th className="text-left py-3 px-4 text-white font-semibold">Referrer Reward (USDT)</th>
+                    <tr className="bg-muted/50 border-b border-border">
+                      <th className="text-left py-4 px-6 font-bold text-sm uppercase tracking-wide">Level</th>
+                      <th className="text-left py-4 px-6 font-bold text-sm uppercase tracking-wide">Total Team Deposit</th>
+                      <th className="text-left py-4 px-6 font-bold text-sm uppercase tracking-wide">Reward</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 text-purple-300">1</td>
-                      <td className="py-3 px-4 text-white font-medium">5,000</td>
-                      <td className="py-3 px-4 text-green-400 font-semibold">50</td>
+                    <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
+                      <td className="py-4 px-6">
+                        <Badge variant="outline" className="font-semibold">Level 1</Badge>
+                      </td>
+                      <td className="py-4 px-6 font-medium">$5,000 USDT</td>
+                      <td className="py-4 px-6">
+                        <span className="text-green-600 dark:text-green-400 font-bold">$50 USDT</span>
+                      </td>
                     </tr>
-                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 text-purple-300">2</td>
-                      <td className="py-3 px-4 text-white font-medium">10,000</td>
-                      <td className="py-3 px-4 text-green-400 font-semibold">100</td>
+                    <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
+                      <td className="py-4 px-6">
+                        <Badge variant="outline" className="font-semibold">Level 2</Badge>
+                      </td>
+                      <td className="py-4 px-6 font-medium">$10,000 USDT</td>
+                      <td className="py-4 px-6">
+                        <span className="text-green-600 dark:text-green-400 font-bold">$100 USDT</span>
+                      </td>
                     </tr>
-                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 text-purple-300">3</td>
-                      <td className="py-3 px-4 text-white font-medium">20,000</td>
-                      <td className="py-3 px-4 text-green-400 font-semibold">200</td>
+                    <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
+                      <td className="py-4 px-6">
+                        <Badge variant="outline" className="font-semibold">Level 3</Badge>
+                      </td>
+                      <td className="py-4 px-6 font-medium">$20,000 USDT</td>
+                      <td className="py-4 px-6">
+                        <span className="text-green-600 dark:text-green-400 font-bold">$200 USDT</span>
+                      </td>
                     </tr>
-                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 text-purple-300">4</td>
-                      <td className="py-3 px-4 text-white font-medium">90,000</td>
-                      <td className="py-3 px-4 text-green-400 font-semibold">600</td>
+                    <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
+                      <td className="py-4 px-6">
+                        <Badge variant="outline" className="font-semibold">Level 4</Badge>
+                      </td>
+                      <td className="py-4 px-6 font-medium">$90,000 USDT</td>
+                      <td className="py-4 px-6">
+                        <span className="text-green-600 dark:text-green-400 font-bold">$600 USDT</span>
+                      </td>
                     </tr>
-                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 text-purple-300">5</td>
-                      <td className="py-3 px-4 text-white font-medium">150,000</td>
-                      <td className="py-3 px-4 text-green-400 font-semibold">700</td>
+                    <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group bg-primary/5">
+                      <td className="py-4 px-6">
+                        <Badge className="font-semibold bg-gradient-to-r from-primary to-accent">Level 5</Badge>
+                      </td>
+                      <td className="py-4 px-6 font-bold">$150,000 USDT</td>
+                      <td className="py-4 px-6">
+                        <span className="text-green-600 dark:text-green-400 font-bold text-lg">$700 USDT</span>
+                      </td>
                     </tr>
-                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 text-purple-300">6</td>
-                      <td className="py-3 px-4 text-white font-medium">250,000</td>
-                      <td className="py-3 px-4 text-green-400 font-semibold">800</td>
+                    <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
+                      <td className="py-4 px-6">
+                        <Badge variant="outline" className="font-semibold">Level 6</Badge>
+                      </td>
+                      <td className="py-4 px-6 font-medium">$250,000 USDT</td>
+                      <td className="py-4 px-6">
+                        <span className="text-green-600 dark:text-green-400 font-bold">$800 USDT</span>
+                      </td>
                     </tr>
-                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 text-purple-300">7</td>
-                      <td className="py-3 px-4 text-white font-medium">500,000</td>
-                      <td className="py-3 px-4 text-green-400 font-semibold">900</td>
+                    <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
+                      <td className="py-4 px-6">
+                        <Badge variant="outline" className="font-semibold">Level 7</Badge>
+                      </td>
+                      <td className="py-4 px-6 font-medium">$500,000 USDT</td>
+                      <td className="py-4 px-6">
+                        <span className="text-green-600 dark:text-green-400 font-bold">$900 USDT</span>
+                      </td>
                     </tr>
-                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 text-purple-300">8</td>
-                      <td className="py-3 px-4 text-white font-medium">1,000,000</td>
-                      <td className="py-3 px-4 text-green-400 font-semibold">1,000</td>
+                    <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group bg-accent/5">
+                      <td className="py-4 px-6">
+                        <Badge className="font-semibold bg-gradient-to-r from-accent to-primary">Level 8</Badge>
+                      </td>
+                      <td className="py-4 px-6 font-bold">$1,000,000 USDT</td>
+                      <td className="py-4 px-6">
+                        <span className="text-green-600 dark:text-green-400 font-bold text-lg">$1,000 USDT</span>
+                      </td>
                     </tr>
-                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 text-purple-300">9</td>
-                      <td className="py-3 px-4 text-white font-medium">1,300,000</td>
-                      <td className="py-3 px-4 text-yellow-400 font-semibold">TBD</td>
+                    <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
+                      <td className="py-4 px-6">
+                        <Badge variant="secondary" className="font-semibold">Level 9</Badge>
+                      </td>
+                      <td className="py-4 px-6 font-medium">$1,300,000 USDT</td>
+                      <td className="py-4 px-6">
+                        <span className="text-yellow-600 dark:text-yellow-400 font-bold">TBD</span>
+                      </td>
                     </tr>
-                    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 text-purple-300">10</td>
-                      <td className="py-3 px-4 text-white font-medium">2,000,000</td>
-                      <td className="py-3 px-4 text-yellow-400 font-semibold">TBD</td>
+                    <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
+                      <td className="py-4 px-6">
+                        <Badge variant="secondary" className="font-semibold">Level 10</Badge>
+                      </td>
+                      <td className="py-4 px-6 font-medium">$2,000,000 USDT</td>
+                      <td className="py-4 px-6">
+                        <span className="text-yellow-600 dark:text-yellow-400 font-bold">TBD</span>
+                      </td>
                     </tr>
-                    <tr className="hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 text-purple-300">... up to 20</td>
-                      <td className="py-3 px-4 text-purple-300 italic">Higher levels available</td>
-                      <td className="py-3 px-4 text-purple-300 italic">Contact support</td>
+                    <tr className="hover:bg-muted/50 transition-colors bg-muted/30">
+                      <td className="py-4 px-6">
+                        <Badge variant="outline" className="font-semibold">Level 11-20</Badge>
+                      </td>
+                      <td className="py-4 px-6 text-muted-foreground italic">Higher levels available</td>
+                      <td className="py-4 px-6 text-muted-foreground italic">Contact support</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <div className="mt-4 p-4 bg-primary/10 rounded-lg border border-primary/20">
-                <p className="text-sm text-purple-300">
-                  <strong className="text-white">💡 Tip:</strong> Build your team to unlock higher reward levels. 
-                  The more your team deposits, the bigger your rewards!
-                </p>
+              <div className="mt-6 p-5 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-xl border border-primary/20 shadow-inner">
+                <div className="flex items-start space-x-3">
+                  <div className="mt-0.5">
+                    <Star className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium mb-1">Pro Tip</p>
+                    <p className="text-sm text-muted-foreground">
+                      Build your team strategically to unlock higher reward tiers. Each level brings exponentially bigger rewards!
+                    </p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Reward Tips */}
-          <Card className="bg-white/5 border-white/10">
+          <Card className="border-border/50 shadow-lg animate-fade-in">
             <CardHeader>
-              <CardTitle className="text-white">How to Earn More Rewards</CardTitle>
+              <CardTitle className="text-xl font-bold flex items-center gap-2">
+                <Zap className="h-5 w-5 text-primary" />
+                How to Earn More Rewards
+              </CardTitle>
+              <CardDescription>Maximize your earnings with these strategies</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4 text-purple-300 text-sm">
-                <div>
-                  <h4 className="text-white font-semibold mb-2">💰 Make Investments</h4>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="p-4 rounded-lg bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 hover-scale transition-all">
+                  <h4 className="font-bold mb-2 flex items-center gap-2">
+                    <span className="text-2xl">💰</span>
+                    Make Investments
+                  </h4>
                   <p>Regular investments unlock milestone bonuses and increase your earning potential.</p>
                 </div>
                 <div>
