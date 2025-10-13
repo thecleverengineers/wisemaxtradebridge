@@ -52,22 +52,24 @@ interface Transaction {
 
 interface ROIInvestment {
   id: string;
-  plan_name: string;
+  user_id: string;
+  investment_id: string;
   amount: number;
-  daily_return: number;
-  total_return: number;
-  status: string;
-  started_at: string;
-  expires_at: string;
-  total_paid_out: number;
+  type: string;
+  description?: string;
+  roi_date?: string;
+  credited_at?: string;
+  created_at: string;
 }
 
 interface Analytics {
   total_trades: number;
-  successful_trades: number;
-  total_volume: number;
-  profit_loss: number;
+  winning_trades: number;
+  losing_trades: number;
   win_rate: number;
+  total_profit: number;
+  total_loss: number;
+  net_profit: number;
 }
 
 interface MarketData {
@@ -92,7 +94,7 @@ export function Dashboard() {
   const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
   const totalROI = wallets.reduce((sum, wallet) => sum + wallet.roi_income, 0);
   const totalReferral = wallets.reduce((sum, wallet) => sum + wallet.referral_income, 0);
-  const activeInvestments = roiInvestments.filter(inv => inv.status === 'active').length;
+  const activeInvestments = 0; // roiInvestments.filter(inv => inv.status === 'active').length;
 
   // Fetch initial data
   useEffect(() => {
@@ -160,7 +162,7 @@ export function Dashboard() {
       const { count, error: refError } = await supabase
         .from('referrals')
         .select('*', { count: 'exact', head: true })
-        .eq('referrer_id', user?.id);
+        .eq('user_id', user?.id);
 
       if (refError) throw refError;
       setReferralCount(count || 0);
@@ -490,57 +492,15 @@ export function Dashboard() {
         <TabsContent value="investments" className="space-y-4">
           <Card className="bg-card/50 border-border/50">
             <CardHeader>
-              <CardTitle>Active ROI Investments</CardTitle>
-              <CardDescription>Your current investment portfolio</CardDescription>
+              <CardTitle>Active Investments</CardTitle>
+              <CardDescription>View your investments in the ROI Investments page</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {roiInvestments.filter(inv => inv.status === 'active').map((investment) => (
-                  <div key={investment.id} className="p-4 bg-accent/30 rounded-lg border border-border/50">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-semibold">{investment.plan_name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Started {formatDistanceToNow(new Date(investment.started_at), { addSuffix: true })}
-                        </p>
-                      </div>
-                      <Badge>Active</Badge>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Invested</p>
-                        <p className="font-bold">${investment.amount.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Daily Return</p>
-                        <p className="font-bold">{investment.daily_return}%</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total Paid Out</p>
-                        <p className="font-bold text-primary">${investment.total_paid_out.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Expires</p>
-                        <p className="font-bold">
-                          {formatDistanceToNow(new Date(investment.expires_at), { addSuffix: true })}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <div className="w-full bg-secondary rounded-full h-2">
-                        <div 
-                          className="bg-primary rounded-full h-2 transition-all"
-                          style={{ 
-                            width: `${Math.min(100, (investment.total_paid_out / investment.total_return) * 100)}%` 
-                          }}
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {((investment.total_paid_out / investment.total_return) * 100).toFixed(1)}% completed
-                      </p>
-                    </div>
-                  </div>
-                ))}
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">Visit the ROI Investments page to view and manage your investments</p>
+                <Button onClick={() => window.location.href = '/roi-investments'}>
+                  Go to Investments
+                </Button>
               </div>
             </CardContent>
           </Card>

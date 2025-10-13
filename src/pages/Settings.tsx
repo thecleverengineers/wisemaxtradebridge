@@ -78,7 +78,7 @@ const Settings = () => {
   const handleProfileUpdate = async () => {
     try {
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({
           name: profileData.name,
           phone: profileData.phone
@@ -158,10 +158,9 @@ const Settings = () => {
 
     try {
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({
-          kyc_documents: kycData,
-          kyc_status: 'pending'
+          phone: profileData.phone
         })
         .eq('id', user?.id);
 

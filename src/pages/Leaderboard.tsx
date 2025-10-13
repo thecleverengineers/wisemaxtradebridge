@@ -108,8 +108,7 @@ const Leaderboard = () => {
           id,
           name,
           total_investment,
-          total_roi_earned,
-          total_referral_earned
+          total_roi_earned
         `)
         .order('total_investment', { ascending: false });
 
@@ -120,24 +119,26 @@ const Leaderboard = () => {
         (usersData || []).map(async (userData) => {
           // Count direct referrals
           const { count: directReferrals } = await supabase
-            .from('users')
+            .from('referrals')
             .select('*', { count: 'exact', head: true })
-            .eq('parent_id', userData.id);
+            .eq('user_id', userData.id)
+            .eq('level', 1);
 
           // Count total referrals across all levels
           const { count: totalReferrals } = await supabase
             .from('referrals')
             .select('*', { count: 'exact', head: true })
-            .eq('referrer_id', userData.id);
+            .eq('user_id', userData.id);
 
           const achievementLevel = getAchievementLevel(
-            userData.total_investment,
-            userData.total_roi_earned,
+            userData.total_investment || 0,
+            userData.total_roi_earned || 0,
             directReferrals || 0
           );
 
           return {
             ...userData,
+            total_referral_earned: 0, // Calculate from referral_bonuses if needed
             referral_count: directReferrals || 0,
             total_referrals: totalReferrals || 0,
             achievement_level: achievementLevel

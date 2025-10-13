@@ -373,21 +373,7 @@ export default function ROIInvestments() {
 
       if (walletError) throw walletError;
 
-      // Create transaction record
-      const { error: txError } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: user?.id,
-          type: 'investment',
-          category: 'investment',
-          currency: 'USDT',
-          amount: amount,
-          status: 'completed',
-          reference_id: investment.id,
-          notes: `Investment in ${selectedPlan.name} plan`
-        });
-
-      if (txError) throw txError;
+      // Transaction created via trigger
 
       toast({
         title: 'Investment Successful!',
