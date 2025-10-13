@@ -32,8 +32,11 @@ const AppSettings = () => {
       if (data?.setting_value) {
         const value = data.setting_value;
         if (value !== null && typeof value === 'object' && 'url' in value) {
-          setSupportLink(((value as any).url as string) || '');
-        } else if (typeof value === 'string') {
+          const urlValue = (value as any).url;
+          if (urlValue !== null && typeof urlValue === 'string') {
+            setSupportLink(urlValue);
+          }
+        } else if (value !== null && typeof value === 'string') {
           setSupportLink(value);
         }
       }
