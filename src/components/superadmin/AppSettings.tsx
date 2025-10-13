@@ -30,10 +30,11 @@ const AppSettings = () => {
       }
 
       if (data?.setting_value) {
-        if (typeof data.setting_value === 'object' && 'url' in data.setting_value) {
-          setSupportLink(((data.setting_value as any).url as string) || '');
-        } else if (typeof data.setting_value === 'string') {
-          setSupportLink(data.setting_value);
+        const value = data.setting_value;
+        if (value !== null && typeof value === 'object' && 'url' in value) {
+          setSupportLink(((value as any).url as string) || '');
+        } else if (typeof value === 'string') {
+          setSupportLink(value);
         }
       }
     } catch (error) {
