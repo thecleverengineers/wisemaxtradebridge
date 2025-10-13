@@ -38,6 +38,48 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics: {
+        Row: {
+          created_at: string | null
+          id: string
+          losing_trades: number | null
+          net_profit: number | null
+          total_loss: number | null
+          total_profit: number | null
+          total_trades: number | null
+          updated_at: string | null
+          user_id: string
+          win_rate: number | null
+          winning_trades: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          losing_trades?: number | null
+          net_profit?: number | null
+          total_loss?: number | null
+          total_profit?: number | null
+          total_trades?: number | null
+          updated_at?: string | null
+          user_id: string
+          win_rate?: number | null
+          winning_trades?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          losing_trades?: number | null
+          net_profit?: number | null
+          total_loss?: number | null
+          total_profit?: number | null
+          total_trades?: number | null
+          updated_at?: string | null
+          user_id?: string
+          win_rate?: number | null
+          winning_trades?: number | null
+        }
+        Relationships: []
+      }
       binary_records: {
         Row: {
           amount: number
@@ -92,7 +134,53 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "binary_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      binary_signals: {
+        Row: {
+          accuracy_rate: number | null
+          analysis: string | null
+          asset: string
+          created_at: string | null
+          direction: string
+          entry_price: number
+          expiry_time: string
+          id: string
+          is_active: boolean | null
+          strength: string
+        }
+        Insert: {
+          accuracy_rate?: number | null
+          analysis?: string | null
+          asset: string
+          created_at?: string | null
+          direction: string
+          entry_price: number
+          expiry_time: string
+          id?: string
+          is_active?: boolean | null
+          strength: string
+        }
+        Update: {
+          accuracy_rate?: number | null
+          analysis?: string | null
+          asset?: string
+          created_at?: string | null
+          direction?: string
+          entry_price?: number
+          expiry_time?: string
+          id?: string
+          is_active?: boolean | null
+          strength?: string
+        }
+        Relationships: []
       }
       bot_strategies: {
         Row: {
@@ -146,6 +234,225 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bot_strategies_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deposit_transactions: {
+        Row: {
+          amount: number
+          confirmed_at: string | null
+          created_at: string | null
+          currency: string | null
+          from_address: string | null
+          id: string
+          network: string | null
+          status: string | null
+          to_address: string
+          tx_hash: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          confirmed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          from_address?: string | null
+          id?: string
+          network?: string | null
+          status?: string | null
+          to_address: string
+          tx_hash?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          confirmed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          from_address?: string | null
+          id?: string
+          network?: string | null
+          status?: string | null
+          to_address?: string
+          tx_hash?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      deposit_wallets: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          network: string
+          qr_code_url: string | null
+          updated_at: string | null
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          network?: string
+          qr_code_url?: string | null
+          updated_at?: string | null
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          network?: string
+          qr_code_url?: string | null
+          updated_at?: string | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      forex_pairs: {
+        Row: {
+          ask: number
+          base_currency: string
+          bid: number
+          change_amount: number
+          change_percent: number
+          created_at: string | null
+          current_price: number
+          daily_high: number
+          daily_low: number
+          daily_volume: number
+          id: string
+          last_updated: string | null
+          previous_close: number
+          quote_currency: string
+          spread: number
+          symbol: string
+        }
+        Insert: {
+          ask: number
+          base_currency: string
+          bid: number
+          change_amount?: number
+          change_percent?: number
+          created_at?: string | null
+          current_price: number
+          daily_high: number
+          daily_low: number
+          daily_volume?: number
+          id?: string
+          last_updated?: string | null
+          previous_close: number
+          quote_currency: string
+          spread?: number
+          symbol: string
+        }
+        Update: {
+          ask?: number
+          base_currency?: string
+          bid?: number
+          change_amount?: number
+          change_percent?: number
+          created_at?: string | null
+          current_price?: number
+          daily_high?: number
+          daily_low?: number
+          daily_volume?: number
+          id?: string
+          last_updated?: string | null
+          previous_close?: number
+          quote_currency?: string
+          spread?: number
+          symbol?: string
+        }
+        Relationships: []
+      }
+      forex_positions: {
+        Row: {
+          closed_at: string | null
+          closed_price: number | null
+          commission: number | null
+          created_at: string | null
+          current_price: number
+          entry_price: number
+          id: string
+          leverage: number
+          margin_used: number
+          pair_id: string
+          position_type: string
+          profit_loss: number | null
+          profit_loss_percent: number | null
+          signal_id: string | null
+          status: string | null
+          stop_loss: number | null
+          swap_fee: number | null
+          take_profit: number | null
+          updated_at: string | null
+          user_id: string
+          volume: number
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_price?: number | null
+          commission?: number | null
+          created_at?: string | null
+          current_price: number
+          entry_price: number
+          id?: string
+          leverage?: number
+          margin_used: number
+          pair_id: string
+          position_type: string
+          profit_loss?: number | null
+          profit_loss_percent?: number | null
+          signal_id?: string | null
+          status?: string | null
+          stop_loss?: number | null
+          swap_fee?: number | null
+          take_profit?: number | null
+          updated_at?: string | null
+          user_id: string
+          volume: number
+        }
+        Update: {
+          closed_at?: string | null
+          closed_price?: number | null
+          commission?: number | null
+          created_at?: string | null
+          current_price?: number
+          entry_price?: number
+          id?: string
+          leverage?: number
+          margin_used?: number
+          pair_id?: string
+          position_type?: string
+          profit_loss?: number | null
+          profit_loss_percent?: number | null
+          signal_id?: string | null
+          status?: string | null
+          stop_loss?: number | null
+          swap_fee?: number | null
+          take_profit?: number | null
+          updated_at?: string | null
+          user_id?: string
+          volume?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forex_positions_pair_id_fkey"
+            columns: ["pair_id"]
+            isOneToOne: false
+            referencedRelation: "forex_pairs"
             referencedColumns: ["id"]
           },
         ]
@@ -223,6 +530,78 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forex_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forex_signals: {
+        Row: {
+          accuracy_rate: number | null
+          analysis: string | null
+          created_at: string | null
+          entry_price: number
+          expired_at: string | null
+          id: string
+          is_active: boolean | null
+          pair_id: string
+          risk_level: string | null
+          signal_type: string
+          stop_loss: number | null
+          strength: string
+          take_profit_1: number | null
+          take_profit_2: number | null
+          take_profit_3: number | null
+          timeframe: string | null
+        }
+        Insert: {
+          accuracy_rate?: number | null
+          analysis?: string | null
+          created_at?: string | null
+          entry_price: number
+          expired_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          pair_id: string
+          risk_level?: string | null
+          signal_type: string
+          stop_loss?: number | null
+          strength: string
+          take_profit_1?: number | null
+          take_profit_2?: number | null
+          take_profit_3?: number | null
+          timeframe?: string | null
+        }
+        Update: {
+          accuracy_rate?: number | null
+          analysis?: string | null
+          created_at?: string | null
+          entry_price?: number
+          expired_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          pair_id?: string
+          risk_level?: string | null
+          signal_type?: string
+          stop_loss?: number | null
+          strength?: string
+          take_profit_1?: number | null
+          take_profit_2?: number | null
+          take_profit_3?: number | null
+          timeframe?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forex_signals_pair_id_fkey"
+            columns: ["pair_id"]
+            isOneToOne: false
+            referencedRelation: "forex_pairs"
             referencedColumns: ["id"]
           },
         ]
@@ -330,7 +709,47 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "investments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      market_data: {
+        Row: {
+          change_percent: number
+          created_at: string | null
+          id: string
+          last_updated: string | null
+          market_cap: number | null
+          price: number
+          symbol: string
+          volume: number
+        }
+        Insert: {
+          change_percent?: number
+          created_at?: string | null
+          id?: string
+          last_updated?: string | null
+          market_cap?: number | null
+          price: number
+          symbol: string
+          volume?: number
+        }
+        Update: {
+          change_percent?: number
+          created_at?: string | null
+          id?: string
+          last_updated?: string | null
+          market_cap?: number | null
+          price?: number
+          symbol?: string
+          volume?: number
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -369,6 +788,13 @@ export type Database = {
             columns: ["referred_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -422,6 +848,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "referral_bonuses_from_user_id_fkey"
+            columns: ["from_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "referral_bonuses_referral_id_fkey"
             columns: ["referral_id"]
             isOneToOne: false
@@ -433,6 +866,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_bonuses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -468,10 +908,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "referrals_referred_user_id_fkey"
+            columns: ["referred_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "referrals_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -523,6 +977,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roi_investments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -663,6 +1124,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "staking_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
       }
       team_achievements: {
@@ -758,6 +1226,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_achievement_progress: {
@@ -831,6 +1306,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
       }
       wallets: {
@@ -896,6 +1378,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "wallets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
       }
       withdrawal_requests: {
@@ -944,17 +1433,136 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "withdrawal_requests_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "withdrawal_requests_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "withdrawal_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      staking_positions: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          daily_return_amount: number | null
+          days_credited: number | null
+          end_date: string | null
+          id: string | null
+          last_payout_date: string | null
+          plan_id: string | null
+          start_date: string | null
+          status: string | null
+          total_earned: number | null
+          total_expected: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          daily_return_amount?: number | null
+          days_credited?: number | null
+          end_date?: string | null
+          id?: string | null
+          last_payout_date?: string | null
+          plan_id?: string | null
+          start_date?: string | null
+          status?: string | null
+          total_earned?: number | null
+          total_expected?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          daily_return_amount?: number | null
+          days_credited?: number | null
+          end_date?: string | null
+          id?: string | null
+          last_payout_date?: string | null
+          plan_id?: string | null
+          start_date?: string | null
+          status?: string | null
+          total_earned?: number | null
+          total_expected?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staking_records_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "staking_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staking_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staking_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          balance: number | null
+          created_at: string | null
+          email: string | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          phone: string | null
+          referral_code: string | null
+          referred_by: string | null
+          total_deposited: number | null
+          total_investment: number | null
+          total_roi_earned: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       approve_withdrawal: {

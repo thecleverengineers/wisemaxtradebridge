@@ -32,14 +32,16 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
         .single();
 
       if (data?.setting_value) {
-        const value = data.setting_value;
-        if (value !== null && typeof value === 'object' && 'url' in value) {
-          const urlValue = (value as any).url;
-          if (urlValue !== null && typeof urlValue === 'string') {
-            setSupportLink(urlValue);
+        const value = data.setting_value as string | { url: string } | null;
+        if (value !== null) {
+          if (typeof value === 'object' && value && 'url' in value) {
+            const urlValue = value.url;
+            if (urlValue && typeof urlValue === 'string') {
+              setSupportLink(urlValue);
+            }
+          } else if (typeof value === 'string') {
+            setSupportLink(value);
           }
-        } else if (value !== null && typeof value === 'string') {
-          setSupportLink(value);
         }
       }
     };
