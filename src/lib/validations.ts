@@ -65,7 +65,7 @@ export const investmentSchema = z.object({
 export const withdrawalSchema = z.object({
   amount: z.number()
     .positive('Amount must be positive')
-    .min(10, 'Minimum withdrawal is $10'),
+    .min(20, 'Minimum withdrawal is $20'),
   currency: z.enum(['USDT', 'BTC', 'ETH']),
   walletAddress: z.string()
     .trim()
