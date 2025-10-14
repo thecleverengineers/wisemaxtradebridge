@@ -139,16 +139,13 @@ const Rewards = () => {
 
   const fetchRewards = async () => {
     try {
-      // Get user statistics for reward calculations
-      const [investmentCount, referralCount, totalRoi] = await Promise.all([
+      const [investmentCount, referralCount] = await Promise.all([
         supabase.from('investments').select('*', { count: 'exact', head: true }).eq('user_id', user?.id),
-        supabase.from('users').select('*', { count: 'exact', head: true }).eq('parent_id', user?.id),
-        supabase.from('wallets').select('roi_income').eq('user_id', user?.id).single()
+        supabase.from('referrals').select('*', { count: 'exact', head: true }).eq('user_id', user?.id)
       ]);
 
       const userInvestments = investmentCount.count || 0;
       const userReferrals = referralCount.count || 0;
-      const userRoi = totalRoi.data?.roi_income || 0;
 
       // Fetch team achievements data
       let totalTeamDeposits = 0;

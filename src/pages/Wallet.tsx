@@ -159,44 +159,19 @@ const Wallet = () => {
     try {
       const amount = parseFloat(withdrawAmount);
       
-      // Create withdrawal transaction
-      const { error: txError } = await supabase
-        .from('transactions')
-        .insert([{
-          user_id: user?.id,
-          type: 'withdrawal',
-          category: 'withdrawal',
-          currency: 'USDT',
-          amount: amount,
-          status: 'pending',
-          to_address: withdrawAddress,
-          network: 'BEP20',
-          notes: `USDT withdrawal to ${withdrawAddress}`,
-          created_at: new Date().toISOString()
-        }]);
-
-      if (txError) throw txError;
-
-      // Create record in transactions_records table
-      const { error: recordError } = await supabase
-        .from('transactions_records')
+      // Create withdrawal request
+      const { error: withdrawalError } = await supabase
+        .from('withdrawal_requests')
         .insert({
           user_id: user?.id,
-          order_type: 'withdraw',
           amount: amount,
-          currency: 'USDT',
           wallet_address: withdrawAddress,
           network: 'BEP20',
-          status: 'pending',
-          payment_method: 'USDT BEP20',
-          fee: amount * 0.02, // 2% withdrawal fee example
-          metadata: {
-            requested_at: new Date().toISOString(),
-            withdrawal_address: withdrawAddress
-          }
+          status: 'pending'
         });
 
-      if (recordError) throw recordError;
+      if (withdrawalError) throw withdrawalError;
+
 
       // Update wallet balance
       const { data: walletData, error: walletError } = await supabase

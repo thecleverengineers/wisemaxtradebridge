@@ -30,10 +30,9 @@ import { AppSidebar } from '@/components/layout/AppSidebar';
 import type { Database } from '@/integrations/supabase/types';
 
 type StakingPlan = Database['public']['Tables']['staking_plans']['Row'];
-type StakingPosition = Database['public']['Tables']['staking_positions']['Row'] & {
+type StakingRecord = Database['public']['Tables']['staking_records']['Row'] & {
   staking_plans?: StakingPlan;
 };
-type StakingEarning = Database['public']['Tables']['staking_earnings']['Row'];
 
 const USDTStaking = () => {
   const { user } = useAuth();
@@ -49,8 +48,7 @@ const USDTStaking = () => {
   const [walletBalance, setWalletBalance] = useState(0);
   
   const [plans, setPlans] = useState<StakingPlan[]>([]);
-  const [positions, setPositions] = useState<StakingPosition[]>([]);
-  const [earnings, setEarnings] = useState<StakingEarning[]>([]);
+  const [records, setRecords] = useState<StakingRecord[]>([]);
   const [totalStats, setTotalStats] = useState({
     totalStaked: 0,
     totalEarned: 0,
@@ -65,37 +63,19 @@ const USDTStaking = () => {
   }, [user]);
 
   const setupRealtimeSubscriptions = () => {
-    // Subscribe to staking positions changes
-    const positionsChannel = supabase
-      .channel('staking-positions-changes')
+    // Subscribe to staking records changes
+    const recordsChannel = supabase
+      .channel('staking-records-changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'staking_positions',
+          table: 'staking_records',
           filter: `user_id=eq.${user?.id}`
         },
         () => {
-          fetchPositions();
-          calculateStats();
-        }
-      )
-      .subscribe();
-
-    // Subscribe to earnings changes
-    const earningsChannel = supabase
-      .channel('staking-earnings-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'staking_earnings',
-          filter: `user_id=eq.${user?.id}`
-        },
-        () => {
-          fetchEarnings();
+          fetchRecords();
           calculateStats();
         }
       )
@@ -119,8 +99,7 @@ const USDTStaking = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(positionsChannel);
-      supabase.removeChannel(earningsChannel);
+      supabase.removeChannel(recordsChannel);
       supabase.removeChannel(walletChannel);
     };
   };
@@ -128,8 +107,7 @@ const USDTStaking = () => {
   const fetchData = async () => {
     await Promise.all([
       fetchPlans(),
-      fetchPositions(),
-      fetchEarnings(),
+      fetchRecords(),
       fetchWalletBalance()
     ]);
     calculateStats();
@@ -137,10 +115,10 @@ const USDTStaking = () => {
 
   const fetchPlans = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from('staking_plans')
         .select('*')
-        .eq('is_active', true)
+        .eq('status', 'active')
         .order('duration_days', { ascending: true });
 
       if (error) throw error;
@@ -150,10 +128,10 @@ const USDTStaking = () => {
     }
   };
 
-  const fetchPositions = async () => {
+  const fetchRecords = async () => {
     try {
       const { data, error } = await supabase
-        .from('staking_positions')
+        .from('staking_records')
         .select(`
           *,
           staking_plans(*)
@@ -162,25 +140,9 @@ const USDTStaking = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPositions(data || []);
+      setRecords(data || []);
     } catch (error) {
-      console.error('Error fetching positions:', error);
-    }
-  };
-
-  const fetchEarnings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('staking_earnings')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('earned_date', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-      setEarnings(data || []);
-    } catch (error) {
-      console.error('Error fetching earnings:', error);
+      console.error('Error fetching records:', error);
     }
   };
 
@@ -201,12 +163,13 @@ const USDTStaking = () => {
   };
 
   const calculateStats = () => {
-    const activePositions = positions.filter(p => p.status === 'active');
+    const activeRecords = records.filter(r => r.status === 'active');
     
-    const totalStaked = activePositions.reduce((sum, p) => sum + (p.amount || 0), 0);
-    const totalEarned = positions.reduce((sum, p) => sum + (p.total_earned || 0), 0);
-    const dailyEarnings = activePositions.reduce((sum, p) => {
-      return sum + calculateDailyEarnings(p.amount || 0, p.apy || 0);
+    const totalStaked = activeRecords.reduce((sum, r) => sum + (r.amount || 0), 0);
+    const totalEarned = records.reduce((sum, r) => sum + (r.total_earned || 0), 0);
+    const dailyEarnings = activeRecords.reduce((sum, r) => {
+      const dailyReturn = r.daily_return_amount || 0;
+      return sum + dailyReturn;
     }, 0);
 
     setTotalStats({
@@ -216,20 +179,12 @@ const USDTStaking = () => {
     });
   };
 
-  const calculateDailyEarnings = (amount: number, apy: number) => {
-    return (amount * (apy / 100)) / 365;
-  };
-
-  const calculateEstimatedEarnings = (amount: number, apy: number, days: number) => {
-    const dailyRate = apy / 365 / 100;
-    return amount * dailyRate * days;
-  };
-
   const getCurrentPlan = () => {
+    // Return the first plan for flexible, or match by duration for locked
     if (stakingType === 'flexible') {
-      return plans.find(p => p.type === 'flexible');
+      return plans.find(p => p.duration_days === 0) || plans[0];
     }
-    return plans.find(p => p.type === 'locked' && p.duration_days === parseInt(selectedDuration));
+    return plans.find(p => p.duration_days === parseInt(selectedDuration)) || plans[0];
   };
 
   const handleStake = async () => {
@@ -264,37 +219,23 @@ const USDTStaking = () => {
     }
 
     try {
-      const endDate = currentPlan.type === 'locked' 
+      const endDate = currentPlan.duration_days > 0
         ? new Date(Date.now() + currentPlan.duration_days * 24 * 60 * 60 * 1000).toISOString()
         : null;
 
-      const { error: positionError } = await supabase
-        .from('staking_positions')
+      const dailyReturnAmount = (amount * currentPlan.daily_return) / 100;
+      const totalExpected = (amount * currentPlan.total_return_percent) / 100;
+
+      const { error: recordError } = await supabase
+        .from('staking_records')
         .insert({
           user_id: user?.id,
           plan_id: currentPlan.id,
           amount,
-          apy: currentPlan.apy,
-          duration_days: currentPlan.duration_days,
-          type: currentPlan.type,
+          daily_return_amount: dailyReturnAmount,
+          total_expected: totalExpected,
+          start_date: new Date().toISOString(),
           end_date: endDate,
-          auto_renew: currentPlan.type === 'locked' ? autoRenew : false,
-          status: 'active'
-        });
-
-      if (positionError) throw positionError;
-
-      const { error: recordError } = await supabase
-        .from('usdtstaking_records')
-        .insert({
-          user_id: user?.id,
-          plan_name: currentPlan.name,
-          plan_type: currentPlan.type,
-          amount,
-          apy: currentPlan.apy,
-          duration_days: currentPlan.duration_days,
-          maturity_date: endDate,
-          auto_renew: currentPlan.type === 'locked' ? autoRenew : false,
           status: 'active'
         });
 
@@ -303,27 +244,12 @@ const USDTStaking = () => {
       const { error: walletError } = await supabase
         .from('wallets')
         .update({ 
-          balance: walletBalance - amount,
-          locked_balance: (walletBalance - amount) 
+          balance: walletBalance - amount
         })
         .eq('user_id', user?.id)
         .eq('currency', 'USDT');
 
       if (walletError) throw walletError;
-
-      const { error: txError } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: user?.id,
-          type: 'stake',
-          category: 'investment',
-          currency: 'USDT',
-          amount,
-          status: 'completed',
-          notes: `Staked in ${currentPlan.name}`
-        });
-
-      if (txError) throw txError;
 
       toast({
         title: "Staking Successful",
@@ -342,8 +268,10 @@ const USDTStaking = () => {
     }
   };
 
-  const handleWithdraw = async (position: StakingPosition) => {
-    if (position.type === 'locked' && position.end_date && new Date(position.end_date) > new Date()) {
+  const handleWithdraw = async (record: StakingRecord) => {
+    const isEarly = record.end_date && new Date(record.end_date) > new Date();
+    
+    if (isEarly) {
       const confirmed = window.confirm(
         "Early withdrawal will forfeit all earned interest. Are you sure you want to proceed?"
       );
@@ -351,67 +279,30 @@ const USDTStaking = () => {
     }
 
     try {
-      const isEarlyWithdrawal = position.type === 'locked' && 
-        position.end_date && new Date(position.end_date) > new Date();
-      
-      const returnAmount = !isEarlyWithdrawal
-        ? position.amount + position.total_earned
-        : position.amount;
-      
-      const penaltyAmount = isEarlyWithdrawal ? position.total_earned : 0;
-
-      const { error: positionError } = await supabase
-        .from('staking_positions')
-        .update({ status: 'withdrawn' })
-        .eq('id', position.id);
-
-      if (positionError) throw positionError;
+      const returnAmount = !isEarly
+        ? record.amount + (record.total_earned || 0)
+        : record.amount;
 
       const { error: recordError } = await supabase
-        .from('usdtstaking_records')
-        .update({ 
-          status: 'withdrawn',
-          withdrawn_amount: returnAmount,
-          withdrawn_at: new Date().toISOString(),
-          early_withdrawal: isEarlyWithdrawal,
-          penalty_amount: penaltyAmount
-        })
-        .eq('user_id', user?.id)
-        .eq('amount', position.amount)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .from('staking_records')
+        .update({ status: 'withdrawn' })
+        .eq('id', record.id);
 
       if (recordError) throw recordError;
 
       const { error: walletError } = await supabase
         .from('wallets')
         .update({ 
-          balance: walletBalance + returnAmount,
-          locked_balance: Math.max(0, walletBalance - returnAmount)
+          balance: walletBalance + returnAmount
         })
         .eq('user_id', user?.id)
         .eq('currency', 'USDT');
 
       if (walletError) throw walletError;
 
-      const { error: txError } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: user?.id,
-          type: 'withdraw',
-          category: 'investment',
-          currency: 'USDT',
-          amount: returnAmount,
-          status: 'completed',
-          notes: `Withdrawn from ${position.staking_plans?.name || 'staking'}${isEarlyWithdrawal ? ' (Early withdrawal - forfeited interest)' : ''}`
-        });
-
-      if (txError) throw txError;
-
       toast({
         title: "Withdrawal Successful",
-        description: `Successfully withdrawn ${returnAmount.toFixed(2)} USDT${isEarlyWithdrawal ? ' (Early withdrawal - interest forfeited)' : ''}`,
+        description: `Successfully withdrawn ${returnAmount.toFixed(2)} USDT${isEarly ? ' (Early withdrawal - interest forfeited)' : ''}`,
       });
       
       fetchData();
@@ -433,8 +324,8 @@ const USDTStaking = () => {
   const handleOpenStakeDialog = (plan?: StakingPlan) => {
     if (plan) {
       setSelectedPlanForStaking(plan);
-      setStakingType(plan.type as 'flexible' | 'locked');
-      if (plan.type === 'locked') {
+      setStakingType(plan.duration_days === 0 ? 'flexible' : 'locked');
+      if (plan.duration_days > 0) {
         setSelectedDuration(plan.duration_days.toString());
       }
     }
@@ -562,23 +453,23 @@ const USDTStaking = () => {
                         <p className="text-sm text-muted-foreground">{plan.description}</p>
                       </div>
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
-                        plan.type === 'flexible' 
+                        plan.duration_days === 0 
                           ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
                           : 'bg-gradient-to-br from-blue-500 to-cyan-500'
                       }`}>
-                        {plan.type === 'flexible' ? <Unlock className="h-6 w-6 text-white" /> : <Lock className="h-6 w-6 text-white" />}
+                        {plan.duration_days === 0 ? <Unlock className="h-6 w-6 text-white" /> : <Lock className="h-6 w-6 text-white" />}
                       </div>
                     </div>
                     
                     <div className="space-y-3 mb-4 p-4 rounded-lg bg-muted/50">
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground text-sm">APY</span>
-                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">{plan.apy}%</span>
+                        <span className="text-muted-foreground text-sm">Daily Return</span>
+                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">{plan.daily_return}%</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-muted-foreground text-sm">Duration</span>
                         <span className="text-foreground font-medium">
-                          {plan.type === 'flexible' ? 'Flexible' : `${plan.duration_days} Days`}
+                          {plan.duration_days === 0 ? 'Flexible' : `${plan.duration_days} Days`}
                         </span>
                       </div>
                       <div className="flex justify-between items-center pt-2 border-t border-border/50">
@@ -586,15 +477,6 @@ const USDTStaking = () => {
                         <span className="text-foreground font-medium">₹{plan.min_amount.toLocaleString()}</span>
                       </div>
                     </div>
-
-                    {plan.bonus_text && (
-                      <div className="mb-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
-                        <p className="text-primary text-sm flex items-center gap-2">
-                          <Gift className="h-4 w-4" />
-                          {plan.bonus_text}
-                        </p>
-                      </div>
-                    )}
 
                     <Button
                       onClick={() => handleOpenStakeDialog(plan)}
@@ -610,20 +492,20 @@ const USDTStaking = () => {
             </div>
           </div>
 
-          {/* Active Positions */}
+          {/* Active Records */}
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
                 <Lock className="h-6 w-6 text-primary" />
-                My Active Positions
+                My Active Staking
               </h2>
-              <p className="text-muted-foreground mt-1">Track your staking positions</p>
+              <p className="text-muted-foreground mt-1">Track your staking records</p>
             </div>
-            {positions.filter(p => p.status === 'active').length === 0 ? (
+            {records.filter(r => r.status === 'active').length === 0 ? (
               <Card>
                 <CardContent className="p-12 text-center">
                   <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-foreground mb-2">No Active Positions</h3>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">No Active Staking</h3>
                   <p className="text-muted-foreground mb-4">Start staking to earn passive income</p>
                   <Button
                     onClick={() => handleOpenStakeDialog()}
@@ -636,26 +518,26 @@ const USDTStaking = () => {
               </Card>
             ) : (
               <div className="grid gap-6">
-                {positions
-                  .filter(p => p.status === 'active')
-                  .map((position) => (
-                  <Card key={position.id} className="overflow-hidden">
+                {records
+                  .filter(r => r.status === 'active')
+                  .map((record) => (
+                  <Card key={record.id} className="overflow-hidden">
                     <CardContent className="p-6">
                       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                         <div className="flex items-center gap-4">
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
-                            position.type === 'flexible' 
+                            !record.end_date 
                               ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
                               : 'bg-gradient-to-br from-blue-500 to-cyan-500'
                           }`}>
-                            {position.type === 'flexible' ? <Unlock className="h-6 w-6 text-white" /> : <Lock className="h-6 w-6 text-white" />}
+                            {!record.end_date ? <Unlock className="h-6 w-6 text-white" /> : <Lock className="h-6 w-6 text-white" />}
                           </div>
                           <div>
                             <h3 className="text-foreground text-lg font-semibold">
-                              {position.staking_plans?.name || (position.type === 'flexible' ? 'Flexible Staking' : `${position.duration_days} Days Locked`)}
+                              {record.staking_plans?.name || (!record.end_date ? 'Flexible Staking' : `${record.staking_plans?.duration_days} Days Locked`)}
                             </h3>
                             <p className="text-muted-foreground text-sm">
-                              Started: {new Date(position.start_date).toLocaleDateString()}
+                              Started: {new Date(record.start_date).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
@@ -667,52 +549,45 @@ const USDTStaking = () => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 rounded-lg bg-muted/50">
                         <div>
                           <p className="text-muted-foreground text-sm mb-1">Staked Amount</p>
-                          <p className="text-foreground font-semibold">₹{position.amount?.toLocaleString()}</p>
+                          <p className="text-foreground font-semibold">₹{record.amount?.toLocaleString()}</p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground text-sm mb-1">APY</p>
-                          <p className="text-foreground font-semibold">{position.apy}%</p>
+                          <p className="text-muted-foreground text-sm mb-1">Daily Return</p>
+                          <p className="text-foreground font-semibold">₹{record.daily_return_amount?.toFixed(4)}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground text-sm mb-1">Total Earned</p>
-                          <p className="text-green-600 dark:text-green-400 font-semibold">₹{position.total_earned?.toFixed(2)}</p>
+                          <p className="text-green-600 dark:text-green-400 font-semibold">₹{record.total_earned?.toFixed(2)}</p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground text-sm mb-1">Daily Earnings</p>
-                          <p className="text-foreground font-semibold">₹{calculateDailyEarnings(position.amount, position.apy).toFixed(4)}</p>
+                          <p className="text-muted-foreground text-sm mb-1">Expected Total</p>
+                          <p className="text-foreground font-semibold">₹{record.total_expected?.toFixed(2)}</p>
                         </div>
                       </div>
 
-                      {position.type === 'locked' && position.end_date && (
+                      {record.end_date && (
                         <div className="mb-4">
                           <div className="flex justify-between text-sm mb-2">
                             <span className="text-muted-foreground">Time Remaining</span>
-                            <span className="text-foreground font-medium">{getRemainingDays(position.end_date)} days</span>
+                            <span className="text-foreground font-medium">{getRemainingDays(record.end_date)} days</span>
                           </div>
                           <div className="w-full bg-muted rounded-full h-2">
                             <div 
                               className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-300"
                               style={{ 
-                                width: `${((position.duration_days - getRemainingDays(position.end_date)) / position.duration_days) * 100}%` 
+                                width: `${((record.days_credited || 0) / (record.staking_plans?.duration_days || 1)) * 100}%` 
                               }}
                             />
                           </div>
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between">
-                        {position.auto_renew && (
-                          <div className="flex items-center gap-2 text-primary">
-                            <RefreshCw className="h-4 w-4" />
-                            <span className="text-sm font-medium">Auto-Renew ON</span>
-                          </div>
-                        )}
+                      <div className="flex items-center justify-end">
                         <Button
                           variant="outline"
-                          onClick={() => handleWithdraw(position)}
-                          className="ml-auto"
+                          onClick={() => handleWithdraw(record)}
                         >
-                          {position.type === 'flexible' ? 'Withdraw' : 'Redeem'}
+                          {!record.end_date ? 'Withdraw' : 'Redeem'}
                         </Button>
                       </div>
                     </CardContent>
@@ -722,53 +597,6 @@ const USDTStaking = () => {
             )}
           </div>
 
-          {/* Earnings History */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                Earnings History
-              </CardTitle>
-              <CardDescription>
-                Your daily staking rewards
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {earnings.length === 0 ? (
-                <div className="text-center py-12">
-                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No Earnings Yet</h3>
-                  <p className="text-muted-foreground">Your staking rewards will appear here</p>
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {earnings.map((earning) => (
-                    <div
-                      key={earning.id}
-                      className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
-                          <TrendingUp className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-foreground font-medium">Daily Reward</p>
-                          <p className="text-muted-foreground text-sm">
-                            {new Date(earning.earned_date).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-green-600 dark:text-green-400 font-semibold">
-                          +₹{earning.amount?.toFixed(4)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
 
@@ -813,10 +641,10 @@ const USDTStaking = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {plans
-                      .filter(p => p.type === 'locked')
+                      .filter(p => p.duration_days > 0)
                       .map(plan => (
                         <SelectItem key={plan.id} value={plan.duration_days.toString()}>
-                          {plan.duration_days} Days - {plan.apy}% APY
+                          {plan.duration_days} Days - {plan.daily_return}% Daily
                         </SelectItem>
                       ))}
                   </SelectContent>
@@ -847,21 +675,6 @@ const USDTStaking = () => {
               <p className="text-xs text-muted-foreground mt-1">Available: ₹{walletBalance.toLocaleString()}</p>
             </div>
 
-            {/* Auto-Renew for Locked */}
-            {stakingType === 'locked' && (
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <RefreshCw className="h-4 w-4 text-primary" />
-                  <Label htmlFor="auto-renew-dialog">Auto-Renew</Label>
-                </div>
-                <Switch
-                  id="auto-renew-dialog"
-                  checked={autoRenew}
-                  onCheckedChange={setAutoRenew}
-                />
-              </div>
-            )}
-
             {/* Estimated Earnings */}
             {currentPlan && stakeAmount && parseFloat(stakeAmount) >= currentPlan.min_amount && (
               <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
@@ -871,20 +684,20 @@ const USDTStaking = () => {
                 </p>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">APY:</span>
-                    <span className="text-foreground font-semibold">{currentPlan.apy}%</span>
+                    <span className="text-muted-foreground">Daily Return:</span>
+                    <span className="text-foreground font-semibold">{currentPlan.daily_return}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Daily:</span>
+                    <span className="text-muted-foreground">Daily Earnings:</span>
                     <span className="text-foreground font-semibold">
-                      ₹{calculateDailyEarnings(parseFloat(stakeAmount), currentPlan.apy).toFixed(4)}
+                      ₹{((parseFloat(stakeAmount) * currentPlan.daily_return) / 100).toFixed(4)}
                     </span>
                   </div>
-                  {stakingType === 'locked' && (
+                  {stakingType === 'locked' && currentPlan.duration_days > 0 && (
                     <div className="flex justify-between pt-2 border-t border-border/50">
                       <span className="text-muted-foreground">Total ({currentPlan.duration_days} days):</span>
                       <span className="text-green-600 dark:text-green-400 font-bold">
-                        ₹{calculateEstimatedEarnings(parseFloat(stakeAmount), currentPlan.apy, currentPlan.duration_days).toFixed(2)}
+                        ₹{((parseFloat(stakeAmount) * currentPlan.total_return_percent) / 100).toFixed(2)}
                       </span>
                     </div>
                   )}
