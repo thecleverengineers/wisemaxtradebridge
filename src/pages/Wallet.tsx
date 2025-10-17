@@ -158,13 +158,15 @@ const Wallet = () => {
     setWithdrawing(true);
     try {
       const amount = parseFloat(withdrawAmount);
+      const withdrawalFee = amount * 0.10; // 10% fee
+      const netAmount = amount - withdrawalFee;
       
-      // Create withdrawal request
+      // Create withdrawal request with net amount
       const { error: withdrawalError } = await supabase
         .from('withdrawal_requests')
         .insert({
           user_id: user?.id,
-          amount: amount,
+          amount: netAmount,
           wallet_address: withdrawAddress,
           network: 'BEP20',
           status: 'pending'
@@ -172,30 +174,29 @@ const Wallet = () => {
 
       if (withdrawalError) throw withdrawalError;
 
-
       // Update wallet balance
-      const { data: walletData, error: walletError } = await supabase
+      const { data: currentWallet, error: walletError } = await supabase
         .from('wallets')
         .select('*')
         .eq('user_id', user?.id)
         .eq('currency', 'USDT')
         .single();
 
-      if (!walletError && walletData) {
+      if (!walletError && currentWallet) {
         const { error: updateError } = await supabase
           .from('wallets')
           .update({
-            balance: walletData.balance - amount,
-            locked_balance: (walletData.locked_balance || 0) + amount
+            balance: currentWallet.balance - amount,
+            locked_balance: (currentWallet.locked_balance || 0) + netAmount
           })
-          .eq('id', walletData.id);
+          .eq('id', currentWallet.id);
 
         if (updateError) throw updateError;
       }
 
       toast({
         title: "Withdrawal Request Submitted",
-        description: "Your withdrawal request is pending admin approval",
+        description: `Withdrawal fee: ${withdrawalFee.toFixed(2)} USDT (10%). Net amount: ${netAmount.toFixed(2)} USDT`,
       });
 
       setWithdrawAmount('');
@@ -359,6 +360,14 @@ const Wallet = () => {
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Withdrawal Amount:</span>
                         <span className="text-foreground">{parseFloat(withdrawAmount).toFixed(2)} USDT</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Withdrawal Fee (10%):</span>
+                        <span className="text-destructive">-{(parseFloat(withdrawAmount) * 0.10).toFixed(2)} USDT</span>
+                      </div>
+                      <div className="flex justify-between text-sm font-semibold border-t border-border pt-1">
+                        <span className="text-foreground">You'll Receive:</span>
+                        <span className="text-primary">{(parseFloat(withdrawAmount) * 0.90).toFixed(2)} USDT</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Network:</span>
