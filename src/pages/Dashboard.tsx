@@ -161,11 +161,15 @@ export function Dashboard() {
       // Fetch referral count
       const { count, error: refError } = await supabase
         .from('referrals')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
         .eq('user_id', user?.id);
 
-      if (refError) throw refError;
-      setReferralCount(count || 0);
+      if (refError) {
+        console.error('Referral count error:', refError);
+        setReferralCount(0);
+      } else {
+        setReferralCount(count || 0);
+      }
 
       // Prepare chart data
       prepareChartData(transactionsData || []);

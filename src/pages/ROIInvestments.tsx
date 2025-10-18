@@ -357,7 +357,7 @@ export default function ROIInvestments() {
           total_roi_earned: 0
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (investError) throw investError;
 

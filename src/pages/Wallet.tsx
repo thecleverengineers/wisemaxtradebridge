@@ -180,7 +180,7 @@ const Wallet = () => {
         .select('*')
         .eq('user_id', user?.id)
         .eq('currency', 'USDT')
-        .single();
+        .maybeSingle();
 
       if (!walletError && currentWallet) {
         const { error: updateError } = await supabase

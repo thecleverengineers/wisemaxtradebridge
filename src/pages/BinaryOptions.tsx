@@ -32,10 +32,12 @@ export default function BinaryOptions() {
       .select('balance')
       .eq('user_id', user.id)
       .eq('currency', 'USDT')
-      .single();
+      .maybeSingle();
 
     if (!error && data) {
       setBalance(data.balance);
+    } else if (!data) {
+      setBalance(0);
     }
   };
 

@@ -23,7 +23,7 @@ const AppSettings = () => {
         .from('admin_settings')
         .select('setting_value')
         .eq('setting_key', 'support_link')
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         throw error;

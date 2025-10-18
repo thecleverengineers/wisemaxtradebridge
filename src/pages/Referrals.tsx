@@ -97,12 +97,15 @@ const Referrals = () => {
       // Fetch all referrals with referred user info
       const { data: referralsData, error: referralsError } = await supabase
         .from('referrals')
-        .select('*')
+        .select('id, referred_user_id, level, created_at')
         .eq('user_id', user?.id)
         .order('level', { ascending: true })
         .order('created_at', { ascending: false });
 
-      if (referralsError) throw referralsError;
+      if (referralsError) {
+        console.error('Referrals query error:', referralsError);
+        throw referralsError;
+      }
 
       // Fetch referred users separately
       const referredIds = [...new Set(referralsData?.map(r => r.referred_user_id) || [])];

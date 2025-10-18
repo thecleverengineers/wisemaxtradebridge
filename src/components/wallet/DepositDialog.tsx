@@ -49,7 +49,7 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
         .from('admin_settings')
         .select('setting_value')
         .eq('setting_key', 'deposit_wallet_address')
-        .single();
+        .maybeSingle();
 
       if (settingData?.setting_value) {
         const walletAddress = JSON.parse(settingData.setting_value);
@@ -139,7 +139,7 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
         .from('wallets')
         .select('balance')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       const currentBalance = wallet?.balance || 0;
 

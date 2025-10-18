@@ -202,7 +202,7 @@ const UserManagement = () => {
         .select('balance')
         .eq('user_id', editingUser.id)
         .eq('currency', 'USDT')
-        .single();
+        .maybeSingle();
 
       const currentBalance = wallet?.balance || 0;
       const newBalance = walletAction === 'add' 

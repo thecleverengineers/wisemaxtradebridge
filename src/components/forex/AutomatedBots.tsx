@@ -154,7 +154,7 @@ export function AutomatedBots() {
         status: 'inactive'
       }])
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       toast.error('Failed to create bot');

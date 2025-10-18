@@ -29,7 +29,7 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
         .from('admin_settings')
         .select('setting_value')
         .eq('setting_key', 'support_link')
-        .single();
+        .maybeSingle();
 
       if (data?.setting_value) {
         const value = data.setting_value as string | { url: string } | null;

@@ -127,7 +127,7 @@ const Salary = () => {
         .from('wallets')
         .select('balance, bonus_income')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (wallet) {
         const newBalance = Number(wallet.balance) + rewardAmount;

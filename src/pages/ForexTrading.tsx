@@ -216,12 +216,13 @@ const ForexTrading = () => {
         .select('balance')
         .eq('user_id', user?.id)
         .eq('currency', 'USDT')
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       setWalletBalance(data?.balance || 0);
     } catch (error) {
       console.error('Error fetching wallet:', error);
+      setWalletBalance(0);
     }
   };
 

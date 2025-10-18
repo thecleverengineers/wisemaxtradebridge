@@ -60,16 +60,18 @@ export const DashboardContent = () => {
         .from('wallets')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (walletError) throw walletError;
       
-      // Add total_balance calculation
-      const walletWithTotal = {
-        ...walletData,
-        total_balance: walletData.balance + walletData.roi_income + walletData.referral_income + walletData.bonus_income + walletData.level_income
-      };
-      setWallet(walletWithTotal);
+      if (walletData) {
+        // Add total_balance calculation
+        const walletWithTotal = {
+          ...walletData,
+          total_balance: walletData.balance + walletData.roi_income + walletData.referral_income + walletData.bonus_income + walletData.level_income
+        };
+        setWallet(walletWithTotal);
+      }
 
       // Fetch investment plans
       const { data: plansData, error: plansError } = await supabase
