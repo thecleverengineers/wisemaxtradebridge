@@ -748,71 +748,64 @@ const Rewards = () => {
                       <td className="py-4 px-6">
                         <Badge variant="outline" className="font-semibold bg-gradient-to-r from-cyan-500/20 to-cyan-400/20 text-cyan-700 dark:text-cyan-400 border-cyan-500/30">💎 Platinum</Badge>
                       </td>
-                      <td className="py-4 px-6 font-medium">$90,000 USDT</td>
+                      <td className="py-4 px-6 font-medium">$40,000 USDT</td>
                       <td className="py-4 px-6">
-                        <span className="text-green-600 dark:text-green-400 font-bold">$600 USDT</span>
+                        <span className="text-green-600 dark:text-green-400 font-bold">$400 USDT</span>
                       </td>
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group bg-primary/5">
                       <td className="py-4 px-6">
                         <Badge className="font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">💠 Diamond</Badge>
                       </td>
-                      <td className="py-4 px-6 font-bold">$150,000 USDT</td>
+                      <td className="py-4 px-6 font-bold">$80,000 USDT</td>
                       <td className="py-4 px-6">
-                        <span className="text-green-600 dark:text-green-400 font-bold text-lg">$700 USDT</span>
+                        <span className="text-green-600 dark:text-green-400 font-bold text-lg">$500 USDT</span>
                       </td>
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
                         <Badge variant="outline" className="font-semibold bg-gradient-to-r from-purple-600/20 to-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-500/30">👑 Master</Badge>
                       </td>
-                      <td className="py-4 px-6 font-medium">$250,000 USDT</td>
+                      <td className="py-4 px-6 font-medium">$150,000 USDT</td>
                       <td className="py-4 px-6">
-                        <span className="text-green-600 dark:text-green-400 font-bold">$800 USDT</span>
+                        <span className="text-green-600 dark:text-green-400 font-bold">$600 USDT</span>
                       </td>
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
                         <Badge variant="outline" className="font-semibold bg-gradient-to-r from-red-600/20 to-red-500/20 text-red-700 dark:text-red-400 border-red-500/30">⚔️ Grandmaster</Badge>
                       </td>
-                      <td className="py-4 px-6 font-medium">$500,000 USDT</td>
+                      <td className="py-4 px-6 font-medium">$250,000 USDT</td>
                       <td className="py-4 px-6">
-                        <span className="text-green-600 dark:text-green-400 font-bold">$900 USDT</span>
+                        <span className="text-green-600 dark:text-green-400 font-bold">$700 USDT</span>
                       </td>
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group bg-accent/5">
                       <td className="py-4 px-6">
                         <Badge className="font-semibold bg-gradient-to-r from-yellow-500 to-orange-600 text-white border-0">🏆 Elite</Badge>
                       </td>
-                      <td className="py-4 px-6 font-bold">$1,000,000 USDT</td>
+                      <td className="py-4 px-6 font-bold">$500,000 USDT</td>
                       <td className="py-4 px-6">
-                        <span className="text-green-600 dark:text-green-400 font-bold text-lg">$1,000 USDT</span>
+                        <span className="text-green-600 dark:text-green-400 font-bold text-lg">$800 USDT</span>
                       </td>
                     </tr>
                     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
-                        <Badge variant="secondary" className="font-semibold bg-gradient-to-r from-pink-600/20 to-pink-500/20 text-pink-700 dark:text-pink-400 border-pink-500/30">⭐ Legend</Badge>
+                        <Badge variant="outline" className="font-semibold bg-gradient-to-r from-pink-600/20 to-pink-500/20 text-pink-700 dark:text-pink-400 border-pink-500/30">⭐ Legend</Badge>
                       </td>
-                      <td className="py-4 px-6 font-medium">$1,300,000 USDT</td>
+                      <td className="py-4 px-6 font-medium">$1,000,000 USDT</td>
                       <td className="py-4 px-6">
-                        <span className="text-yellow-600 dark:text-yellow-400 font-bold">TBD</span>
+                        <span className="text-green-600 dark:text-green-400 font-bold">$900 USDT</span>
                       </td>
                     </tr>
-                    <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors group">
+                    <tr className="hover:bg-muted/50 transition-colors group">
                       <td className="py-4 px-6">
-                        <Badge variant="secondary" className="font-semibold bg-gradient-to-r from-indigo-600/20 to-indigo-500/20 text-indigo-700 dark:text-indigo-400 border-indigo-500/30">🌟 Mythic</Badge>
+                        <Badge variant="outline" className="font-semibold bg-gradient-to-r from-indigo-600/20 to-indigo-500/20 text-indigo-700 dark:text-indigo-400 border-indigo-500/30">🌟 Mythic</Badge>
                       </td>
                       <td className="py-4 px-6 font-medium">$2,000,000 USDT</td>
                       <td className="py-4 px-6">
-                        <span className="text-yellow-600 dark:text-yellow-400 font-bold">TBD</span>
+                        <span className="text-green-600 dark:text-green-400 font-bold">$1,000 USDT</span>
                       </td>
-                    </tr>
-                    <tr className="hover:bg-muted/50 transition-colors bg-muted/30">
-                      <td className="py-4 px-6">
-                        <Badge variant="outline" className="font-semibold bg-gradient-to-r from-primary/20 to-accent/20">✨ Champion+</Badge>
-                      </td>
-                      <td className="py-4 px-6 text-muted-foreground italic">Higher tiers available</td>
-                      <td className="py-4 px-6 text-muted-foreground italic">Contact support</td>
                     </tr>
                   </tbody>
                 </table>
