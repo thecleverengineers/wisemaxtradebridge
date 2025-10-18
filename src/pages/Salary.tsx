@@ -436,6 +436,84 @@ const Salary = () => {
             </CardContent>
           </Card>
 
+          {/* Salary Tier Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-6 w-6" />
+                Monthly Salary Structure
+              </CardTitle>
+              <CardDescription>
+                Complete overview of all achievement tiers and their monthly salaries
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-primary/20">
+                      <th className="text-left p-4 font-semibold">Achievement Tier</th>
+                      <th className="text-left p-4 font-semibold">Total Team Deposit</th>
+                      <th className="text-left p-4 font-semibold">Salary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="p-4 font-medium">🥉 Bronze</td>
+                      <td className="p-4">$5,000 USDT</td>
+                      <td className="p-4 text-primary font-semibold">$50 USDT <span className="text-muted-foreground text-sm">Up to 6 Months</span></td>
+                    </tr>
+                    <tr className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="p-4 font-medium">🥈 Silver</td>
+                      <td className="p-4">$10,000 USDT</td>
+                      <td className="p-4 text-primary font-semibold">$75 USDT <span className="text-muted-foreground text-sm">Up to 6 Months</span></td>
+                    </tr>
+                    <tr className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="p-4 font-medium">🥇 Gold</td>
+                      <td className="p-4">$20,000 USDT</td>
+                      <td className="p-4 text-primary font-semibold">$100 USDT <span className="text-muted-foreground text-sm">Up to 6 Months</span></td>
+                    </tr>
+                    <tr className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="p-4 font-medium">💎 Platinum</td>
+                      <td className="p-4">$40,000 USDT</td>
+                      <td className="p-4 text-primary font-semibold">$120 USDT <span className="text-muted-foreground text-sm">Up to 6 Months</span></td>
+                    </tr>
+                    <tr className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="p-4 font-medium">💠 Diamond</td>
+                      <td className="p-4">$80,000 USDT</td>
+                      <td className="p-4 text-primary font-semibold">$130 USDT <span className="text-muted-foreground text-sm">Up to 6 Months</span></td>
+                    </tr>
+                    <tr className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="p-4 font-medium">👑 Master</td>
+                      <td className="p-4">$150,000 USDT</td>
+                      <td className="p-4 text-primary font-semibold">$150 USDT <span className="text-muted-foreground text-sm">Up to 6 Months</span></td>
+                    </tr>
+                    <tr className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="p-4 font-medium">⚔️ Grandmaster</td>
+                      <td className="p-4">$250,000 USDT</td>
+                      <td className="p-4 text-primary font-semibold">$200 USDT <span className="text-muted-foreground text-sm">Up to 6 Months</span></td>
+                    </tr>
+                    <tr className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="p-4 font-medium">🏆 Elite</td>
+                      <td className="p-4">$500,000 USDT</td>
+                      <td className="p-4 text-primary font-semibold">$300 USDT <span className="text-muted-foreground text-sm">Up to 6 Months</span></td>
+                    </tr>
+                    <tr className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="p-4 font-medium">⭐ Legend</td>
+                      <td className="p-4">$1,000,000 USDT</td>
+                      <td className="p-4 text-primary font-semibold">$400 USDT <span className="text-muted-foreground text-sm">Up to 6 Months</span></td>
+                    </tr>
+                    <tr className="hover:bg-muted/50 transition-colors">
+                      <td className="p-4 font-medium">🌟 Mythic</td>
+                      <td className="p-4">$2,000,000 USDT</td>
+                      <td className="p-4 text-primary font-semibold">$500 USDT <span className="text-muted-foreground text-sm">Up to 6 Months</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Salary Payment History */}
           {salaryPayments.length > 0 && (
             <Card>
