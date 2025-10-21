@@ -32,7 +32,8 @@ export const DepositWalletsManagement = () => {
   // Form state
   const [network, setNetwork] = useState('TRC20');
   const [walletAddress, setWalletAddress] = useState('');
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
+  const [existingQrCodeUrl, setExistingQrCodeUrl] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -66,13 +67,15 @@ export const DepositWalletsManagement = () => {
       setEditingWallet(wallet);
       setNetwork(wallet.network);
       setWalletAddress(wallet.wallet_address);
-      setQrCodeUrl(wallet.qr_code_url || '');
+      setExistingQrCodeUrl(wallet.qr_code_url);
+      setQrCodeFile(null);
       setIsActive(wallet.is_active);
     } else {
       setEditingWallet(null);
       setNetwork('TRC20');
       setWalletAddress('');
-      setQrCodeUrl('');
+      setExistingQrCodeUrl(null);
+      setQrCodeFile(null);
       setIsActive(true);
     }
     setDialogOpen(true);
@@ -90,6 +93,41 @@ export const DepositWalletsManagement = () => {
 
     setSaving(true);
     try {
+      let qrCodeUrl = existingQrCodeUrl;
+
+      // Upload new QR code if file is selected
+      if (qrCodeFile) {
+        // Delete old QR code if exists
+        if (existingQrCodeUrl) {
+          const oldPath = existingQrCodeUrl.split('/').pop();
+          if (oldPath) {
+            await supabase.storage
+              .from('deposit-qr-codes')
+              .remove([oldPath]);
+          }
+        }
+
+        // Upload new QR code
+        const fileExt = qrCodeFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('deposit-qr-codes')
+          .upload(fileName, qrCodeFile, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('deposit-qr-codes')
+          .getPublicUrl(fileName);
+
+        qrCodeUrl = publicUrl;
+      }
+
       if (editingWallet) {
         // Update existing wallet
         const { error } = await supabase
@@ -97,7 +135,7 @@ export const DepositWalletsManagement = () => {
           .update({
             network,
             wallet_address: walletAddress,
-            qr_code_url: qrCodeUrl || null,
+            qr_code_url: qrCodeUrl,
             is_active: isActive,
             updated_at: new Date().toISOString(),
           })
@@ -112,7 +150,7 @@ export const DepositWalletsManagement = () => {
           .insert({
             network,
             wallet_address: walletAddress,
-            qr_code_url: qrCodeUrl || null,
+            qr_code_url: qrCodeUrl,
             is_active: isActive,
           });
 
@@ -134,10 +172,21 @@ export const DepositWalletsManagement = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, qrCodeUrl: string | null) => {
     if (!confirm('Are you sure you want to delete this deposit wallet?')) return;
 
     try {
+      // Delete QR code from storage if exists
+      if (qrCodeUrl) {
+        const fileName = qrCodeUrl.split('/').pop();
+        if (fileName) {
+          await supabase.storage
+            .from('deposit-qr-codes')
+            .remove([fileName]);
+        }
+      }
+
+      // Delete wallet record
       const { error } = await supabase
         .from('deposit_wallets')
         .delete()
@@ -230,13 +279,24 @@ export const DepositWalletsManagement = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="qr-code">QR Code URL (Optional)</Label>
+                    <Label htmlFor="qr-code">QR Code Image (Optional)</Label>
                     <Input
                       id="qr-code"
-                      value={qrCodeUrl}
-                      onChange={(e) => setQrCodeUrl(e.target.value)}
-                      placeholder="https://..."
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setQrCodeFile(e.target.files?.[0] || null)}
+                      className="cursor-pointer"
                     />
+                    {existingQrCodeUrl && !qrCodeFile && (
+                      <div className="mt-2">
+                        <p className="text-sm text-muted-foreground mb-1">Current QR Code:</p>
+                        <img 
+                          src={existingQrCodeUrl} 
+                          alt="Current QR Code" 
+                          className="w-24 h-24 border rounded"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -324,7 +384,7 @@ export const DepositWalletsManagement = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDelete(wallet.id)}
+                          onClick={() => handleDelete(wallet.id, wallet.qr_code_url)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
