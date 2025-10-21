@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Users, Wallet, Eye, Copy, Check } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Users, Wallet, Eye, Copy, Check, DollarSign, Gift } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -46,6 +46,8 @@ export const DashboardContent = () => {
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [investmentPlans, setInvestmentPlans] = useState<InvestmentPlan[]>([]);
   const [copied, setCopied] = useState(false);
+  const [totalSalary, setTotalSalary] = useState(0);
+  const [totalRewards, setTotalRewards] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -71,6 +73,28 @@ export const DashboardContent = () => {
           total_balance: walletData.balance + walletData.roi_income + walletData.referral_income + walletData.bonus_income + walletData.level_income
         };
         setWallet(walletWithTotal);
+      }
+
+      // Fetch total salary payments
+      const { data: salaryData, error: salaryError } = await supabase
+        .from('salary_payments')
+        .select('amount')
+        .eq('user_id', user?.id);
+
+      if (!salaryError && salaryData) {
+        const total = salaryData.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+        setTotalSalary(total);
+      }
+
+      // Fetch total rewards (from referral bonuses)
+      const { data: rewardsData, error: rewardsError } = await supabase
+        .from('referral_bonuses')
+        .select('amount')
+        .eq('user_id', user?.id);
+
+      if (!rewardsError && rewardsData) {
+        const total = rewardsData.reduce((sum, bonus) => sum + (bonus.amount || 0), 0);
+        setTotalRewards(total);
       }
 
       // Fetch investment plans
@@ -139,6 +163,30 @@ export const DashboardContent = () => {
                 <p className="text-2xl font-bold">₹{wallet?.roi_income?.toLocaleString() || '0'}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-primary" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-muted-foreground text-sm">Total Salary</p>
+                <p className="text-2xl font-bold">₹{totalSalary?.toLocaleString() || '0'}</p>
+              </div>
+              <DollarSign className="h-8 w-8 text-primary" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-muted-foreground text-sm">Total Rewards</p>
+                <p className="text-2xl font-bold">₹{totalRewards?.toLocaleString() || '0'}</p>
+              </div>
+              <Gift className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
