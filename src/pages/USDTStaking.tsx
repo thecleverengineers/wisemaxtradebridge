@@ -372,7 +372,7 @@ const USDTStaking = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">Available Balance</p>
-                    <p className="text-2xl font-bold text-foreground">₹{walletBalance.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-foreground">${walletBalance.toLocaleString()}</p>
                   </div>
                   <div className="p-3 rounded-xl bg-green-500/10">
                     <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -387,7 +387,7 @@ const USDTStaking = () => {
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">Total Staked</p>
                     <p className="text-2xl font-bold text-foreground">
-                      ₹{totalStats.totalStaked.toLocaleString()}
+                      ${totalStats.totalStaked.toLocaleString()}
                     </p>
                   </div>
                   <div className="p-3 rounded-xl bg-primary/10">
@@ -403,7 +403,7 @@ const USDTStaking = () => {
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">Total Earned</p>
                     <p className="text-2xl font-bold text-foreground">
-                      ₹{totalStats.totalEarned.toFixed(2)}
+                      ${totalStats.totalEarned.toFixed(2)}
                     </p>
                   </div>
                   <div className="p-3 rounded-xl bg-primary/10">
@@ -419,7 +419,7 @@ const USDTStaking = () => {
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">Daily Earnings</p>
                     <p className="text-2xl font-bold text-foreground">
-                      ₹{totalStats.dailyEarnings.toFixed(2)}
+                      ${totalStats.dailyEarnings.toFixed(2)}
                     </p>
                   </div>
                   <div className="p-3 rounded-xl bg-primary/10">
@@ -475,7 +475,7 @@ const USDTStaking = () => {
                       </div>
                       <div className="flex justify-between items-center pt-2 border-t border-border/50">
                         <span className="text-muted-foreground text-sm">Min. Stake</span>
-                        <span className="text-foreground font-medium">₹{plan.min_amount.toLocaleString()}</span>
+                        <span className="text-foreground font-medium">${plan.min_amount.toLocaleString()}</span>
                       </div>
                     </div>
 
@@ -550,19 +550,19 @@ const USDTStaking = () => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 rounded-lg bg-muted/50">
                         <div>
                           <p className="text-muted-foreground text-sm mb-1">Staked Amount</p>
-                          <p className="text-foreground font-semibold">₹{record.amount?.toLocaleString()}</p>
+                          <p className="text-foreground font-semibold">${record.amount?.toLocaleString()}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground text-sm mb-1">Daily Return</p>
-                          <p className="text-foreground font-semibold">₹{record.daily_return_amount?.toFixed(4)}</p>
+                          <p className="text-foreground font-semibold">${record.daily_return_amount?.toFixed(4)}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground text-sm mb-1">Total Earned</p>
-                          <p className="text-green-600 dark:text-green-400 font-semibold">₹{record.total_earned?.toFixed(2)}</p>
+                          <p className="text-green-600 dark:text-green-400 font-semibold">${record.total_earned?.toFixed(2)}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground text-sm mb-1">Expected Total</p>
-                          <p className="text-foreground font-semibold">₹{record.total_expected?.toFixed(2)}</p>
+                          <p className="text-foreground font-semibold">${record.total_expected?.toFixed(2)}</p>
                         </div>
                       </div>
 
@@ -673,7 +673,7 @@ const USDTStaking = () => {
                   MAX
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Available: ₹{walletBalance.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">Available: ${walletBalance.toLocaleString()}</p>
             </div>
 
             {/* Estimated Earnings */}
@@ -691,14 +691,14 @@ const USDTStaking = () => {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Daily Earnings:</span>
                     <span className="text-foreground font-semibold">
-                      ₹{((parseFloat(stakeAmount) * currentPlan.daily_return) / 100).toFixed(4)}
+                      ${((parseFloat(stakeAmount) * currentPlan.daily_return) / 100).toFixed(4)}
                     </span>
                   </div>
                   {stakingType === 'locked' && currentPlan.duration_days > 0 && (
                     <div className="flex justify-between pt-2 border-t border-border/50">
                       <span className="text-muted-foreground">Total ({currentPlan.duration_days} days):</span>
                       <span className="text-green-600 dark:text-green-400 font-bold">
-                        ₹{((parseFloat(stakeAmount) * currentPlan.total_return_percent) / 100).toFixed(2)}
+                        ${((parseFloat(stakeAmount) * currentPlan.total_return_percent) / 100).toFixed(2)}
                       </span>
                     </div>
                   )}
