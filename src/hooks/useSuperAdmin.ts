@@ -20,7 +20,7 @@ export const useSuperAdmin = () => {
           .from('user_roles')
           .select('role')
           .eq('user_id', userId)
-          .eq('role', 'super-admin')
+          .in('role', ['superadmin', 'super-admin'])
           .maybeSingle();
 
         if (error) {
