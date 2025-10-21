@@ -20,6 +20,7 @@ const sections = [
   { id: 'usdt', label: 'USDT Staking', icon: DollarSign },
   { id: 'deposits', label: 'Deposits', icon: Wallet },
   { id: 'withdrawals', label: 'Withdrawals', icon: ArrowDownToLine },
+  { id: 'deposit-wallets', label: 'Update Wallet Address', icon: Wallet },
   { id: 'plans', label: 'Investment Plans', icon: Briefcase },
   { id: 'staking-plans', label: 'Staking Plans', icon: Layers },
   { id: 'activity', label: 'Activity Log', icon: Database },

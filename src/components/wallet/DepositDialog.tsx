@@ -11,14 +11,10 @@ import { ArrowDownLeft, AlertCircle, Copy, Check } from 'lucide-react';
 
 interface DepositWallet {
   id: string;
-  currency: string;
   network: string;
   wallet_address: string;
-  wallet_label: string | null;
-  min_deposit_amount: number;
-  network_fee_notice: string | null;
   qr_code_url: string | null;
-  show_qr_code: boolean;
+  is_active: boolean;
 }
 
 interface DepositDialogProps {
@@ -44,28 +40,17 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
 
   const fetchDepositWallets = async () => {
     try {
-      // For now, use a static deposit wallet from admin settings
-      const { data: settingData } = await supabase
-        .from('admin_settings')
-        .select('setting_value')
-        .eq('setting_key', 'deposit_wallet_address')
-        .maybeSingle();
+      const { data, error } = await supabase
+        .from('deposit_wallets')
+        .select('*')
+        .eq('is_active', true)
+        .order('network', { ascending: true });
 
-      if (settingData?.setting_value) {
-        const walletAddress = JSON.parse(settingData.setting_value);
-        const staticWallet: DepositWallet = {
-          id: '1',
-          currency: 'USDT',
-          network: 'TRC20',
-          wallet_address: walletAddress,
-          wallet_label: 'Main Deposit Wallet',
-          min_deposit_amount: 10,
-          network_fee_notice: 'Network fees apply. Please ensure you send TRC20 USDT only.',
-          qr_code_url: null,
-          show_qr_code: false,
-        };
-        setDepositWallets([staticWallet]);
-        setSelectedWallet(staticWallet);
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        setDepositWallets(data);
+        setSelectedWallet(data[0]);
       }
     } catch (error) {
       console.error('Error fetching deposit wallets:', error);
@@ -114,10 +99,10 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
       return;
     }
 
-    if (depositAmount < selectedWallet.min_deposit_amount) {
+    if (depositAmount < 10) {
       toast({
         title: 'Amount Too Low',
-        description: `Minimum deposit amount is ${selectedWallet.min_deposit_amount} ${selectedWallet.currency}`,
+        description: 'Minimum deposit amount is $10',
         variant: 'destructive',
       });
       return;
@@ -151,7 +136,7 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
           type: 'deposit',
           amount: depositAmount,
           balance_after: currentBalance + depositAmount,
-          currency: selectedWallet.currency,
+          currency: 'USDT',
           network: selectedWallet.network,
           to_address: selectedWallet.wallet_address,
           reference_id: transactionHash,
@@ -222,8 +207,7 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
                   <SelectContent>
                     {depositWallets.map((wallet) => (
                       <SelectItem key={wallet.id} value={wallet.id}>
-                        {wallet.currency} - {wallet.network}
-                        {wallet.wallet_label && ` (${wallet.wallet_label})`}
+                        USDT - {wallet.network}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -232,14 +216,12 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
 
               {selectedWallet && (
                 <>
-                  {selectedWallet.network_fee_notice && (
-                    <Alert className="bg-muted border-border">
-                      <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                      <AlertDescription className="text-muted-foreground text-sm">
-                        {selectedWallet.network_fee_notice}
-                      </AlertDescription>
-                    </Alert>
-                  )}
+                  <Alert className="bg-muted border-border">
+                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                    <AlertDescription className="text-muted-foreground text-sm">
+                      Please send only USDT on the {selectedWallet.network} network to this address.
+                    </AlertDescription>
+                  </Alert>
 
                   <div>
                     <Label htmlFor="wallet-address" className="text-foreground">
@@ -267,7 +249,7 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
                     </div>
                   </div>
 
-                  {selectedWallet.show_qr_code && selectedWallet.qr_code_url && (
+                  {selectedWallet.qr_code_url && (
                     <div className="flex justify-center">
                       <img
                         src={selectedWallet.qr_code_url}
@@ -279,14 +261,14 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
 
                   <div>
                     <Label htmlFor="amount" className="text-foreground">
-                      Amount ({selectedWallet.currency})
+                      Amount (USDT)
                     </Label>
                     <Input
                       id="amount"
                       type="number"
                       step="0.01"
-                      min={selectedWallet.min_deposit_amount}
-                      placeholder={`Min: ${selectedWallet.min_deposit_amount}`}
+                      min={10}
+                      placeholder="Min: $10"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                       className="bg-background border-border text-foreground"
