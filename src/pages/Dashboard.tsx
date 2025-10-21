@@ -152,7 +152,7 @@ export function Dashboard() {
       const { data: marketDataRes, error: marketError } = await supabase
         .from('market_data')
         .select('*')
-        .order('timestamp', { ascending: false })
+        .order('last_updated', { ascending: false })
         .limit(5);
 
       if (marketError) throw marketError;
