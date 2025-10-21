@@ -60,11 +60,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('id', userId)
         .maybeSingle();
       
-      const { data: userRole } = await supabase
+      const { data: userRoles } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
+        .eq('user_id', userId);
       
       const { data: wallet } = await supabase
         .from('wallets')
@@ -85,8 +84,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           total_roi_earned: wallet?.roi_income || 0,
           total_referral_earned: wallet?.referral_income || 0
         });
-        setIsSuperAdmin(userRole?.role === 'super-admin' || userRole?.role === 'superadmin');
-        setIsAdmin(userRole?.role === 'admin' || userRole?.role === 'super-admin' || userRole?.role === 'superadmin');
+        
+        // Check if user has super-admin or superadmin role
+        const roles = userRoles?.map(r => r.role) || [];
+        setIsSuperAdmin(roles.includes('super-admin') || roles.includes('superadmin'));
+        setIsAdmin(roles.includes('admin') || roles.includes('super-admin') || roles.includes('superadmin'));
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
