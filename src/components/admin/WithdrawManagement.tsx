@@ -47,12 +47,12 @@ const WithdrawManagement = () => {
 
       console.log('Current user ID:', user.id);
 
-      // Check if user has admin or superadmin role
+      // Check if user has admin or super-admin role
       const { data: roleData, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .in('role', ['admin', 'superadmin']);
+        .in('role', ['admin', 'super-admin']);
 
       console.log('User roles:', roleData);
 

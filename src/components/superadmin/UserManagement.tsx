@@ -171,7 +171,7 @@ const UserManagement = () => {
         .from('user_roles')
         .insert([{
           user_id: editingUser.id,
-          role: selectedRole as 'admin' | 'superadmin' | 'user',
+          role: selectedRole as 'admin' | 'super-admin' | 'user',
         }]);
 
       if (roleError) throw roleError;

@@ -85,8 +85,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           total_roi_earned: wallet?.roi_income || 0,
           total_referral_earned: wallet?.referral_income || 0
         });
-        setIsSuperAdmin(userRole?.role === 'superadmin');
-        setIsAdmin(userRole?.role === 'admin' || userRole?.role === 'superadmin');
+        setIsSuperAdmin(userRole?.role === 'super-admin');
+        setIsAdmin(userRole?.role === 'admin' || userRole?.role === 'super-admin');
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
