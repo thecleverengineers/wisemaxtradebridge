@@ -266,76 +266,76 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="name" className="text-white">Full Name</Label>
+                  <Label htmlFor="name">Full Name</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="name"
                       type="text"
                       placeholder="Enter your full name"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/50"
+                      className="pl-10"
                       required
                     />
                   </div>
                   {errors.name && (
-                    <p className="text-red-400 text-xs mt-1">{errors.name}</p>
+                    <p className="text-destructive text-xs mt-1">{errors.name}</p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="signup-email" className="text-white">Email</Label>
+                  <Label htmlFor="signup-email">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="signup-email"
                       type="email"
                       placeholder="Enter your email"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/50"
+                      className="pl-10"
                       required
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-red-400 text-xs mt-1">{errors.email}</p>
+                    <p className="text-destructive text-xs mt-1">{errors.email}</p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="phone" className="text-white">Phone Number</Label>
+                  <Label htmlFor="phone">Phone Number</Label>
                   <div className="relative">
-                    <Smartphone className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                    <Smartphone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="phone"
                       type="tel"
                       placeholder="Enter your phone number (optional)"
                       value={formData.phone}
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/50"
+                      className="pl-10"
                     />
                   </div>
                   {errors.phone && (
-                    <p className="text-red-400 text-xs mt-1">{errors.phone}</p>
+                    <p className="text-destructive text-xs mt-1">{errors.phone}</p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="signup-password" className="text-white">Password</Label>
+                  <Label htmlFor="signup-password">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="signup-password"
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Create a strong password"
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
-                      className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/50"
+                      className="pl-10 pr-10"
                       required
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+                      className="absolute right-2 top-1/2 -translate-y-1/2"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -344,8 +344,8 @@ const Auth = () => {
                   {formData.password && (
                     <div className="mt-2">
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-white/70">Password strength</span>
-                        <span className={`${passwordStrength >= 75 ? 'text-green-400' : passwordStrength >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
+                        <span className="text-muted-foreground">Password strength</span>
+                        <span className={`${passwordStrength >= 75 ? 'text-green-500' : passwordStrength >= 50 ? 'text-yellow-500' : 'text-destructive'}`}>
                           {passwordStrength >= 75 ? 'Strong' : passwordStrength >= 50 ? 'Medium' : 'Weak'}
                         </span>
                       </div>
@@ -353,42 +353,42 @@ const Auth = () => {
                     </div>
                   )}
                   {errors.password && (
-                    <p className="text-red-400 text-xs mt-1">{errors.password}</p>
+                    <p className="text-destructive text-xs mt-1">{errors.password}</p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="confirm-password" className="text-white">Confirm Password</Label>
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="confirm-password"
                       type={showConfirmPassword ? 'text' : 'password'}
                       placeholder="Confirm your password"
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                      className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/50"
+                      className="pl-10 pr-10"
                       required
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+                      className="absolute right-2 top-1/2 -translate-y-1/2"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                   {errors.confirmPassword && (
-                    <p className="text-red-400 text-xs mt-1">{errors.confirmPassword}</p>
+                    <p className="text-destructive text-xs mt-1">{errors.confirmPassword}</p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="referralCode" className="text-white">
+                  <Label htmlFor="referralCode">
                     Referral Code {formData.referralCode ? '(Applied)' : '(Optional)'}
                   </Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="referralCode"
                       type="text"
@@ -396,42 +396,42 @@ const Auth = () => {
                       value={formData.referralCode}
                       onChange={(e) => setFormData({...formData, referralCode: e.target.value})}
                       className={cn(
-                        "pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/50",
-                        formData.referralCode && "border-green-500/50 bg-green-500/10"
+                        "pl-10",
+                        formData.referralCode && "border-green-500"
                       )}
                       readOnly={!!formData.referralCode && location.search.includes('ref=')}
                     />
                     {formData.referralCode && (
-                      <CheckCircle className="absolute right-3 top-3 h-4 w-4 text-green-400" />
+                      <CheckCircle className="absolute right-3 top-3 h-4 w-4 text-green-500" />
                     )}
                   </div>
                   {formData.referralCode && (
-                    <Alert className="mt-2 bg-green-500/10 border-green-500/30">
-                      <CheckCircle className="h-4 w-4 text-green-400" />
-                      <AlertDescription className="text-green-400 text-xs">
+                    <Alert className="mt-2 border-green-500/50 bg-green-500/10">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <AlertDescription className="text-green-600 dark:text-green-400 text-xs">
                         Referral code applied! You'll be connected to your referrer.
                       </AlertDescription>
                     </Alert>
                   )}
                   {errors.referralCode && (
-                    <p className="text-red-400 text-xs mt-1">{errors.referralCode}</p>
+                    <p className="text-destructive text-xs mt-1">{errors.referralCode}</p>
                   )}
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg"
+                  className="w-full"
                   disabled={loading}
                 >
                   {loading ? (
                     <span className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                       Creating Account...
                     </span>
                   ) : 'Create Account'}
                 </Button>
-                <Alert className="mt-4 bg-green-500/10 border-green-500/30">
-                  <CheckCircle className="h-4 w-4 text-green-400" />
-                  <AlertDescription className="text-green-400 text-sm">
+                <Alert className="mt-4 border-green-500/50 bg-green-500/10">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <AlertDescription className="text-green-600 dark:text-green-400 text-sm">
                     No email verification required! You can start trading immediately after signup.
                   </AlertDescription>
                 </Alert>
