@@ -89,6 +89,8 @@ export function Dashboard() {
   const [marketData, setMarketData] = useState<MarketData[]>([]);
   const [referralCount, setReferralCount] = useState(0);
   const [chartData, setChartData] = useState<any[]>([]);
+  const [totalSalary, setTotalSalary] = useState(0);
+  const [totalRewards, setTotalRewards] = useState(0);
 
   // Calculate total balance across all wallets
   const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
@@ -169,6 +171,28 @@ export function Dashboard() {
         setReferralCount(0);
       } else {
         setReferralCount(count || 0);
+      }
+
+      // Fetch total salary payments
+      const { data: salaryData, error: salaryError } = await supabase
+        .from('salary_payments')
+        .select('amount')
+        .eq('user_id', user?.id);
+
+      if (!salaryError && salaryData) {
+        const total = salaryData.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+        setTotalSalary(total);
+      }
+
+      // Fetch total rewards (from referral bonuses)
+      const { data: rewardsData, error: rewardsError } = await supabase
+        .from('referral_bonuses')
+        .select('amount')
+        .eq('user_id', user?.id);
+
+      if (!rewardsError && rewardsData) {
+        const total = rewardsData.reduce((sum, bonus) => sum + (bonus.amount || 0), 0);
+        setTotalRewards(total);
       }
 
       // Prepare chart data
@@ -293,7 +317,7 @@ export function Dashboard() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card className="bg-card/50 border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Balance</CardTitle>
@@ -323,6 +347,32 @@ export function Dashboard() {
                 <div className="text-2xl font-bold">${totalROI.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground">
                   {activeInvestments} active investments
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Salary</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${totalSalary.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground">
+                  From achievements
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Rewards</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${totalRewards.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground">
+                  Bonus earnings
                 </p>
               </CardContent>
             </Card>
