@@ -295,6 +295,7 @@ export type Database = {
           created_at: string | null
           id: string
           is_active: boolean | null
+          minimum_deposit_amount: number
           network: string
           qr_code_url: string | null
           updated_at: string | null
@@ -304,6 +305,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_active?: boolean | null
+          minimum_deposit_amount?: number
           network?: string
           qr_code_url?: string | null
           updated_at?: string | null
@@ -313,6 +315,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_active?: boolean | null
+          minimum_deposit_amount?: number
           network?: string
           qr_code_url?: string | null
           updated_at?: string | null

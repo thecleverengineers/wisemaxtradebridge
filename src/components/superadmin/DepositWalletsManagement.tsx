@@ -18,6 +18,7 @@ interface DepositWallet {
   wallet_address: string;
   qr_code_url: string | null;
   is_active: boolean;
+  minimum_deposit_amount: number;
   created_at: string;
 }
 
@@ -35,6 +36,7 @@ export const DepositWalletsManagement = () => {
   const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
   const [existingQrCodeUrl, setExistingQrCodeUrl] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(true);
+  const [minDepositAmount, setMinDepositAmount] = useState<string>('0');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -70,6 +72,7 @@ export const DepositWalletsManagement = () => {
       setExistingQrCodeUrl(wallet.qr_code_url);
       setQrCodeFile(null);
       setIsActive(wallet.is_active);
+      setMinDepositAmount(wallet.minimum_deposit_amount?.toString() || '0');
     } else {
       setEditingWallet(null);
       setNetwork('TRC20');
@@ -77,6 +80,7 @@ export const DepositWalletsManagement = () => {
       setExistingQrCodeUrl(null);
       setQrCodeFile(null);
       setIsActive(true);
+      setMinDepositAmount('0');
     }
     setDialogOpen(true);
   };
@@ -86,6 +90,16 @@ export const DepositWalletsManagement = () => {
       toast({
         title: 'Validation Error',
         description: 'Wallet address is required',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const minAmount = parseFloat(minDepositAmount);
+    if (isNaN(minAmount) || minAmount < 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Minimum deposit amount must be a valid positive number',
         variant: 'destructive',
       });
       return;
@@ -137,6 +151,7 @@ export const DepositWalletsManagement = () => {
             wallet_address: walletAddress,
             qr_code_url: qrCodeUrl,
             is_active: isActive,
+            minimum_deposit_amount: minAmount,
             updated_at: new Date().toISOString(),
           })
           .eq('id', editingWallet.id);
@@ -152,6 +167,7 @@ export const DepositWalletsManagement = () => {
             wallet_address: walletAddress,
             qr_code_url: qrCodeUrl,
             is_active: isActive,
+            minimum_deposit_amount: minAmount,
           });
 
         if (error) throw error;
@@ -299,6 +315,19 @@ export const DepositWalletsManagement = () => {
                     )}
                   </div>
 
+                  <div>
+                    <Label htmlFor="min-deposit">Minimum Deposit Amount (USDT)</Label>
+                    <Input
+                      id="min-deposit"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={minDepositAmount}
+                      onChange={(e) => setMinDepositAmount(e.target.value)}
+                      placeholder="Enter minimum deposit amount"
+                    />
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <Label htmlFor="is-active">Active</Label>
                     <Switch
@@ -327,6 +356,7 @@ export const DepositWalletsManagement = () => {
                 <TableRow>
                   <TableHead>Network</TableHead>
                   <TableHead>Wallet Address</TableHead>
+                  <TableHead>Min. Deposit</TableHead>
                   <TableHead>QR Code</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -357,6 +387,9 @@ export const DepositWalletsManagement = () => {
                           )}
                         </Button>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-medium">${wallet.minimum_deposit_amount}</span>
                     </TableCell>
                     <TableCell>
                       {wallet.qr_code_url ? (
