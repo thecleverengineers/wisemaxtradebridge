@@ -12,14 +12,16 @@ import { Loader2, DollarSign, CheckCircle, XCircle, Clock, TrendingUp, Check, X 
 interface DepositRecord {
   id: string;
   user_id: string;
-  type: string;
-  category: string;
-  currency: string;
   amount: number;
+  currency: string;
+  network: string;
+  tx_hash: string | null;
+  from_address: string | null;
+  to_address: string;
   status: string;
-  reference_id: string | null;
-  notes: string | null;
+  confirmed_at: string | null;
   created_at: string;
+  updated_at: string;
   user_email?: string;
   user_name?: string;
 }
@@ -39,9 +41,8 @@ const DepositManagement = () => {
     try {
       setLoading(true);
       let query = supabase
-        .from('transactions')
+        .from('deposit_transactions')
         .select('*')
-        .eq('category', 'deposit')
         .order('created_at', { ascending: false })
         .limit(100);
 
@@ -84,10 +85,14 @@ const DepositManagement = () => {
 
   const handleApprove = async (deposit: DepositRecord) => {
     try {
-      // Update transaction status
+      // Update deposit transaction status
       const { error: txError } = await supabase
-        .from('transactions')
-        .update({ status: 'completed' })
+        .from('deposit_transactions')
+        .update({ 
+          status: 'confirmed',
+          confirmed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
         .eq('id', deposit.id);
 
       if (txError) throw txError;
@@ -95,24 +100,45 @@ const DepositManagement = () => {
       // Get current wallet balance
       const { data: walletData, error: fetchError } = await supabase
         .from('wallets')
-        .select('balance')
+        .select('balance, total_deposited')
         .eq('user_id', deposit.user_id)
-        .eq('currency', deposit.currency)
         .maybeSingle();
 
       if (fetchError) throw fetchError;
 
       const currentBalance = walletData?.balance || 0;
+      const totalDeposited = walletData?.total_deposited || 0;
       const newBalance = Number(currentBalance) + Number(deposit.amount);
+      const newTotalDeposited = Number(totalDeposited) + Number(deposit.amount);
 
-      // Update user's wallet balance
+      // Update user's wallet balance and total deposited
       const { error: walletError } = await supabase
         .from('wallets')
-        .update({ balance: newBalance })
-        .eq('user_id', deposit.user_id)
-        .eq('currency', deposit.currency);
+        .update({ 
+          balance: newBalance,
+          total_deposited: newTotalDeposited,
+          last_transaction_at: new Date().toISOString()
+        })
+        .eq('user_id', deposit.user_id);
 
       if (walletError) throw walletError;
+
+      // Create transaction record
+      const { error: transactionError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: deposit.user_id,
+          type: 'credit',
+          category: 'deposit',
+          amount: deposit.amount,
+          currency: deposit.currency,
+          status: 'completed',
+          reference_id: deposit.tx_hash,
+          balance_after: newBalance,
+          notes: `Deposit confirmed - Network: ${deposit.network}`
+        });
+
+      if (transactionError) throw transactionError;
 
       toast({
         title: 'Deposit Approved',
@@ -132,8 +158,11 @@ const DepositManagement = () => {
   const handleReject = async (deposit: DepositRecord) => {
     try {
       const { error } = await supabase
-        .from('transactions')
-        .update({ status: 'rejected' })
+        .from('deposit_transactions')
+        .update({ 
+          status: 'rejected',
+          updated_at: new Date().toISOString()
+        })
         .eq('id', deposit.id);
 
       if (error) throw error;
@@ -157,23 +186,24 @@ const DepositManagement = () => {
   const filteredDeposits = deposits.filter(
     (deposit) =>
       deposit.user_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.reference_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deposit.tx_hash?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deposit.from_address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deposit.currency.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const stats = {
     total: deposits.length,
     pending: deposits.filter((d) => d.status === 'pending').length,
-    completed: deposits.filter((d) => d.status === 'completed').length,
+    confirmed: deposits.filter((d) => d.status === 'confirmed').length,
     rejected: deposits.filter((d) => d.status === 'rejected').length,
     totalAmount: deposits
-      .filter((d) => d.status === 'completed')
+      .filter((d) => d.status === 'confirmed')
       .reduce((sum, d) => sum + Number(d.amount), 0),
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'confirmed':
         return 'default';
       case 'pending':
         return 'secondary';
@@ -225,11 +255,11 @@ const DepositManagement = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.completed}</div>
+            <div className="text-2xl font-bold">{stats.confirmed}</div>
           </CardContent>
         </Card>
 
@@ -263,7 +293,7 @@ const DepositManagement = () => {
         <CardContent>
           <div className="flex gap-4 mb-4">
             <Input
-              placeholder="Search by email, reference, or currency..."
+              placeholder="Search by email, tx hash, address..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
@@ -275,7 +305,7 @@ const DepositManagement = () => {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
@@ -290,11 +320,10 @@ const DepositManagement = () => {
                 <TableRow>
                   <TableHead>User</TableHead>
                   <TableHead>Amount</TableHead>
-                  <TableHead>Currency</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Reference</TableHead>
+                  <TableHead>Network</TableHead>
+                  <TableHead>From Address</TableHead>
+                  <TableHead>Tx Hash</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Notes</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -318,16 +347,22 @@ const DepositManagement = () => {
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">
-                        ${Number(deposit.amount).toFixed(2)}
+                        ${Number(deposit.amount).toFixed(2)} {deposit.currency}
                       </TableCell>
-                      <TableCell>{deposit.currency}</TableCell>
                       <TableCell>
-                        <span className="text-xs capitalize">{deposit.type}</span>
+                        <Badge variant="outline">{deposit.network}</Badge>
                       </TableCell>
                       <TableCell>
                         <span className="text-xs font-mono">
-                          {deposit.reference_id
-                            ? `${deposit.reference_id.substring(0, 8)}...`
+                          {deposit.from_address
+                            ? `${deposit.from_address.substring(0, 6)}...${deposit.from_address.substring(deposit.from_address.length - 4)}`
+                            : 'N/A'}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-xs font-mono">
+                          {deposit.tx_hash
+                            ? `${deposit.tx_hash.substring(0, 8)}...`
                             : 'N/A'}
                         </span>
                       </TableCell>
@@ -336,11 +371,12 @@ const DepositManagement = () => {
                           {deposit.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs max-w-[200px] truncate">
-                        {deposit.notes || 'N/A'}
-                      </TableCell>
                       <TableCell className="text-sm">
                         {new Date(deposit.created_at).toLocaleDateString()}
+                        <br />
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(deposit.created_at).toLocaleTimeString()}
+                        </span>
                       </TableCell>
                       <TableCell>
                         {deposit.status === 'pending' ? (
@@ -363,8 +399,8 @@ const DepositManagement = () => {
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">
-                            {deposit.status === 'completed' ? 'Approved' : 'Rejected'}
+                          <span className="text-xs text-muted-foreground capitalize">
+                            {deposit.status}
                           </span>
                         )}
                       </TableCell>
