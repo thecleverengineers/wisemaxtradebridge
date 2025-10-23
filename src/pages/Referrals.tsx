@@ -21,6 +21,7 @@ interface ReferralUser {
   created_at: string;
   is_active: boolean;
   total_investment: number;
+  level?: number;
 }
 
 interface ReferralBonus {
@@ -131,21 +132,20 @@ const Referrals = () => {
 
       const userMap = new Map(referredUsersData?.map(u => [u.id, { ...u, total_investment: investmentMap.get(u.id) || 0, is_active: true }]) || []);
 
-      // Get level 1 referrals for display
-      const level1Referrals = referralsData?.filter(r => r.level === 1)
-        .map(r => {
-          const user = userMap.get(r.referred_user_id);
-          return user ? {
-            id: user.id,
-            name: user.name || 'Unknown',
-            created_at: user.created_at || '',
-            is_active: user.is_active,
-            total_investment: user.total_investment || 0
-          } : null;
-        })
-        .filter(Boolean) || [];
+      // Get all referrals for display, grouped by level
+      const allReferrals = referralsData?.map(r => {
+        const user = userMap.get(r.referred_user_id);
+        return user ? {
+          id: user.id,
+          name: user.name || 'Unknown',
+          created_at: user.created_at || '',
+          is_active: user.is_active,
+          total_investment: user.total_investment || 0,
+          level: r.level
+        } : null;
+      }).filter(Boolean) || [];
       
-      setReferralUsers(level1Referrals as ReferralUser[]);
+      setReferralUsers(allReferrals as any[]);
 
       // Fetch referral bonuses
       const { data: bonusesData, error: bonusesError } = await supabase
@@ -533,45 +533,78 @@ const Referrals = () => {
             <TabsContent value="team" className="space-y-4">
               <Card className="bg-card/80 backdrop-blur border-primary/20">
                 <CardHeader>
-                  <CardTitle className="text-foreground">Direct Referrals (Level 1)</CardTitle>
+                  <CardTitle className="text-foreground">Your Complete Network (20 Levels)</CardTitle>
                   <CardDescription className="text-muted-foreground">
-                    People who joined directly using your referral code
+                    All members in your downline across 20 levels
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {referralUsers.length === 0 ? (
                     <div className="text-center py-8">
                       <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">No direct referrals yet. Start sharing your code!</p>
+                      <p className="text-muted-foreground">No referrals yet. Start sharing your code!</p>
                     </div>
                   ) : (
-                    <ScrollArea className="h-[400px]">
-                      <div className="space-y-3 pr-4">
-                        {referralUsers.map((user) => (
-                          <div key={user.id} className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/10">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
-                                <Users className="h-5 w-5 text-primary-foreground" />
+                    <ScrollArea className="h-[500px]">
+                      <div className="space-y-6 pr-4">
+                        {Array.from({ length: 20 }, (_, i) => i + 1).map((level) => {
+                          const levelUsers = referralUsers.filter((u: any) => u.level === level);
+                          if (levelUsers.length === 0) return null;
+                          
+                          return (
+                            <div key={level} className="space-y-3">
+                              <div className="sticky top-0 bg-card/95 backdrop-blur p-3 rounded-lg border-l-4 z-10" style={{ borderColor: `hsl(var(--primary))` }}>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className={cn(
+                                      "w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br",
+                                      COMMISSION_RATES[level - 1].color
+                                    )}>
+                                      <span className="text-white font-bold text-sm">L{level}</span>
+                                    </div>
+                                    <div>
+                                      <h3 className="font-semibold text-foreground">Level {level}</h3>
+                                      <p className="text-xs text-muted-foreground">
+                                        {levelUsers.length} member{levelUsers.length !== 1 ? 's' : ''} • {COMMISSION_RATES[level - 1].rate}% commission rate
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Badge variant="outline" className="font-mono">
+                                    ${levelUsers.reduce((sum: number, u: any) => sum + (u.total_investment || 0), 0).toFixed(2)} invested
+                                  </Badge>
+                                </div>
                               </div>
-                              <div>
-                                <p className="font-medium text-foreground">{user.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  Joined {new Date(user.created_at).toLocaleDateString()}
-                                </p>
+                              
+                              <div className="space-y-2 ml-4">
+                                {levelUsers.map((user: any) => (
+                                  <div key={user.id} className="flex items-center justify-between p-3 bg-primary/5 rounded-lg border border-primary/10">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
+                                        <Users className="h-4 w-4 text-primary-foreground" />
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-foreground text-sm">{user.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          Joined {new Date(user.created_at).toLocaleDateString()}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <Badge variant={user.is_active ? "default" : "secondary"} className="text-xs">
+                                        {user.is_active ? 'Active' : 'Inactive'}
+                                      </Badge>
+                                      {user.total_investment > 0 && (
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                          ${user.total_investment.toFixed(2)}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             </div>
-                            <div className="text-right">
-                              <Badge variant={user.is_active ? "default" : "secondary"}>
-                                {user.is_active ? 'Active' : 'Inactive'}
-                              </Badge>
-                              {user.total_investment > 0 && (
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  Invested: ${user.total_investment.toFixed(2)}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </ScrollArea>
                   )}
@@ -600,15 +633,18 @@ const Referrals = () => {
                         {referralBonuses.slice(0, 50).map((bonus) => (
                           <div key={bonus.id} className="flex items-center justify-between p-4 bg-green-500/5 rounded-lg border border-green-500/20">
                             <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                                <DollarSign className="h-5 w-5 text-white" />
+                              <div className={cn(
+                                "w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br",
+                                COMMISSION_RATES[bonus.level - 1]?.color || "from-green-500 to-emerald-600"
+                              )}>
+                                <span className="text-white font-bold text-xs">L{bonus.level}</span>
                               </div>
                               <div>
                                 <p className="font-medium text-foreground">
-                                  Level {bonus.level} Commission
+                                  Level {bonus.level} Commission ({COMMISSION_RATES[bonus.level - 1]?.rate}%)
                                 </p>
                                 <p className="text-sm text-muted-foreground">
-                                  From: {bonus.users.name} • {bonus.percentage}% of ${bonus.base_amount?.toFixed(2)}
+                                  From: {bonus.users.name} • Investment: ${bonus.base_amount?.toFixed(2)}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                   {new Date(bonus.created_at).toLocaleString()}
