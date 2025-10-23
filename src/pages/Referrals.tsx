@@ -90,6 +90,81 @@ const Referrals = () => {
   useEffect(() => {
     if (user) {
       fetchReferralData();
+      
+      // Set up real-time subscriptions for immediate updates
+      const referralsChannel = supabase
+        .channel('referrals-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'referrals',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Referrals changed:', payload);
+            fetchReferralData();
+          }
+        )
+        .subscribe();
+
+      const bonusesChannel = supabase
+        .channel('bonuses-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'referral_bonuses',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Bonuses changed:', payload);
+            fetchReferralData();
+          }
+        )
+        .subscribe();
+
+      const investmentsChannel = supabase
+        .channel('investments-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'investments'
+          },
+          (payload) => {
+            console.log('Investments changed:', payload);
+            fetchReferralData();
+          }
+        )
+        .subscribe();
+
+      const profilesChannel = supabase
+        .channel('profiles-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'profiles'
+          },
+          (payload) => {
+            console.log('Profiles changed:', payload);
+            fetchReferralData();
+          }
+        )
+        .subscribe();
+
+      // Cleanup subscriptions on unmount
+      return () => {
+        supabase.removeChannel(referralsChannel);
+        supabase.removeChannel(bonusesChannel);
+        supabase.removeChannel(investmentsChannel);
+        supabase.removeChannel(profilesChannel);
+      };
     }
   }, [user]);
 
