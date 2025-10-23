@@ -1568,10 +1568,7 @@ export type Database = {
       }
     }
     Functions: {
-      approve_withdrawal: {
-        Args: { withdrawal_id: string }
-        Returns: Json
-      }
+      approve_withdrawal: { Args: { withdrawal_id: string }; Returns: Json }
       build_referral_tree: {
         Args: { new_user_id: string; referrer_id: string }
         Returns: undefined
@@ -1580,14 +1577,12 @@ export type Database = {
         Args: { referrer_user_id: string }
         Returns: number
       }
-      generate_referral_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
+      distribute_referral_commissions: {
+        Args: { p_investment_amount: number; p_investor_id: string }
+        Returns: undefined
       }
-      get_tier_salary_amount: {
-        Args: { p_tier: string }
-        Returns: number
-      }
+      generate_referral_code: { Args: never; Returns: string }
+      get_tier_salary_amount: { Args: { p_tier: string }; Returns: number }
       get_user_achievement_tier: {
         Args: { p_user_id: string }
         Returns: string
