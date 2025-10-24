@@ -122,17 +122,9 @@ const UserManagement = () => {
       })
       .subscribe();
 
-    const depositsChannel = supabase
-      .channel('deposits-changes')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'deposit_transactions' }, () => {
-        fetchUsers(); // Refresh when deposits are approved
-      })
-      .subscribe();
-
     return () => {
       supabase.removeChannel(usersChannel);
       supabase.removeChannel(walletsChannel);
-      supabase.removeChannel(depositsChannel);
     };
   }, []);
 

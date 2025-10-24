@@ -106,21 +106,6 @@ const DepositManagement = () => {
 
   const handleApprove = async (deposit: DepositRecord) => {
     try {
-      // Get current wallet balance first
-      const { data: walletData, error: fetchError } = await supabase
-        .from('wallets')
-        .select('balance, total_deposited')
-        .eq('user_id', deposit.user_id)
-        .eq('currency', 'USDT')
-        .maybeSingle();
-
-      if (fetchError) throw fetchError;
-
-      const currentBalance = walletData?.balance || 0;
-      const totalDeposited = walletData?.total_deposited || 0;
-      const newBalance = Number(currentBalance) + Number(deposit.amount);
-      const newTotalDeposited = Number(totalDeposited) + Number(deposit.amount);
-
       // Update deposit transaction status
       const { error: txError } = await supabase
         .from('deposit_transactions')
@@ -133,6 +118,20 @@ const DepositManagement = () => {
 
       if (txError) throw txError;
 
+      // Get current wallet balance
+      const { data: walletData, error: fetchError } = await supabase
+        .from('wallets')
+        .select('balance, total_deposited')
+        .eq('user_id', deposit.user_id)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+
+      const currentBalance = walletData?.balance || 0;
+      const totalDeposited = walletData?.total_deposited || 0;
+      const newBalance = Number(currentBalance) + Number(deposit.amount);
+      const newTotalDeposited = Number(totalDeposited) + Number(deposit.amount);
+
       // Update user's wallet balance and total deposited
       const { error: walletError } = await supabase
         .from('wallets')
@@ -141,8 +140,7 @@ const DepositManagement = () => {
           total_deposited: newTotalDeposited,
           last_transaction_at: new Date().toISOString()
         })
-        .eq('user_id', deposit.user_id)
-        .eq('currency', 'USDT');
+        .eq('user_id', deposit.user_id);
 
       if (walletError) throw walletError;
 
@@ -158,24 +156,21 @@ const DepositManagement = () => {
           status: 'completed',
           reference_id: deposit.tx_hash,
           balance_after: newBalance,
-          notes: `Deposit approved by admin - Network: ${deposit.network}`,
-          network: deposit.network,
-          to_address: deposit.to_address
+          notes: `Deposit confirmed - Network: ${deposit.network}`
         });
 
       if (transactionError) throw transactionError;
 
       toast({
-        title: 'Deposit Approved ✓',
-        description: `Credited ${deposit.amount} ${deposit.currency} to ${deposit.user_email}'s wallet. New balance: $${newBalance.toFixed(2)}`,
+        title: 'Deposit Approved',
+        description: `Successfully approved deposit of ${deposit.amount} ${deposit.currency} for ${deposit.user_email}`,
       });
 
       fetchDeposits();
     } catch (error: any) {
-      console.error('Error approving deposit:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to approve deposit',
+        description: error.message,
         variant: 'destructive',
       });
     }
