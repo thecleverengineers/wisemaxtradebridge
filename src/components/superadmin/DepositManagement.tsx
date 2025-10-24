@@ -35,6 +35,27 @@ const DepositManagement = () => {
 
   useEffect(() => {
     fetchDeposits();
+    
+    // Set up real-time subscription for deposit updates
+    const channel = supabase
+      .channel('deposit-transactions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'deposit_transactions'
+        },
+        (payload) => {
+          console.log('Deposit transaction changed:', payload);
+          fetchDeposits();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [statusFilter]);
 
   const fetchDeposits = async () => {

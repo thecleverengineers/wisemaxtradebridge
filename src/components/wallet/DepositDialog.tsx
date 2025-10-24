@@ -119,32 +119,21 @@ export const DepositDialog = ({ userId, onDepositCreated }: DepositDialogProps) 
 
     setLoading(true);
     try {
-      // Get current wallet balance
-      const { data: wallet } = await supabase
-        .from('wallets')
-        .select('balance')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      const currentBalance = wallet?.balance || 0;
-
-      // Create transaction record
-      const { error: txError } = await supabase
-        .from('transactions')
+      // Create deposit transaction record (for admin approval)
+      const { error: depositError } = await supabase
+        .from('deposit_transactions')
         .insert({
           user_id: userId,
-          type: 'deposit',
           amount: depositAmount,
-          balance_after: currentBalance + depositAmount,
           currency: 'USDT',
           network: selectedWallet.network,
+          tx_hash: transactionHash,
+          from_address: null,
           to_address: selectedWallet.wallet_address,
-          reference_id: transactionHash,
           status: 'pending',
-          notes: `Deposit via ${selectedWallet.network}`,
         });
 
-      if (txError) throw txError;
+      if (depositError) throw depositError;
 
       toast({
         title: 'Deposit Request Submitted',
