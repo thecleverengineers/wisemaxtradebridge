@@ -106,23 +106,12 @@ const DepositManagement = () => {
 
   const handleApprove = async (deposit: DepositRecord) => {
     try {
-      // Update deposit transaction status
-      const { error: txError } = await supabase
-        .from('deposit_transactions')
-        .update({ 
-          status: 'confirmed',
-          confirmed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', deposit.id);
-
-      if (txError) throw txError;
-
-      // Get current wallet balance
+      // Get current wallet balance first
       const { data: walletData, error: fetchError } = await supabase
         .from('wallets')
         .select('balance, total_deposited')
         .eq('user_id', deposit.user_id)
+        .eq('currency', 'USDT')
         .maybeSingle();
 
       if (fetchError) throw fetchError;
@@ -140,11 +129,24 @@ const DepositManagement = () => {
           total_deposited: newTotalDeposited,
           last_transaction_at: new Date().toISOString()
         })
-        .eq('user_id', deposit.user_id);
+        .eq('user_id', deposit.user_id)
+        .eq('currency', 'USDT');
 
       if (walletError) throw walletError;
 
-      // Create transaction record
+      // Update deposit transaction status
+      const { error: txError } = await supabase
+        .from('deposit_transactions')
+        .update({ 
+          status: 'confirmed',
+          confirmed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', deposit.id);
+
+      if (txError) throw txError;
+
+      // Create transaction record for history
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
@@ -156,21 +158,22 @@ const DepositManagement = () => {
           status: 'completed',
           reference_id: deposit.tx_hash,
           balance_after: newBalance,
-          notes: `Deposit confirmed - Network: ${deposit.network}`
+          notes: `Deposit confirmed - Network: ${deposit.network}, TxHash: ${deposit.tx_hash || 'N/A'}`
         });
 
       if (transactionError) throw transactionError;
 
       toast({
         title: 'Deposit Approved',
-        description: `Successfully approved deposit of ${deposit.amount} ${deposit.currency} for ${deposit.user_email}`,
+        description: `Successfully credited ${deposit.amount} ${deposit.currency} to ${deposit.user_email}'s wallet`,
       });
 
       fetchDeposits();
     } catch (error: any) {
+      console.error('Error approving deposit:', error);
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.message || 'Failed to approve deposit',
         variant: 'destructive',
       });
     }

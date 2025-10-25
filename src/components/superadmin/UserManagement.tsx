@@ -46,6 +46,49 @@ const UserManagement = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  useEffect(() => {
+    fetchUsers();
+    
+    // Subscribe to wallet changes for real-time updates
+    const walletChannel = supabase
+      .channel('wallets-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wallets'
+        },
+        () => {
+          console.log('Wallet updated, refreshing users...');
+          fetchUsers();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to deposit transactions for real-time updates
+    const depositChannel = supabase
+      .channel('deposits-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'deposit_transactions'
+        },
+        () => {
+          console.log('Deposit updated, refreshing users...');
+          fetchUsers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(walletChannel);
+      supabase.removeChannel(depositChannel);
+    };
+  }, []);
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
