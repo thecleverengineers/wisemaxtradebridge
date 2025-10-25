@@ -1604,6 +1604,7 @@ export type Database = {
         }
         Returns: Json
       }
+      process_matured_investments: { Args: never; Returns: undefined }
       reject_withdrawal: {
         Args: { note?: string; withdrawal_id: string }
         Returns: Json
