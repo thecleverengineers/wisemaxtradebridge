@@ -32,8 +32,7 @@ interface InvestmentPlan {
   id: string;
   name: string;
   description?: string;
-  min_amount: number;
-  max_amount: number;
+  amount: number;
   daily_roi: number;
   duration_days: number;
   total_return_percent: number;
@@ -101,7 +100,7 @@ export const DashboardContent = () => {
       const { data: plansData, error: plansError } = await supabase
         .from('investment_plans')
         .select('*')
-        .order('min_amount');
+        .order('amount');
 
       if (plansError) throw plansError;
       setInvestmentPlans(plansData || []);
@@ -254,16 +253,16 @@ export const DashboardContent = () => {
               
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <p className="text-muted-foreground text-sm">Min Amount</p>
-                  <p className="font-semibold">₹{plan.min_amount?.toLocaleString()}</p>
+                  <p className="text-muted-foreground text-sm">Investment Amount</p>
+                  <p className="font-semibold">₹{plan.amount?.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-sm">Duration</p>
                   <p className="font-semibold">{plan.duration_days} Days</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-sm">Max Amount</p>
-                  <p className="font-semibold">₹{plan.max_amount?.toLocaleString() || 'No Limit'}</p>
+                  <p className="text-muted-foreground text-sm">Daily ROI</p>
+                  <p className="font-semibold">{plan.daily_roi}%</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-sm">Total Return</p>

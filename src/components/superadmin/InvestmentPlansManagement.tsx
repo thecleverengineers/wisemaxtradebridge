@@ -16,8 +16,7 @@ interface InvestmentPlan {
   id: string;
   name: string;
   description: string | null;
-  min_amount: number;
-  max_amount: number;
+  amount: number;
   daily_roi: number;
   duration_days: number;
   total_return_percent: number;
@@ -37,8 +36,7 @@ const InvestmentPlansManagement = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    min_amount: '',
-    max_amount: '',
+    amount: '',
     daily_roi: '',
     duration_days: '',
     total_return_percent: '',
@@ -77,8 +75,7 @@ const InvestmentPlansManagement = () => {
       setFormData({
         name: plan.name,
         description: plan.description || '',
-        min_amount: plan.min_amount.toString(),
-        max_amount: plan.max_amount.toString(),
+        amount: plan.amount.toString(),
         daily_roi: plan.daily_roi.toString(),
         duration_days: plan.duration_days.toString(),
         total_return_percent: plan.total_return_percent.toString(),
@@ -89,8 +86,7 @@ const InvestmentPlansManagement = () => {
       setFormData({
         name: '',
         description: '',
-        min_amount: '',
-        max_amount: '',
+        amount: '',
         daily_roi: '',
         duration_days: '',
         total_return_percent: '',
@@ -106,7 +102,7 @@ const InvestmentPlansManagement = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.min_amount || !formData.max_amount || !formData.daily_roi || !formData.duration_days) {
+    if (!formData.name || !formData.amount || !formData.daily_roi || !formData.duration_days) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields",
@@ -120,8 +116,7 @@ const InvestmentPlansManagement = () => {
       const planData = {
         name: formData.name,
         description: formData.description || null,
-        min_amount: parseFloat(formData.min_amount),
-        max_amount: parseFloat(formData.max_amount),
+        amount: parseFloat(formData.amount),
         daily_roi: parseFloat(formData.daily_roi),
         duration_days: parseInt(formData.duration_days),
         total_return_percent: parseFloat(formData.total_return_percent) || (parseFloat(formData.daily_roi) * parseInt(formData.duration_days)),
@@ -230,7 +225,7 @@ const InvestmentPlansManagement = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Plan Name</TableHead>
-                  <TableHead>Min - Max Amount</TableHead>
+                  <TableHead>Investment Amount</TableHead>
                   <TableHead>Daily ROI</TableHead>
                   <TableHead>Duration</TableHead>
                   <TableHead>Total Return</TableHead>
@@ -256,8 +251,8 @@ const InvestmentPlansManagement = () => {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        ${plan.min_amount.toLocaleString()} - ${plan.max_amount.toLocaleString()}
+                      <TableCell className="font-bold text-primary">
+                        ${plan.amount.toLocaleString()}
                       </TableCell>
                       <TableCell className="text-green-600 font-semibold">
                         {plan.daily_roi}%
@@ -328,27 +323,18 @@ const InvestmentPlansManagement = () => {
                 rows={3}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="min_amount">Minimum Amount *</Label>
-                <Input
-                  id="min_amount"
-                  type="number"
-                  value={formData.min_amount}
-                  onChange={(e) => setFormData({ ...formData, min_amount: e.target.value })}
-                  placeholder="100"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="max_amount">Maximum Amount *</Label>
-                <Input
-                  id="max_amount"
-                  type="number"
-                  value={formData.max_amount}
-                  onChange={(e) => setFormData({ ...formData, max_amount: e.target.value })}
-                  placeholder="10000"
-                />
-              </div>
+            <div className="grid gap-2">
+              <Label htmlFor="amount">Investment Amount *</Label>
+              <Input
+                id="amount"
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                placeholder="100"
+              />
+              <p className="text-xs text-muted-foreground">
+                Fixed investment amount for this plan
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">

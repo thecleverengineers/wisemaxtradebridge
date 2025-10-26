@@ -35,8 +35,7 @@ interface InvestmentPlan {
   name: string;
   description: string | null;
   daily_roi: number;
-  min_amount: number;
-  max_amount: number;
+  amount: number;
   duration_days: number;
   total_return_percent: number;
   status: string;
@@ -161,8 +160,7 @@ export default function ROIInvestments() {
         name: plan.name,
         description: plan.description,
         daily_roi: plan.daily_roi,
-        min_amount: plan.min_amount,
-        max_amount: plan.max_amount,
+        amount: plan.amount,
         duration_days: plan.duration_days,
         total_return_percent: plan.total_return_percent,
         status: plan.status,
@@ -304,33 +302,15 @@ export default function ROIInvestments() {
   };
 
   const handleInvest = async () => {
-    if (!selectedPlan || !investmentAmount) return;
+    if (!selectedPlan) return;
 
-    const amount = parseFloat(investmentAmount);
+    const amount = selectedPlan.amount;
     
     // Validation
-    if (amount < selectedPlan.min_amount) {
-      toast({
-        title: 'Invalid Amount',
-        description: `Minimum investment is $${selectedPlan.min_amount}`,
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    if (amount > selectedPlan.max_amount) {
-      toast({
-        title: 'Invalid Amount',
-        description: `Maximum investment is $${selectedPlan.max_amount}`,
-        variant: 'destructive'
-      });
-      return;
-    }
-
     if (amount > walletData.balance) {
       toast({
         title: 'Insufficient Balance',
-        description: 'Please add funds to your wallet first',
+        description: `You need $${amount.toFixed(2)} to invest in this plan. Please add funds to your wallet first.`,
         variant: 'destructive'
       });
       return;
@@ -404,7 +384,7 @@ export default function ROIInvestments() {
   const openInvestDialog = (plan: InvestmentPlan) => {
     setSelectedPlan(plan);
     setShowInvestDialog(true);
-    setInvestmentAmount('');
+    setInvestmentAmount(plan.amount.toString());
   };
 
   const calculateExpectedReturns = () => {
@@ -635,10 +615,10 @@ export default function ROIInvestments() {
                         <div className="flex items-center justify-between pt-2 border-t border-border/50">
                           <span className="text-muted-foreground text-sm flex items-center gap-2">
                             <DollarSign className="h-4 w-4" />
-                            Range
+                            Investment Amount
                           </span>
                           <span className="text-foreground text-sm font-medium">
-                            ${plan.min_amount.toLocaleString()} - ${plan.max_amount.toLocaleString()}
+                            ${plan.amount.toLocaleString()}
                           </span>
                         </div>
                       </div>
@@ -648,9 +628,9 @@ export default function ROIInvestments() {
                           onClick={() => openInvestDialog(plan)}
                           className="w-full"
                           size="lg"
-                          disabled={walletData.balance < plan.min_amount}
+                          disabled={walletData.balance < plan.amount}
                         >
-                          {walletData.balance < plan.min_amount ? (
+                          {walletData.balance < plan.amount ? (
                             <>
                               <Lock className="h-4 w-4 mr-2" />
                               Insufficient Balance
@@ -856,43 +836,44 @@ export default function ROIInvestments() {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label>Investment Amount (USD)</Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="number"
-                      placeholder="Enter amount"
-                      value={investmentAmount}
-                      onChange={(e) => setInvestmentAmount(e.target.value)}
-                      className="pl-10"
-                      min={selectedPlan.min_amount}
-                      max={selectedPlan.max_amount}
-                    />
+                <div className="p-4 rounded-lg bg-muted/50 space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Investment Amount</span>
+                    <span className="text-foreground font-semibold text-lg">${selectedPlan.amount.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Min: ${selectedPlan.min_amount.toLocaleString()}</span>
-                    <span>Max: ${selectedPlan.max_amount.toLocaleString()}</span>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Duration</span>
+                    <span className="text-foreground font-semibold">{selectedPlan.duration_days} days</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Daily ROI</span>
+                    <span className="text-foreground font-semibold">{selectedPlan.daily_roi}%</span>
+                  </div>
+                  <div className="flex justify-between border-t border-border/50 pt-3">
+                    <span className="text-muted-foreground">Total Return</span>
+                    <span className="text-green-600 dark:text-green-400 font-bold text-lg">{selectedPlan.total_return_percent}%</span>
                   </div>
                 </div>
                 
-                {investmentAmount && (
-                  <Alert className="bg-primary/5 border-primary/20">
-                    <Calculator className="h-4 w-4 text-primary" />
-                    <AlertDescription>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <span>Daily Returns:</span>
-                          <span className="font-semibold">${calculateExpectedReturns().daily.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Total Returns:</span>
-                          <span className="font-semibold text-green-600 dark:text-green-400">${calculateExpectedReturns().total.toFixed(2)}</span>
-                        </div>
+                <Alert className="bg-primary/5 border-primary/20">
+                  <Calculator className="h-4 w-4 text-primary" />
+                  <AlertDescription>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span>Daily Returns:</span>
+                        <span className="font-semibold">${(selectedPlan.amount * (selectedPlan.daily_roi / 100)).toFixed(2)}</span>
                       </div>
-                    </AlertDescription>
-                  </Alert>
-                )}
+                      <div className="flex justify-between">
+                        <span>Total Returns:</span>
+                        <span className="font-semibold text-green-600 dark:text-green-400">${(selectedPlan.amount * (selectedPlan.total_return_percent / 100)).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between border-t border-border/20 pt-2 mt-2">
+                        <span>Final Amount:</span>
+                        <span className="font-bold text-primary">${(selectedPlan.amount + (selectedPlan.amount * (selectedPlan.total_return_percent / 100))).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </AlertDescription>
+                </Alert>
                 
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <Label htmlFor="auto-reinvest" className="cursor-pointer font-normal">
@@ -923,7 +904,7 @@ export default function ROIInvestments() {
               </Button>
               <Button
                 onClick={handleInvest}
-                disabled={isLoading || !investmentAmount || parseFloat(investmentAmount) < (selectedPlan?.min_amount || 0)}
+                disabled={isLoading || walletData.balance < (selectedPlan?.amount || 0)}
               >
                 {isLoading ? (
                   <>

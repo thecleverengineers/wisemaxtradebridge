@@ -611,37 +611,34 @@ export type Database = {
       }
       investment_plans: {
         Row: {
+          amount: number
           created_at: string | null
           daily_roi: number
           description: string | null
           duration_days: number
           id: string
-          max_amount: number
-          min_amount: number
           name: string
           status: string | null
           total_return_percent: number
         }
         Insert: {
+          amount: number
           created_at?: string | null
           daily_roi: number
           description?: string | null
           duration_days: number
           id?: string
-          max_amount: number
-          min_amount: number
           name: string
           status?: string | null
           total_return_percent: number
         }
         Update: {
+          amount?: number
           created_at?: string | null
           daily_roi?: number
           description?: string | null
           duration_days?: number
           id?: string
-          max_amount?: number
-          min_amount?: number
           name?: string
           status?: string | null
           total_return_percent?: number
