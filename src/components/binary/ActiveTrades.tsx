@@ -5,9 +5,9 @@ import { cn } from '@/lib/utils';
 
 interface Trade {
   id: string;
-  asset_pair: string;
-  trade_type: 'CALL' | 'PUT';
-  stake_amount: number;
+  asset: string;
+  direction: 'CALL' | 'PUT';
+  amount: number;
   entry_price: number;
   expiry_time: string;
   status: string;
@@ -62,15 +62,15 @@ export function ActiveTrades({ trades }: ActiveTradesProps) {
               className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border/50"
             >
               <div className="flex items-center gap-3">
-                {trade.trade_type === 'CALL' ? (
+                {trade.direction === 'CALL' ? (
                   <TrendingUp className="h-5 w-5 text-green-500" />
                 ) : (
                   <TrendingDown className="h-5 w-5 text-red-500" />
                 )}
                 <div>
-                  <p className="font-medium text-foreground">{trade.asset_pair}</p>
+                  <p className="font-medium text-foreground">{trade.asset}</p>
                   <p className="text-sm text-muted-foreground">
-                    {trade.trade_type} • ${trade.stake_amount.toFixed(2)}
+                    {trade.direction} • ${(trade.amount || 0).toFixed(2)}
                   </p>
                 </div>
               </div>

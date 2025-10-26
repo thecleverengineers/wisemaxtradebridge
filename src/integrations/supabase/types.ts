@@ -94,6 +94,7 @@ export type Database = {
           profit_loss: number | null
           settled_at: string | null
           status: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -109,6 +110,7 @@ export type Database = {
           profit_loss?: number | null
           settled_at?: string | null
           status?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -124,6 +126,7 @@ export type Database = {
           profit_loss?: number | null
           settled_at?: string | null
           status?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
