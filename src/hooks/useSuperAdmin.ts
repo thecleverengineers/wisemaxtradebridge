@@ -21,7 +21,8 @@ export const useSuperAdmin = () => {
           .select('role')
           .eq('user_id', userId)
           .in('role', ['superadmin', 'super-admin'])
-          .maybeSingle();
+          .limit(1)
+          .single();
 
         if (error) {
           console.error('Error fetching super admin role:', error);

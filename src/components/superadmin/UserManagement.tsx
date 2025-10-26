@@ -202,22 +202,25 @@ const UserManagement = () => {
     if (!editingUser) return;
 
     try {
-      // Update user role by deleting old and inserting new
-      const { error: deleteError } = await supabase
+      // Check if user already has this role
+      const { data: existingRoles } = await supabase
         .from('user_roles')
-        .delete()
+        .select('role')
         .eq('user_id', editingUser.id);
 
-      if (deleteError) throw deleteError;
+      const hasRole = existingRoles?.some(r => r.role === selectedRole);
 
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert([{
-          user_id: editingUser.id,
-          role: selectedRole as 'admin' | 'super-admin' | 'user',
-        }]);
+      if (!hasRole) {
+        // Only insert if the user doesn't have this role yet
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert([{
+            user_id: editingUser.id,
+            role: selectedRole as 'admin' | 'superadmin' | 'super-admin' | 'user',
+          }]);
 
-      if (roleError) throw roleError;
+        if (roleError) throw roleError;
+      }
 
       toast({
         title: 'Success',
@@ -225,11 +228,11 @@ const UserManagement = () => {
       });
       setShowEditDialog(false);
       fetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating user:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update user',
+        description: error.message || 'Failed to update user',
         variant: 'destructive',
       });
     }
@@ -265,13 +268,13 @@ const UserManagement = () => {
         .from('transactions')
         .insert([{
           user_id: editingUser.id,
-          type: 'admin_adjustment',
+          type: walletAction === 'add' ? 'credit' : 'debit',
+          income_type: 'adjustment',
           amount: amount,
           balance_after: newBalance,
-          currency: 'USDT',
-          network: null,
+          reason: `Admin ${walletAction === 'add' ? 'credit' : 'debit'} by super admin`,
+          category: 'admin_adjustment',
           status: 'completed',
-          notes: `Admin ${walletAction === 'add' ? 'credit' : 'debit'} by super admin`,
         }]);
 
       toast({
@@ -315,9 +318,13 @@ const UserManagement = () => {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'super_admin': return 'destructive';
-      case 'admin': return 'secondary';
-      default: return 'default';
+      case 'superadmin':
+      case 'super-admin':
+        return 'destructive';
+      case 'admin':
+        return 'secondary';
+      default:
+        return 'default';
     }
   };
 
@@ -568,7 +575,7 @@ const UserManagement = () => {
                 <SelectContent>
                   <SelectItem value="user">User</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="super_admin">Super Admin</SelectItem>
+                  <SelectItem value="superadmin">Super Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
