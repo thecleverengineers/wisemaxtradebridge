@@ -759,6 +759,12 @@ export type Database = {
           created_at: string | null
           email: string | null
           id: string
+          kyc_aadhar_number: string | null
+          kyc_approved_at: string | null
+          kyc_pan_number: string | null
+          kyc_status: string | null
+          kyc_submitted_at: string | null
+          kyc_usdt_wallet: string | null
           name: string | null
           phone: string | null
           referral_code: string
@@ -769,6 +775,12 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id: string
+          kyc_aadhar_number?: string | null
+          kyc_approved_at?: string | null
+          kyc_pan_number?: string | null
+          kyc_status?: string | null
+          kyc_submitted_at?: string | null
+          kyc_usdt_wallet?: string | null
           name?: string | null
           phone?: string | null
           referral_code: string
@@ -779,6 +791,12 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id?: string
+          kyc_aadhar_number?: string | null
+          kyc_approved_at?: string | null
+          kyc_pan_number?: string | null
+          kyc_status?: string | null
+          kyc_submitted_at?: string | null
+          kyc_usdt_wallet?: string | null
           name?: string | null
           phone?: string | null
           referral_code?: string

@@ -61,8 +61,7 @@ const Settings = () => {
   const [kycData, setKycData] = useState({
     panNumber: '',
     aadharNumber: '',
-    bankAccount: '',
-    ifscCode: ''
+    usdtWallet: ''
   });
 
   useEffect(() => {
@@ -147,10 +146,20 @@ const Settings = () => {
   };
 
   const handleKYCSubmit = async () => {
-    if (!kycData.panNumber || !kycData.aadharNumber) {
+    if (!kycData.panNumber || !kycData.aadharNumber || !kycData.usdtWallet) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required KYC details",
+        description: "Please fill in all required KYC details including USDT wallet address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate USDT wallet address (basic validation - should start with T for TRC20)
+    if (!kycData.usdtWallet.match(/^[T|0x][a-zA-Z0-9]{33,41}$/)) {
+      toast({
+        title: "Invalid Wallet Address",
+        description: "Please enter a valid USDT wallet address",
         variant: "destructive",
       });
       return;
@@ -160,7 +169,11 @@ const Settings = () => {
       const { error } = await supabase
         .from('profiles')
         .update({
-          phone: profileData.phone
+          kyc_pan_number: kycData.panNumber,
+          kyc_aadhar_number: kycData.aadharNumber,
+          kyc_usdt_wallet: kycData.usdtWallet,
+          kyc_status: 'pending',
+          kyc_submitted_at: new Date().toISOString()
         })
         .eq('id', user?.id);
 
@@ -470,67 +483,63 @@ const Settings = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="pan-number">PAN Number *</Label>
-                      <Input
-                        id="pan-number"
-                        value={kycData.panNumber}
-                        onChange={(e) => setKycData({...kycData, panNumber: e.target.value.toUpperCase()})}
-                        placeholder="ABCDE1234F"
-                        maxLength={10}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="aadhar-number">Aadhar Number *</Label>
-                      <Input
-                        id="aadhar-number"
-                        value={kycData.aadharNumber}
-                        onChange={(e) => setKycData({...kycData, aadharNumber: e.target.value})}
-                        placeholder="1234 5678 9012"
-                        maxLength={12}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="bank-account">Bank Account Number</Label>
-                      <div className="relative">
-                        <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <div className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="pan-number">PAN Number *</Label>
                         <Input
-                          id="bank-account"
-                          value={kycData.bankAccount}
-                          onChange={(e) => setKycData({...kycData, bankAccount: e.target.value})}
-                          className="pl-10"
+                          id="pan-number"
+                          value={kycData.panNumber}
+                          onChange={(e) => setKycData({...kycData, panNumber: e.target.value.toUpperCase()})}
+                          placeholder="ABCDE1234F"
+                          maxLength={10}
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="aadhar-number">Aadhar Number *</Label>
+                        <Input
+                          id="aadhar-number"
+                          value={kycData.aadharNumber}
+                          onChange={(e) => setKycData({...kycData, aadharNumber: e.target.value})}
+                          placeholder="1234 5678 9012"
+                          maxLength={12}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="ifsc-code">IFSC Code</Label>
-                      <Input
-                        id="ifsc-code"
-                        value={kycData.ifscCode}
-                        onChange={(e) => setKycData({...kycData, ifscCode: e.target.value.toUpperCase()})}
-                        placeholder="SBIN0001234"
-                      />
+                      <Label htmlFor="usdt-wallet">USDT Wallet Address (TRC20) *</Label>
+                      <div className="relative">
+                        <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="usdt-wallet"
+                          value={kycData.usdtWallet}
+                          onChange={(e) => setKycData({...kycData, usdtWallet: e.target.value})}
+                          placeholder="TRC20 wallet address (starts with T)"
+                          className="pl-10"
+                        />
+                      </div>
+                      <p className="text-muted-foreground text-sm mt-1">
+                        This address will be used for withdrawals
+                      </p>
                     </div>
                   </div>
 
                   <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                    <h4 className="text-foreground font-medium mb-2">Required Documents</h4>
+                    <h4 className="text-foreground font-medium mb-2">Required Information</h4>
                     <ul className="text-muted-foreground text-sm space-y-1">
-                      <li>• PAN Card (mandatory)</li>
-                      <li>• Aadhar Card (mandatory)</li>
-                      <li>• Bank Account details for withdrawals</li>
-                      <li>• All documents should be clear and readable</li>
+                      <li>• PAN Card number (mandatory)</li>
+                      <li>• Aadhar Card number (mandatory)</li>
+                      <li>• USDT Wallet Address for withdrawals (mandatory)</li>
+                      <li>• Ensure wallet address is correct as it cannot be changed after approval</li>
                     </ul>
                   </div>
 
                   <div className="flex justify-end">
                     <Button 
                       onClick={handleKYCSubmit}
-                      disabled={!kycData.panNumber || !kycData.aadharNumber || profile?.kyc_status === 'approved'}
+                      disabled={!kycData.panNumber || !kycData.aadharNumber || !kycData.usdtWallet || profile?.kyc_status === 'approved'}
                       size="lg"
                     >
                       {profile?.kyc_status === 'approved' ? 'Already Verified' :

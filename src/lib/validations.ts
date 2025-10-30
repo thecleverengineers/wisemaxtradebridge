@@ -81,4 +81,21 @@ export type SignInData = z.infer<typeof signInSchema>;
 export type SignUpData = z.infer<typeof signUpSchema>;
 export type UserProfileData = z.infer<typeof userProfileSchema>;
 export type InvestmentData = z.infer<typeof investmentSchema>;
+// KYC schema
+export const kycSchema = z.object({
+  panNumber: z.string()
+    .trim()
+    .length(10, 'PAN number must be 10 characters')
+    .regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, 'Invalid PAN number format'),
+  aadharNumber: z.string()
+    .trim()
+    .regex(/^[0-9]{12}$/, 'Aadhar number must be 12 digits'),
+  usdtWallet: z.string()
+    .trim()
+    .min(34, 'Invalid USDT wallet address')
+    .max(42, 'Invalid USDT wallet address')
+    .regex(/^[T|0x][a-zA-Z0-9]{33,41}$/, 'Invalid USDT wallet address format'),
+});
+
 export type WithdrawalData = z.infer<typeof withdrawalSchema>;
+export type KYCData = z.infer<typeof kycSchema>;
