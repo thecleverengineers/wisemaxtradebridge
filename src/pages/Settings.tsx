@@ -155,11 +155,11 @@ const Settings = () => {
       return;
     }
 
-    // Validate USDT wallet address (basic validation - should start with T for TRC20)
-    if (!kycData.usdtWallet.match(/^[T|0x][a-zA-Z0-9]{33,41}$/)) {
+    // Validate USDT wallet address (BEP20 format - starts with 0x)
+    if (!kycData.usdtWallet.match(/^0x[a-fA-F0-9]{40}$/)) {
       toast({
         title: "Invalid Wallet Address",
-        description: "Please enter a valid USDT wallet address",
+        description: "Please enter a valid BEP20 wallet address (starts with 0x)",
         variant: "destructive",
       });
       return;
@@ -509,14 +509,14 @@ const Settings = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="usdt-wallet">USDT Wallet Address (TRC20) *</Label>
+                      <Label htmlFor="usdt-wallet">USDT Wallet Address (BEP20) *</Label>
                       <div className="relative">
                         <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="usdt-wallet"
                           value={kycData.usdtWallet}
                           onChange={(e) => setKycData({...kycData, usdtWallet: e.target.value})}
-                          placeholder="TRC20 wallet address (starts with T)"
+                          placeholder="BEP20 wallet address (starts with 0x)"
                           className="pl-10"
                         />
                       </div>

@@ -92,9 +92,8 @@ export const kycSchema = z.object({
     .regex(/^[0-9]{12}$/, 'Aadhar number must be 12 digits'),
   usdtWallet: z.string()
     .trim()
-    .min(34, 'Invalid USDT wallet address')
-    .max(42, 'Invalid USDT wallet address')
-    .regex(/^[T|0x][a-zA-Z0-9]{33,41}$/, 'Invalid USDT wallet address format'),
+    .length(42, 'BEP20 address must be 42 characters')
+    .regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid BEP20 wallet address format (must start with 0x)'),
 });
 
 export type WithdrawalData = z.infer<typeof withdrawalSchema>;
