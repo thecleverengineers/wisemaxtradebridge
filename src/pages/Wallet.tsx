@@ -50,6 +50,17 @@ interface Transaction {
   tx_hash?: string;
 }
 
+interface WithdrawalRequest {
+  id: string;
+  amount: number;
+  wallet_address: string;
+  network: string;
+  status: string;
+  created_at: string;
+  processed_at?: string;
+  admin_note?: string;
+}
+
 const Wallet = () => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
@@ -58,6 +69,7 @@ const Wallet = () => {
   
   const [walletData, setWalletData] = useState<WalletData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>([]);
   
   const [showBalance, setShowBalance] = useState(true);
   
@@ -117,6 +129,18 @@ const Wallet = () => {
         setTransactions(transactionsResponse);
       }
 
+      // Fetch withdrawal requests
+      const { data: withdrawalResponse, error: withdrawalError } = await supabase
+        .from('withdrawal_requests')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (!withdrawalError && withdrawalResponse) {
+        setWithdrawalRequests(withdrawalResponse);
+      }
+
     } catch (error) {
       console.error('Error fetching wallet data:', error);
       toast({
@@ -146,7 +170,19 @@ const Wallet = () => {
       return;
     }
 
-    if (parseFloat(withdrawAmount) > (walletData?.total_balance || 0)) {
+    const amount = parseFloat(withdrawAmount);
+    
+    // Minimum withdrawal check
+    if (amount < 20) {
+      toast({
+        title: "Minimum Withdrawal",
+        description: "Minimum withdrawal amount is 20 USDT",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (amount > (walletData?.total_balance || 0)) {
       toast({
         title: "Insufficient Balance",
         description: "You don't have enough balance for this withdrawal",
@@ -157,9 +193,22 @@ const Wallet = () => {
 
     setWithdrawing(true);
     try {
-      const amount = parseFloat(withdrawAmount);
       const withdrawalFee = amount * 0.10; // 10% fee
       const netAmount = amount - withdrawalFee;
+      
+      // Get current wallet
+      const { data: currentWallet, error: walletError } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('currency', 'USDT')
+        .single();
+
+      if (walletError) throw new Error('Failed to fetch wallet data');
+      if (!currentWallet) throw new Error('Wallet not found');
+
+      const newBalance = currentWallet.balance - amount;
+      const newLockedBalance = (currentWallet.locked_balance || 0) + netAmount;
       
       // Create withdrawal request with net amount
       const { error: withdrawalError } = await supabase
@@ -175,38 +224,48 @@ const Wallet = () => {
       if (withdrawalError) throw withdrawalError;
 
       // Update wallet balance
-      const { data: currentWallet, error: walletError } = await supabase
+      const { error: updateError } = await supabase
         .from('wallets')
-        .select('*')
-        .eq('user_id', user?.id)
-        .eq('currency', 'USDT')
-        .maybeSingle();
+        .update({
+          balance: newBalance,
+          locked_balance: newLockedBalance
+        })
+        .eq('id', currentWallet.id);
 
-      if (!walletError && currentWallet) {
-        const { error: updateError } = await supabase
-          .from('wallets')
-          .update({
-            balance: currentWallet.balance - amount,
-            locked_balance: (currentWallet.locked_balance || 0) + netAmount
-          })
-          .eq('id', currentWallet.id);
+      if (updateError) throw updateError;
 
-        if (updateError) throw updateError;
-      }
+      // Create transaction record
+      const { error: transactionError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user?.id,
+          type: 'debit',
+          income_type: 'withdrawal',
+          amount: amount,
+          balance_after: newBalance,
+          reason: `Withdrawal request - Net: ${netAmount.toFixed(2)} USDT, Fee: ${withdrawalFee.toFixed(2)} USDT`,
+          category: 'withdrawal',
+          currency: 'USDT',
+          to_address: withdrawAddress,
+          network: 'BEP20',
+          status: 'pending'
+        });
+
+      if (transactionError) throw transactionError;
 
       toast({
         title: "Withdrawal Request Submitted",
-        description: `Withdrawal fee: ${withdrawalFee.toFixed(2)} USDT (10%). Net amount: ${netAmount.toFixed(2)} USDT`,
+        description: `Your withdrawal of ${netAmount.toFixed(2)} USDT is pending admin approval. Fee: ${withdrawalFee.toFixed(2)} USDT (10%)`,
       });
 
       setWithdrawAmount('');
       setWithdrawAddress('');
-      fetchWalletData();
-    } catch (error) {
+      await fetchWalletData();
+    } catch (error: any) {
       console.error('Error submitting withdrawal:', error);
       toast({
         title: "Withdrawal Failed",
-        description: "Failed to submit withdrawal request. Please try again.",
+        description: error?.message || "Failed to submit withdrawal request. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -395,6 +454,63 @@ const Wallet = () => {
               </DialogContent>
             </Dialog>
           </div>
+
+          {/* Withdrawal Requests */}
+          {withdrawalRequests.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <ArrowUpRight className="h-5 w-5 mr-2" />
+                  Withdrawal Requests
+                </CardTitle>
+                <CardDescription>
+                  Track your pending withdrawal requests
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {withdrawalRequests.map((request) => (
+                    <div key={request.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-foreground font-medium">{request.amount.toFixed(2)} USDT</h4>
+                          <Badge 
+                            variant={
+                              request.status === 'approved' ? 'default' :
+                              request.status === 'pending' ? 'secondary' :
+                              'destructive'
+                            }
+                          >
+                            {request.status}
+                          </Badge>
+                        </div>
+                        <p className="text-muted-foreground text-sm">
+                          Network: {request.network}
+                        </p>
+                        <p className="text-muted-foreground text-xs font-mono truncate">
+                          To: {request.wallet_address}
+                        </p>
+                        <p className="text-muted-foreground text-xs mt-1">
+                          Requested: {new Date(request.created_at).toLocaleDateString()} • 
+                          {new Date(request.created_at).toLocaleTimeString()}
+                        </p>
+                        {request.processed_at && (
+                          <p className="text-muted-foreground text-xs">
+                            Processed: {new Date(request.processed_at).toLocaleDateString()}
+                          </p>
+                        )}
+                        {request.admin_note && (
+                          <p className="text-destructive text-xs mt-1">
+                            Note: {request.admin_note}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Transaction History */}
           <Card>
