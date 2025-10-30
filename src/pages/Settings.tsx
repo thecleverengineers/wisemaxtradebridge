@@ -173,15 +173,25 @@ const Settings = () => {
           kyc_aadhar_number: kycData.aadharNumber,
           kyc_usdt_wallet: kycData.usdtWallet,
           kyc_status: 'pending',
-          kyc_submitted_at: new Date().toISOString()
+          kyc_submitted_at: new Date().toISOString(),
+          kyc_approved_at: null
         })
         .eq('id', user?.id);
 
       if (error) throw error;
 
       toast({
-        title: "KYC Submitted",
-        description: "Your KYC documents have been submitted for verification",
+        title: profile?.kyc_status === 'pending' || profile?.kyc_status === 'approved' ? "KYC Resubmitted" : "KYC Submitted",
+        description: profile?.kyc_status === 'pending' || profile?.kyc_status === 'approved' 
+          ? "Your KYC has been resubmitted and is pending verification" 
+          : "Your KYC documents have been submitted for verification",
+      });
+
+      // Reset form after successful submission
+      setKycData({
+        panNumber: '',
+        aadharNumber: '',
+        usdtWallet: ''
       });
     } catch (error) {
       console.error('Error submitting KYC:', error);
@@ -539,10 +549,10 @@ const Settings = () => {
                   <div className="flex justify-end">
                     <Button 
                       onClick={handleKYCSubmit}
-                      disabled={!kycData.panNumber || !kycData.aadharNumber || !kycData.usdtWallet || profile?.kyc_status === 'approved'}
+                      disabled={!kycData.panNumber || !kycData.aadharNumber || !kycData.usdtWallet}
                       size="lg"
                     >
-                      {profile?.kyc_status === 'approved' ? 'Already Verified' :
+                      {profile?.kyc_status === 'approved' ? 'Resubmit KYC' :
                        profile?.kyc_status === 'pending' ? 'Resubmit KYC' :
                        'Submit KYC'}
                     </Button>
