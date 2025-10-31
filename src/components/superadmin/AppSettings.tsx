@@ -11,6 +11,7 @@ const AppSettings = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [supportLink, setSupportLink] = useState('');
+  const [telegramLink, setTelegramLink] = useState('');
 
   useEffect(() => {
     fetchSettings();
@@ -19,18 +20,18 @@ const AppSettings = () => {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: supportData, error: supportError } = await supabase
         .from('admin_settings')
         .select('setting_value')
         .eq('setting_key', 'support_link')
         .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
+      if (supportError && supportError.code !== 'PGRST116') {
+        throw supportError;
       }
 
-      if (data?.setting_value) {
-        const value = data.setting_value as string | { url: string } | null;
+      if (supportData?.setting_value) {
+        const value = supportData.setting_value as string | { url: string } | null;
         if (value !== null) {
           if (typeof value === 'object' && value && 'url' in value) {
             const urlValue = value.url;
@@ -39,6 +40,30 @@ const AppSettings = () => {
             }
           } else if (typeof value === 'string') {
             setSupportLink(value);
+          }
+        }
+      }
+
+      const { data: telegramData, error: telegramError } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_key', 'telegram_support_link')
+        .maybeSingle();
+
+      if (telegramError && telegramError.code !== 'PGRST116') {
+        throw telegramError;
+      }
+
+      if (telegramData?.setting_value) {
+        const value = telegramData.setting_value as string | { url: string } | null;
+        if (value !== null) {
+          if (typeof value === 'object' && value && 'url' in value) {
+            const urlValue = value.url;
+            if (urlValue && typeof urlValue === 'string') {
+              setTelegramLink(urlValue);
+            }
+          } else if (typeof value === 'string') {
+            setTelegramLink(value);
           }
         }
       }
@@ -55,41 +80,69 @@ const AppSettings = () => {
   };
 
   const handleSave = async () => {
-    if (!supportLink.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Support link cannot be empty",
-        variant: "destructive",
-      });
-      return;
+    // Validate URLs
+    if (supportLink.trim()) {
+      try {
+        new URL(supportLink);
+      } catch {
+        toast({
+          title: "Validation Error",
+          description: "Please enter a valid support URL",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
-    // Basic URL validation
-    try {
-      new URL(supportLink);
-    } catch {
-      toast({
-        title: "Validation Error",
-        description: "Please enter a valid URL",
-        variant: "destructive",
-      });
-      return;
+    if (telegramLink.trim()) {
+      try {
+        new URL(telegramLink);
+      } catch {
+        toast({
+          title: "Validation Error",
+          description: "Please enter a valid Telegram URL",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('admin_settings')
-        .upsert({
-          setting_key: 'support_link',
-          setting_value: supportLink
-        });
+      const updates = [];
+      
+      if (supportLink.trim()) {
+        updates.push(
+          supabase
+            .from('admin_settings')
+            .upsert({
+              setting_key: 'support_link',
+              setting_value: supportLink
+            })
+        );
+      }
 
-      if (error) throw error;
+      if (telegramLink.trim()) {
+        updates.push(
+          supabase
+            .from('admin_settings')
+            .upsert({
+              setting_key: 'telegram_support_link',
+              setting_value: telegramLink
+            })
+        );
+      }
+
+      const results = await Promise.all(updates);
+      
+      const errors = results.filter(r => r.error);
+      if (errors.length > 0) {
+        throw errors[0].error;
+      }
 
       toast({
         title: "Success",
-        description: "Support link updated successfully",
+        description: "Settings updated successfully",
       });
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -122,12 +175,38 @@ const AppSettings = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="supportLink">Support Link</Label>
+            <Label htmlFor="telegramLink">Telegram Support Link</Label>
+            <div className="flex gap-2">
+              <Input
+                id="telegramLink"
+                type="url"
+                placeholder="https://t.me/yoursupport"
+                value={telegramLink}
+                onChange={(e) => setTelegramLink(e.target.value)}
+                className="flex-1"
+              />
+              {telegramLink && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => window.open(telegramLink, '_blank')}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              This Telegram link will appear in the sidebar before Settings for all users.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="supportLink">General Support Link</Label>
             <div className="flex gap-2">
               <Input
                 id="supportLink"
                 type="url"
-                placeholder="https://t.me/+3esl2Tswpc1mZGRk"
+                placeholder="https://support.example.com"
                 value={supportLink}
                 onChange={(e) => setSupportLink(e.target.value)}
                 className="flex-1"
@@ -143,7 +222,7 @@ const AppSettings = () => {
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              This link will appear in the sidebar for all users. Typically a Telegram support channel.
+              This link will appear at the bottom of the sidebar for all users.
             </p>
           </div>
 

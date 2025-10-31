@@ -22,17 +22,18 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
   const location = useLocation();
   const { isSuperAdmin } = useSuperAdmin();
   const [supportLink, setSupportLink] = useState<string>('');
+  const [telegramLink, setTelegramLink] = useState<string>('');
 
   useEffect(() => {
-    const fetchSupportLink = async () => {
-      const { data } = await supabase
+    const fetchLinks = async () => {
+      const { data: supportData } = await supabase
         .from('admin_settings')
         .select('setting_value')
         .eq('setting_key', 'support_link')
         .maybeSingle();
 
-      if (data?.setting_value) {
-        const value = data.setting_value as string | { url: string } | null;
+      if (supportData?.setting_value) {
+        const value = supportData.setting_value as string | { url: string } | null;
         if (value !== null) {
           if (typeof value === 'object' && value && 'url' in value) {
             const urlValue = value.url;
@@ -44,9 +45,29 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
           }
         }
       }
+
+      const { data: telegramData } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_key', 'telegram_support_link')
+        .maybeSingle();
+
+      if (telegramData?.setting_value) {
+        const value = telegramData.setting_value as string | { url: string } | null;
+        if (value !== null) {
+          if (typeof value === 'object' && value && 'url' in value) {
+            const urlValue = value.url;
+            if (urlValue && typeof urlValue === 'string') {
+              setTelegramLink(urlValue);
+            }
+          } else if (typeof value === 'string') {
+            setTelegramLink(value);
+          }
+        }
+      }
     };
 
-    fetchSupportLink();
+    fetchLinks();
   }, []);
 
   const menuItems = [
@@ -68,6 +89,10 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
     { icon: Gift, label: 'Rewards', path: '/rewards' },
     { icon: DollarSign, label: 'Monthly Salary', path: '/salary', badge: 'NEW' },
     { icon: TrendingUp, label: 'Investment Records', path: '/investment-records' },
+  ];
+
+  const bottomMenuItems = [
+    ...(telegramLink ? [{ icon: MessageCircle, label: 'Telegram Support', path: telegramLink, external: true }] : []),
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
@@ -203,6 +228,42 @@ export const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
                 </button>
               );
             })}
+            
+            {/* Bottom Menu Items */}
+            <div className="pt-2 mt-2 border-t border-border">
+              {bottomMenuItems.map((item, index) => {
+                if ('external' in item && item.external) {
+                  return (
+                    <a
+                      key={index}
+                      href={item.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center space-x-3 px-3 py-2.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-lg transition-all duration-200"
+                    >
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="font-medium text-sm truncate">{item.label}</span>
+                    </a>
+                  );
+                }
+                const isActive = location.pathname === item.path;
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleNavigation(item.path)}
+                    className={cn(
+                      "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200",
+                      isActive 
+                        ? "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25" 
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="font-medium text-sm truncate">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </nav>
 
