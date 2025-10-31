@@ -7,19 +7,25 @@ import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 interface WithdrawalRecord {
   id: string;
   user_id: string;
   amount: number;
-  currency: string;
   status: string;
-  type: string;
-  category?: string;
-  network?: string;
-  to_address?: string;
-  notes?: string;
+  network: string;
+  wallet_address: string;
+  admin_note?: string;
   created_at: string;
+  processed_at?: string;
   user_email?: string;
   user_name?: string;
 }
@@ -35,6 +41,9 @@ const WithdrawManagement = () => {
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState<WithdrawalRecord | null>(null);
+  const [rejectNote, setRejectNote] = useState('');
   const { toast } = useToast();
 
   const checkUserRole = async () => {
@@ -47,12 +56,12 @@ const WithdrawManagement = () => {
 
       console.log('Current user ID:', user.id);
 
-      // Check if user has admin or super-admin role
+      // Check if user has admin, superadmin, or super-admin role
       const { data: roleData, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .in('role', ['admin', 'super-admin']);
+        .in('role', ['admin', 'superadmin', 'super-admin']);
 
       console.log('User roles:', roleData);
 
@@ -81,22 +90,18 @@ const WithdrawManagement = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('transactions')
+        .from('withdrawal_requests')
         .select(`
           id,
           user_id,
           amount,
-          currency,
           status,
-          type,
-          category,
           network,
-          to_address,
-          notes,
-          created_at
+          wallet_address,
+          admin_note,
+          created_at,
+          processed_at
         `)
-        .eq('type', 'withdrawal')
-        .eq('category', 'withdrawal')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -170,11 +175,19 @@ const WithdrawManagement = () => {
   };
 
   const handleReject = async (withdrawal: WithdrawalRecord) => {
-    setProcessingId(withdrawal.id);
+    setSelectedWithdrawal(withdrawal);
+    setRejectDialogOpen(true);
+  };
+
+  const confirmReject = async () => {
+    if (!selectedWithdrawal) return;
+    
+    setProcessingId(selectedWithdrawal.id);
     
     try {
       const { data, error } = await supabase.rpc('reject_withdrawal', {
-        withdrawal_id: withdrawal.id
+        withdrawal_id: selectedWithdrawal.id,
+        note: rejectNote || null
       });
       
       if (error) throw error;
@@ -187,9 +200,12 @@ const WithdrawManagement = () => {
       
       toast({
         title: 'Success',
-        description: result.message || 'Withdrawal rejected and funds returned',
+        description: result.message || 'Withdrawal rejected successfully',
       });
       
+      setRejectDialogOpen(false);
+      setRejectNote('');
+      setSelectedWithdrawal(null);
       await fetchWithdrawals();
     } catch (error) {
       toast({
@@ -251,8 +267,8 @@ const WithdrawManagement = () => {
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead>Amount</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead>Wallet/Account</TableHead>
+                <TableHead>Network</TableHead>
+                <TableHead>Wallet Address</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
@@ -275,11 +291,11 @@ const WithdrawManagement = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {withdrawal.amount} {withdrawal.currency}
+                      {withdrawal.amount} USDT
                     </TableCell>
                     <TableCell>{withdrawal.network || 'N/A'}</TableCell>
                     <TableCell className="max-w-[200px] truncate">
-                      {withdrawal.to_address || 'N/A'}
+                      {withdrawal.wallet_address || 'N/A'}
                     </TableCell>
                     <TableCell>{format(new Date(withdrawal.created_at), 'MMM dd, yyyy')}</TableCell>
                     <TableCell>
@@ -318,6 +334,11 @@ const WithdrawManagement = () => {
                           </Button>
                         </div>
                       )}
+                      {withdrawal.status === 'rejected' && withdrawal.admin_note && (
+                        <div className="text-sm text-muted-foreground">
+                          Note: {withdrawal.admin_note}
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -326,6 +347,49 @@ const WithdrawManagement = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Withdrawal</DialogTitle>
+            <DialogDescription>
+              Add a note explaining why this withdrawal is being rejected (optional)
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              value={rejectNote}
+              onChange={(e) => setRejectNote(e.target.value)}
+              placeholder="Enter rejection reason..."
+              rows={4}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setRejectDialogOpen(false);
+                  setRejectNote('');
+                  setSelectedWithdrawal(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmReject}
+                disabled={!!processingId}
+              >
+                {processingId ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <XCircle className="h-4 w-4 mr-1" />
+                )}
+                Confirm Reject
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
