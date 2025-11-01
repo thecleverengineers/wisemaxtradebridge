@@ -12,6 +12,11 @@ interface UserProfile {
   parent_id?: string;
   is_active: boolean;
   kyc_status: string;
+  kyc_pan_number?: string;
+  kyc_aadhar_number?: string;
+  kyc_usdt_wallet?: string;
+  kyc_submitted_at?: string;
+  kyc_approved_at?: string;
   total_investment: number;
   total_roi_earned: number;
   total_referral_earned: number;
@@ -79,7 +84,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           referral_code: userProfile.referral_code,
           parent_id: userProfile.referred_by,
           is_active: true,
-          kyc_status: 'pending',
+          kyc_status: userProfile.kyc_status || 'pending',
+          kyc_pan_number: userProfile.kyc_pan_number,
+          kyc_aadhar_number: userProfile.kyc_aadhar_number,
+          kyc_usdt_wallet: userProfile.kyc_usdt_wallet,
+          kyc_submitted_at: userProfile.kyc_submitted_at,
+          kyc_approved_at: userProfile.kyc_approved_at,
           total_investment: 0,
           total_roi_earned: wallet?.roi_income || 0,
           total_referral_earned: wallet?.referral_income || 0

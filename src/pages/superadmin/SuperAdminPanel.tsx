@@ -6,6 +6,7 @@ import { Shield, ChevronLeft } from 'lucide-react';
 import UserManagement from '@/components/superadmin/UserManagement';
 import SystemOverview from '@/components/superadmin/SystemOverview';
 import RoleManagement from '@/components/superadmin/RoleManagement';
+import KYCManagement from '@/components/superadmin/KYCManagement';
 import ActivityLog from '@/components/superadmin/ActivityLog';
 import AppSettings from '@/components/superadmin/AppSettings';
 import BinaryRecordsManagement from '@/components/superadmin/BinaryRecordsManagement';
@@ -65,6 +66,8 @@ const SuperAdminPanel = () => {
         return <UserManagement />;
       case 'roles':
         return <RoleManagement />;
+      case 'kyc':
+        return <KYCManagement />;
       case 'binary':
         return <BinaryRecordsManagement />;
       case 'forex':

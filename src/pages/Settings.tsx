@@ -71,6 +71,13 @@ const Settings = () => {
         phone: profile.phone || '',
         email: user?.email || ''
       });
+      
+      // Load existing KYC data if available
+      setKycData({
+        panNumber: profile.kyc_pan_number || '',
+        aadharNumber: profile.kyc_aadhar_number || '',
+        usdtWallet: profile.kyc_usdt_wallet || ''
+      });
     }
   }, [profile, user]);
 
