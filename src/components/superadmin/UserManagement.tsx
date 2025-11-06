@@ -100,13 +100,20 @@ const UserManagement = () => {
 
       if (usersError) throw usersError;
 
-      // Fetch wallets
+      // Fetch wallets with all income fields
       const { data: walletsData, error: walletsError } = await supabase
         .from('wallets')
-        .select('user_id, balance')
+        .select('user_id, balance, roi_income, referral_income, level_income, bonus_income')
         .eq('currency', 'USDT');
 
       if (walletsError) throw walletsError;
+
+      // Fetch investments and calculate total per user
+      const { data: investmentsData, error: investmentsError } = await supabase
+        .from('investments')
+        .select('user_id, amount, status');
+
+      if (investmentsError) throw investmentsError;
 
       // Fetch roles
       const { data: rolesData, error: rolesError } = await supabase
@@ -115,24 +122,40 @@ const UserManagement = () => {
 
       if (rolesError) throw rolesError;
 
-      // Combine data and add missing fields
-      const usersWithWalletAndRole = usersData?.map(user => ({
-        id: user.id,
-        email: user.email || '',
-        name: user.name,
-        phone: user.phone,
-        referral_code: user.referral_code,
-        parent_id: user.referred_by,
-        is_active: true,
-        kyc_status: 'pending',
-        total_investment: 0,
-        total_roi_earned: 0,
-        total_referral_earned: 0,
-        created_at: user.created_at,
-        updated_at: user.updated_at,
-        wallet_balance: walletsData?.find(w => w.user_id === user.id)?.balance || 0,
-        role: rolesData?.find(r => r.user_id === user.id)?.role || 'user'
-      })) || [];
+      // Calculate total investment per user
+      const investmentsByUser = investmentsData?.reduce((acc, inv) => {
+        if (!acc[inv.user_id]) {
+          acc[inv.user_id] = 0;
+        }
+        // Only count active and completed investments
+        if (inv.status === 'active' || inv.status === 'completed') {
+          acc[inv.user_id] += Number(inv.amount);
+        }
+        return acc;
+      }, {} as Record<string, number>) || {};
+
+      // Combine data with correct values from database
+      const usersWithWalletAndRole = usersData?.map(user => {
+        const wallet = walletsData?.find(w => w.user_id === user.id);
+        
+        return {
+          id: user.id,
+          email: user.email || '',
+          name: user.name,
+          phone: user.phone,
+          referral_code: user.referral_code,
+          parent_id: user.referred_by,
+          is_active: true,
+          kyc_status: user.kyc_status || 'pending',
+          total_investment: investmentsByUser[user.id] || 0,
+          total_roi_earned: wallet?.roi_income || 0,
+          total_referral_earned: (wallet?.referral_income || 0) + (wallet?.level_income || 0),
+          created_at: user.created_at,
+          updated_at: user.updated_at,
+          wallet_balance: wallet?.balance || 0,
+          role: rolesData?.find(r => r.user_id === user.id)?.role || 'user'
+        };
+      }) || [];
 
       setUsers(usersWithWalletAndRole);
     } catch (error) {
