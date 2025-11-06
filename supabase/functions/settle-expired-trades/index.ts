@@ -39,29 +39,122 @@ Deno.serve(async (req) => {
 
     console.log(`Found ${expiredTrades.length} expired trades to settle`);
 
-    // Settle each trade
+    // Settle each trade with 40% win / 60% lose probability
     let settledCount = 0;
     for (const trade of expiredTrades) {
-      // Simulate current market price (slightly different from entry price)
-      const priceMovement = (Math.random() - 0.5) * 0.015; // ±0.75% movement
-      const exitPrice = trade.entry_price * (1 + priceMovement);
-
-      // Update the trade with exit price - the trigger will handle the rest
+      const randomValue = Math.random();
+      const isWin = randomValue <= 0.4; // 40% win chance
+      
+      // Calculate exit price based on win/lose and direction
+      let exitPrice: number;
+      let profitLoss: number;
+      const stakeAmount = Number(trade.amount);
+      const entryPrice = Number(trade.entry_price);
+      const direction = trade.direction; // 'CALL' or 'PUT'
+      
+      if (isWin) {
+        // Win: 90% payout (stake + 90% profit)
+        profitLoss = stakeAmount * 0.9;
+        
+        // Adjust exit price to reflect win
+        if (direction === 'CALL') {
+          // CALL wins when price goes up
+          exitPrice = entryPrice * (1 + (Math.random() * 0.02 + 0.01)); // +1% to +3%
+        } else {
+          // PUT wins when price goes down
+          exitPrice = entryPrice * (1 - (Math.random() * 0.02 + 0.01)); // -1% to -3%
+        }
+      } else {
+        // Lose: lose entire stake
+        profitLoss = -stakeAmount;
+        
+        // Adjust exit price to reflect loss
+        if (direction === 'CALL') {
+          // CALL loses when price goes down or stays same
+          exitPrice = entryPrice * (1 - (Math.random() * 0.02 + 0.005)); // -0.5% to -2.5%
+        } else {
+          // PUT loses when price goes up or stays same
+          exitPrice = entryPrice * (1 + (Math.random() * 0.02 + 0.005)); // +0.5% to +2.5%
+        }
+      }
+      
+      const status = isWin ? 'won' : 'lost';
+      const settledAt = new Date().toISOString();
+      
+      // Update the binary record
       const { error: updateError } = await supabase
         .from('binary_records')
         .update({ 
           exit_price: exitPrice,
-          updated_at: new Date().toISOString()
+          profit_loss: profitLoss,
+          status: status,
+          settled_at: settledAt,
+          updated_at: settledAt
         })
         .eq('id', trade.id)
         .eq('status', 'pending'); // Only update if still pending
 
       if (updateError) {
         console.error(`Error updating trade ${trade.id}:`, updateError);
-      } else {
-        settledCount++;
-        console.log(`Settled trade ${trade.id}: ${trade.trade_type} on ${trade.asset_pair}, Entry: ${trade.entry_price}, Exit: ${exitPrice}`);
+        continue;
       }
+
+      // Update wallet balance
+      // Fetch current wallet state first
+      const { data: wallet, error: walletFetchError } = await supabase
+        .from('wallets')
+        .select('balance, locked_balance')
+        .eq('user_id', trade.user_id)
+        .single();
+
+      if (walletFetchError || !wallet) {
+        console.error(`Error fetching wallet for trade ${trade.id}:`, walletFetchError);
+        continue;
+      }
+
+      if (isWin) {
+        // Win: Return stake + profit to balance, reduce locked balance
+        const totalReturn = stakeAmount + profitLoss;
+        const { error: walletError } = await supabase
+          .from('wallets')
+          .update({
+            balance: wallet.balance + totalReturn,
+            locked_balance: wallet.locked_balance - stakeAmount
+          })
+          .eq('user_id', trade.user_id);
+
+        if (walletError) {
+          console.error(`Error updating wallet for trade ${trade.id}:`, walletError);
+        }
+      } else {
+        // Lose: Just unlock the balance (amount already deducted)
+        const { error: walletError } = await supabase
+          .from('wallets')
+          .update({
+            locked_balance: wallet.locked_balance - stakeAmount
+          })
+          .eq('user_id', trade.user_id);
+
+        if (walletError) {
+          console.error(`Error updating wallet for trade ${trade.id}:`, walletError);
+        }
+      }
+
+      // Create transaction record
+      await supabase
+        .from('transactions')
+        .insert({
+          user_id: trade.user_id,
+          type: isWin ? 'credit' : 'debit',
+          amount: Math.abs(profitLoss),
+          balance_after: 0, // Will be updated by wallet trigger
+          reason: `Binary trade ${status} - ${trade.asset} ${direction}`,
+          category: 'binary_trading',
+          status: 'completed'
+        });
+
+      settledCount++;
+      console.log(`Settled trade ${trade.id}: ${direction} on ${trade.asset}, Result: ${status} (${(randomValue * 100).toFixed(1)}%), Entry: ${entryPrice}, Exit: ${exitPrice.toFixed(4)}, P/L: ${profitLoss.toFixed(2)}`);
     }
 
     return new Response(
