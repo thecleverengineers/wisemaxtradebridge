@@ -105,49 +105,59 @@ Deno.serve(async (req) => {
         .from('wallets')
         .select('balance, locked_balance')
         .eq('user_id', trade.user_id)
-        .single();
+        .maybeSingle();
 
       if (walletFetchError || !wallet) {
         console.error(`Error fetching wallet for trade ${trade.id}:`, walletFetchError);
         continue;
       }
 
+      let newBalance = wallet.balance;
+      let newLockedBalance = wallet.locked_balance;
+
       if (isWin) {
         // Win: Return stake + profit to balance, reduce locked balance
         const totalReturn = stakeAmount + profitLoss;
+        newBalance = wallet.balance + totalReturn;
+        newLockedBalance = wallet.locked_balance - stakeAmount;
+        
         const { error: walletError } = await supabase
           .from('wallets')
           .update({
-            balance: wallet.balance + totalReturn,
-            locked_balance: wallet.locked_balance - stakeAmount
+            balance: newBalance,
+            locked_balance: newLockedBalance
           })
           .eq('user_id', trade.user_id);
 
         if (walletError) {
           console.error(`Error updating wallet for trade ${trade.id}:`, walletError);
+          continue;
         }
       } else {
         // Lose: Just unlock the balance (amount already deducted)
+        newLockedBalance = wallet.locked_balance - stakeAmount;
+        
         const { error: walletError } = await supabase
           .from('wallets')
           .update({
-            locked_balance: wallet.locked_balance - stakeAmount
+            locked_balance: newLockedBalance
           })
           .eq('user_id', trade.user_id);
 
         if (walletError) {
           console.error(`Error updating wallet for trade ${trade.id}:`, walletError);
+          continue;
         }
       }
 
-      // Create transaction record
+      // Create transaction record with correct balance_after
       await supabase
         .from('transactions')
         .insert({
           user_id: trade.user_id,
           type: isWin ? 'credit' : 'debit',
           amount: Math.abs(profitLoss),
-          balance_after: 0, // Will be updated by wallet trigger
+          balance_after: newBalance,
           reason: `Binary trade ${status} - ${trade.asset} ${direction}`,
           category: 'binary_trading',
           status: 'completed'
