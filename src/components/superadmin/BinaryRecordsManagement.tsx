@@ -91,13 +91,100 @@ const BinaryRecordsManagement = () => {
 
   const handleForceResult = async (recordId: string, result: 'WIN' | 'LOSE') => {
     try {
-      const status = result === 'WIN' ? 'won' : 'lost';
-      const { error } = await supabase
+      // First, get the trade details
+      const { data: trade, error: fetchError } = await supabase
         .from('binary_records')
-        .update({ status })
-        .eq('id', recordId);
+        .select('*')
+        .eq('id', recordId)
+        .single();
 
-      if (error) throw error;
+      if (fetchError || !trade) throw fetchError || new Error('Trade not found');
+
+      const isWin = result === 'WIN';
+      const status = isWin ? 'won' : 'lost';
+      const stakeAmount = Number(trade.amount);
+      const entryPrice = Number(trade.entry_price);
+      const direction = trade.direction;
+
+      // Calculate exit price based on result and direction
+      let exitPrice: number;
+      let profitLoss: number;
+
+      if (isWin) {
+        profitLoss = stakeAmount * 0.9; // 90% profit on win
+        if (direction === 'CALL') {
+          exitPrice = entryPrice * (1 + (Math.random() * 0.02 + 0.01));
+        } else {
+          exitPrice = entryPrice * (1 - (Math.random() * 0.02 + 0.01));
+        }
+      } else {
+        profitLoss = -stakeAmount;
+        if (direction === 'CALL') {
+          exitPrice = entryPrice * (1 - (Math.random() * 0.02 + 0.005));
+        } else {
+          exitPrice = entryPrice * (1 + (Math.random() * 0.02 + 0.005));
+        }
+      }
+
+      const settledAt = new Date().toISOString();
+
+      // Update the binary record with all fields
+      const { error: updateError } = await supabase
+        .from('binary_records')
+        .update({
+          status,
+          exit_price: exitPrice,
+          profit_loss: profitLoss,
+          settled_at: settledAt,
+          updated_at: settledAt
+        })
+        .eq('id', recordId)
+        .eq('status', 'pending');
+
+      if (updateError) throw updateError;
+
+      // Fetch wallet to update it
+      const { data: wallet, error: walletFetchError } = await supabase
+        .from('wallets')
+        .select('balance, locked_balance')
+        .eq('user_id', trade.user_id)
+        .maybeSingle();
+
+      if (walletFetchError || !wallet) {
+        console.error('Error fetching wallet:', walletFetchError);
+      } else {
+        let newBalance = wallet.balance;
+        let newLockedBalance = wallet.locked_balance;
+
+        if (isWin) {
+          const totalReturn = stakeAmount + profitLoss;
+          newBalance = wallet.balance + totalReturn;
+          newLockedBalance = wallet.locked_balance - stakeAmount;
+        } else {
+          newLockedBalance = wallet.locked_balance - stakeAmount;
+        }
+
+        await supabase
+          .from('wallets')
+          .update({
+            balance: newBalance,
+            locked_balance: newLockedBalance
+          })
+          .eq('user_id', trade.user_id);
+
+        // Create transaction record
+        await supabase
+          .from('transactions')
+          .insert({
+            user_id: trade.user_id,
+            type: isWin ? 'credit' : 'debit',
+            amount: Math.abs(profitLoss),
+            balance_after: newBalance,
+            reason: `Binary trade ${status} - ${trade.asset} ${direction} (Admin)`,
+            category: 'binary_trading',
+            status: 'completed'
+          });
+      }
 
       toast({
         title: "Success",
